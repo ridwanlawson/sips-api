@@ -1,0 +1,740 @@
+name: Report
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: api/report/hasil-panen
+    metadata:
+      groupName: Report
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Memanggil data hasil panen.'
+      description: |-
+        API ini digunakan untuk memperlihatkan hasil panen pada report di Android SIPS Mobile
+        Namun, jika ingin melakukan filter pada data yang dipanggil,
+        gunakan parameter pada URL berdasarkan _**Query Parameter**_.
+        Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afdeling, tph, blok
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      nodokumen:
+        name: nodokumen
+        description: 'Optional. Filter Hasil Panen berdasarkan No Dokumen.'
+        required: false
+        example: SKJ-PNN/MTE/07/25/001
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tanggaldari:
+        name: tanggaldari
+        description: 'Optional. Filter Hasil Panen berdasarkan rentang tanggal, parameter ini diisi tanggal dari. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2024-12-19'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tanggalsampai:
+        name: tanggalsampai
+        description: 'Optional. Filter Hasil Panen berdasarkan rentang tanggal, parameter ini diisi tanggal sampai. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2024-12-20'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tph:
+        name: tph
+        description: 'Optional. Filter Hasil Panen berdasarkan Kode TPH.'
+        required: false
+        example: 1A02
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      blok:
+        name: blok
+        description: 'Optional. Filter Hasil Panen berdasarkan Blok.'
+        required: false
+        example: A02
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'Optional. Filter Hasil Panen berdasarkan afdeling.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'Optional. Filter Hasil Panen berdasarkan Bisnis Unit (FCBA).'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: 'Optional. Filter Hasil Panen berdasarkan Status Hasil Panen salah satu dari SELISIH,BELUM,SELESAI.'
+        required: false
+        example: SELISIH
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      nodokumen: SKJ-PNN/MTE/07/25/001
+      tanggaldari: '2024-12-19'
+      tanggalsampai: '2024-12-20'
+      tph: 1A02
+      blok: A02
+      afdeling: AFD-01
+      fcba: MTE
+      status: SELISIH
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "List Data Hasil Panen",
+           "data": [
+               {
+                   "id": "1",
+                   "nodokumen": "SPB2024001259",
+                   "tanggal": "2024-12-31 00:00:00",
+                   "tph": "1A02",
+                   "blok": "A02",
+                   "afdeling": "AFD-01",
+                   "fcba": "MTE",
+                   "janjang": "180",
+                   "status": "SELISIH",
+                   "informasi": "SELISIH : -195 JJG"
+               }
+           ]
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer cb4v83DVhdgEaakZ1e65fP6'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/report/hasil-pengangkutan
+    metadata:
+      groupName: Report
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Memanggil data hasil pengangkutan.'
+      description: |-
+        API ini digunakan untuk memanggil data Pengangkutan secara keseluruhan yang dikelompokkan berdasarkan no pengangkutan.
+        Namun, jika ingin melakukan filter pada data yang dipanggil,
+        gunakan parameter pada URL berdasarkan _**Query Parameter**_.
+        Data diurutkan berdasarkan Tanggal terbaru, Afdeling, dan Kode Karyawan.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      nopengangkutan:
+        name: nopengangkutan
+        description: 'Optional. Filter Pengangkutan berdasarkan No Pengangkutan.'
+        required: false
+        example: DRC2010101101
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      nospb:
+        name: nospb
+        description: 'Optional. Filter Pengangkutan berdasarkan No SPB.'
+        required: false
+        example: SPB2024001259
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tanggal:
+        name: tanggal
+        description: 'Optional. Filter Pengangkutan berdasarkan tanggal. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2025-11-01'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tanggal_end:
+        name: tanggal_end
+        description: 'Optional. Filter Pengangkutan berdasarkan rentang tanggal. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2025-11-20'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      kode_karyawan_kerani:
+        name: kode_karyawan_kerani
+        description: 'Optional. Filter Pengangkutan berdasarkan Kode Karyawan Kerani Transport.'
+        required: false
+        example: 06-030922-240201-0531
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      kode_karyawan_driver:
+        name: kode_karyawan_driver
+        description: 'Optional. Filter Pengangkutan berdasarkan Kode Karyawan Kerani Driver.'
+        required: false
+        example: 06-830717-190901-0112
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tkbm1:
+        name: tkbm1
+        description: 'Optional. Filter Pengangkutan berdasarkan kode karyawan tenaga kerja bongkar muat Pertama.'
+        required: false
+        example: 06-830717-190901-0113
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tkbm2:
+        name: tkbm2
+        description: 'Optional. Filter Pengangkutan berdasarkan kode karyawan tenaga kerja bongkar muat Kedua.'
+        required: false
+        example: 06-830717-190901-0114
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tkbm3:
+        name: tkbm3
+        description: 'Optional. Filter Pengangkutan berdasarkan kode karyawan tenaga kerja bongkar muat Ketiga.'
+        required: false
+        example: 06-830717-190901-0115
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tkbm4:
+        name: tkbm4
+        description: 'Optional. Filter Pengangkutan berdasarkan kode karyawan tenaga kerja bongkar muat Keempat.'
+        required: false
+        example: 06-830717-190901-0116
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tkbm5:
+        name: tkbm5
+        description: 'Optional. Filter Pengangkutan berdasarkan kode karyawan tenaga kerja bongkar muat Kelima.'
+        required: false
+        example: 06-830717-190901-0117
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      type_pengangkutan:
+        name: type_pengangkutan
+        description: 'Optional. Filter Pengangkutan berdasarkan type pengangkutan salah satu dari 1 (LANGSIR) atau 2 (DIRECT).'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      kode_kendaraan:
+        name: kode_kendaraan
+        description: 'Optional. Filter Pengangkutan berdasarkan Kode Kendaraan.'
+        required: false
+        example: DT70
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'Optional. Filter Pengangkutan berdasarkan FCBA.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      pabrik_tujuan:
+        name: pabrik_tujuan
+        description: 'Optional. Filter Pengangkutan berdasarkan tujuan tergantung type_pengangkutan jika Direct Maka akan diarahkan ke Business Unit dengan type M jika Langsir maka akan diarahkan ke TPH dengan tipe langsir kodenya (4).'
+        required: false
+        example: DOM
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'Optional. Filter Pengangkutan berdasarkan afdeling.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      nopengangkutan: DRC2010101101
+      nospb: SPB2024001259
+      tanggal: '2025-11-01'
+      tanggal_end: '2025-11-20'
+      kode_karyawan_kerani: 06-030922-240201-0531
+      kode_karyawan_driver: 06-830717-190901-0112
+      tkbm1: 06-830717-190901-0113
+      tkbm2: 06-830717-190901-0114
+      tkbm3: 06-830717-190901-0115
+      tkbm4: 06-830717-190901-0116
+      tkbm5: 06-830717-190901-0117
+      type_pengangkutan: 1
+      kode_kendaraan: DT70
+      fcba: MTE
+      pabrik_tujuan: DOM
+      afdeling: AFD-01
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "List Data Pengangkutan",
+           "data": [
+               {
+                   "id": "5",
+                   "nopengangkutan": "DRC2010101101",
+                   "nospb": "SPB2024001259",
+                   "tanggal": "2024-12-31 00:00:00",
+                   "kode_karyawan_kerani": "06-030922-240201-0531",
+                   "nama_karyawan_kerani": "LEONARDUS DIFAN ALFANTO",
+                   "kode_karyawan_driver": "06-830717-190901-0112",
+                   "nama_karyawan_driver": "NURSIDA",
+                   "tkbm1": "06-830717-190901-0113",
+                   "nama_tkbm1": "ANON",
+                   "tkbm2": "06-830717-190901-0114",
+                   "nama_tkbm2": "ONAN",
+                   "tkbm3": "06-830717-190901-0115",
+                   "nama_tkbm3": "JASU",
+                   "tkbm4": "06-830717-190901-0116",
+                   "nama_tkbm4": "BUJA",
+                   "tkbm5": "06-830717-190901-0117",
+                   "nama_tkbm5": "TOYO",
+                   "type_pengangkutan": 1,
+                   "kode_kendaraan": "DT70",
+                   "nama_kendaraan": "Dump Truck 70",
+                   "fcba": "MTE",
+                   "pabrik_tujuan": "DOM",
+                   "afdeling": "AFD-01",
+                   "tph": "1",
+                   "fieldcode": "A01A",
+                   "totaljanjang": "190",
+                   "output": "155",
+                   "janjangnormal": "160",
+                   "brondolan": "2"
+               }
+           ]
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Vdek46Pvb3c5a6hfaE8DgZ1'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/report/hasil-langsir
+    metadata:
+      groupName: Report
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Memanggil data hasil langsir.'
+      description: |-
+        API ini digunakan untuk memperlihatkan hasil langsir pada report di Android SIPS Mobile
+        Namun, jika ingin melakukan filter pada data yang dipanggil,
+        gunakan parameter pada URL berdasarkan _**Query Parameter**_.
+        Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afdeling, tph, blok
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      tanggaldari:
+        name: tanggaldari
+        description: 'Optional. Filter Hasil Langsir berdasarkan rentang tanggal, parameter ini diisi tanggal dari. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2025-11-01'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tanggalsampai:
+        name: tanggalsampai
+        description: 'Optional. Filter Hasil Langsir berdasarkan rentang tanggal, parameter ini diisi tanggal sampai. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2025-12-20'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      nopengangkutan:
+        name: nopengangkutan
+        description: 'Optional. Filter Hasil Langsir berdasarkan No Pengangkutan.'
+        required: false
+        example: LGS2010101101
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      nodokumen:
+        name: nodokumen
+        description: 'Optional. Filter Hasil Langsir berdasarkan No Dokumen.'
+        required: false
+        example: SKJ-HOF/MTE/25/02/0001
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      kode_kendaraan:
+        name: kode_kendaraan
+        description: 'Optional. Filter Hasil Langsir berdasarkan kode_kendaraan.'
+        required: false
+        example: DT-R-5818-MSE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'Optional. Filter Hasil Langsir berdasarkan Bisnis Unit (FCBA).'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'Optional. Filter Hasil Langsir berdasarkan afdeling.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tujuan:
+        name: tujuan
+        description: 'Optional. Filter Hasil Langsir berdasarkan tujuan.'
+        required: false
+        example: DOM
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: 'Optional. Filter Hasil Langsir berdasarkan Status Hasil Langsir salah satu dari SELISIH,BELUM,SELESAI.'
+        required: false
+        example: SELISIH
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      tanggaldari: '2025-11-01'
+      tanggalsampai: '2025-12-20'
+      nopengangkutan: LGS2010101101
+      nodokumen: SKJ-HOF/MTE/25/02/0001
+      kode_kendaraan: DT-R-5818-MSE
+      fcba: MTE
+      afdeling: AFD-01
+      tujuan: DOM
+      status: SELISIH
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "List Data Hasil Langsir",
+           "data": [
+               {
+                   "id": "1",
+                   "tanggal": "2024-12-31 00:00:00",
+                   "nopengangkutan": "LGS2010101101",
+                   "nodokumen": "SKJ-HOF/MTE/25/02/0001",
+                   "kode_kendaraan": "DT-R-5818-MSE",
+                   "nama_kendaraan": "Dump Truck Rental KT 5818 MSE",
+                   "type_pengangkutan": "1",
+                   "fcba": "MTE",
+                   "afdeling": "AFD-01",
+                   "tujuan": "26",
+                   "janjang": "180",
+                   "janjang_diangkut": "190",
+                   "sisa": "-10",
+                   "status": "SELISIH",
+                   "informasi": "SELISIH : -10 JJG"
+               }
+           ]
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer EbcDZeVag18hkafv65P64d3'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/report/upload-attendance
+    metadata:
+      groupName: Report
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Memanggil data Attendance GAD / Attendance GAD Temp from SIPS Mobile.'
+      description: |-
+        API ini digunakan untuk memanggil SIPS Mobile untuk dimasukkan ke Attendance GAD / Attendance GAD Temp.
+        Namun, jika ingin melakukan filter pada data yang dipanggil,
+        gunakan parameter pada URL berdasarkan _**Query Parameter**_.
+        Data diurutkan berdasarkan Tanggal terbaru, FCBA, Afdeling, Gang, dan Kode Karyawan.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      totalcount:
+        name: totalcount
+        description: 'Optional. Filter Attendance berdasarkan nilai lebih dari totalcount.'
+        required: false
+        example: '2'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tanggal:
+        name: tanggal
+        description: 'Optional. Filter Attendance berdasarkan tanggal. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2025-11-01'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tanggal_end:
+        name: tanggal_end
+        description: 'Optional. Filter Attendance berdasarkan rentang tanggal. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2025-11-20'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'Optional. Filter Attendance berdasarkan FCBA.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'Optional. Filter Attendance berdasarkan afdeling.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      gangcode:
+        name: gangcode
+        description: 'Optional. Filter Attendance berdasarkan gangcode.'
+        required: false
+        example: PN013
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      totalcount: '2'
+      tanggal: '2025-11-01'
+      tanggal_end: '2025-11-20'
+      fcba: MTE
+      afdeling: AFD-01
+      gangcode: PN013
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "List Data Attendance GAD / Attendance GAD Temp",
+           "data": [
+               {
+               	"totalcount" : 4,
+               	"id" : 229,
+               	"afdeling" : "AFD-01",
+               	"gangcode" : "PN013",
+               	"fddate" : "2025-10-31 17:00:00",
+               	"supervision_1" : null,
+               	"supervision_2" : null,
+               	"supervision_3" : null,
+               	"supervision_4" : null,
+               	"supervision_5" : null,
+               	"employeecode" : "03-891219-180801-0116",
+               	"attendance" : "KJ",
+               	"jobcode" : "505030101",
+               	"locationtype" : "FF",
+               	"locationcode" : "I45P",
+               	"mandays" : 0.25,
+               	"othrs" : 0,
+               	"rate" : 0,
+               	"unit" : 25,
+               	"output" : 0.425,
+               	"reference" : null,
+               	"remarks" : "SIPS MOBILE",
+               	"fcentry" : "andrew",
+               	"fcedit" : "adrianus",
+               	"fcip" : null,
+               	"fcba" : "MTE",
+               	"lastupdate" : "2026-01-08 03:46:54",
+               	"lasttime" : "10:46",
+               	"linenokey" : 1441715,
+               	"overtime_hours" : 0,
+               	"type_overtime" : 0,
+               	"chargejob" : null,
+               	"chargetype" : null,
+               	"chargecode" : null,
+               	"bucket" : null,
+               	"spbno" : null,
+               	"kg_brondolan" : 1.75,
+               	"rowstate" : "Approved",
+               	"document_classification" : 501,
+               	"basis_bm" : 0,
+               	"kg_janjang" : 384.75,
+               	"bjr" : 15.39,
+               	"documentno" : 229,
+               	"sourcetime" : "2025-10-31 19:56:04",
+               	"fieldcode" : "I45"
+               }
+           ]
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer gd45VE1Dcb8aZkeP6hfa3v6'
+    controller: null
+    method: null
+    route: null
+    custom: []

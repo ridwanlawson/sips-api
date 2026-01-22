@@ -1,0 +1,239 @@
+openapi: 3.0.3
+info:
+  title: 'SIPS API'
+  description: 'SIPS API untuk Mobile dan Frontend'
+  version: 1.0.0
+servers:
+  -
+    url: 'http://172.16.5.199:82'
+paths:
+  /api/register:
+    post:
+      summary: ''
+      operationId: postApiRegister
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: ''
+                  example: velit
+                  nullable: false
+                fullname:
+                  type: string
+                  description: ''
+                  example: et
+                  nullable: false
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: julian.powlowski@example.net
+                  nullable: true
+                phone:
+                  type: string
+                  description: 'Must be between 9 and 20 digits.'
+                  example: '6889168447485493930'
+                  nullable: true
+                password:
+                  type: string
+                  description: 'Must be at least 8 characters.'
+                  example: ')(|@Rf#G%Ys~P2aXpun/'
+                  nullable: false
+                fcba:
+                  type: string
+                  description: ''
+                  example: molestiae
+                  nullable: false
+                afdeling:
+                  type: string
+                  description: ''
+                  example: null
+                  nullable: true
+                gangcode:
+                  type: string
+                  description: ''
+                  example: null
+                  nullable: true
+              required:
+                - username
+                - fullname
+                - password
+                - fcba
+      security: []
+  /api/login:
+    post:
+      summary: ''
+      operationId: postApiLogin
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: ''
+                  example: et
+                  nullable: false
+                password:
+                  type: string
+                  description: ''
+                  example: iure
+                  nullable: false
+              required:
+                - username
+                - password
+      security: []
+  /api/logout:
+    post:
+      summary: ''
+      operationId: postApiLogout
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+  /api/change-password:
+    post:
+      summary: ''
+      operationId: postApiChangePassword
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                current_password:
+                  type: string
+                  description: ''
+                  example: praesentium
+                  nullable: false
+                new_password:
+                  type: string
+                  description: 'Must be at least 6 characters.'
+                  example: rcjjrpyoknllzticotjyrrjbls
+                  nullable: false
+              required:
+                - current_password
+                - new_password
+  /api/master/users:
+    get:
+      summary: ''
+      operationId: getApiMasterUsers
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Master
+  /api/master/fields:
+    get:
+      summary: ''
+      operationId: getApiMasterFields
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Master
+  /api/master/karyawans:
+    get:
+      summary: ''
+      operationId: getApiMasterKaryawans
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Master
+  /api/master/tphs:
+    get:
+      summary: ''
+      operationId: getApiMasterTphs
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Master
+tags:
+  -
+    name: Auth
+    description: ''
+  -
+    name: Master
+    description: ''
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'You can retrieve your token by visiting your dashboard and clicking <b>Generate API token</b>.'
+security:
+  -
+    default: []
