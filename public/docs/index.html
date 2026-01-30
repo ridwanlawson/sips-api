@@ -26,7 +26,7 @@
             </style>
 
     <script>
-        var tryItOutBaseUrl = "http://dev.skj.my.id:82";
+        var tryItOutBaseUrl = "url";
         var useCsrf = Boolean(1);
         var csrfUrl = "/sanctum/csrf-cookie";
     </script>
@@ -325,7 +325,7 @@
         <h1 id="introduction">Introduction</h1>
 <p>SIPS API untuk Mobile dan Frontend</p>
 <aside>
-    <strong>Base URL</strong>: <code>http://dev.skj.my.id:82</code>
+    <strong>Base URL</strong>: <code>url</code>
 </aside>
 <p>Dokumentasi ini bertujuan untuk memberikan semua informasi yang Anda butuhkan untuk menggunakan dengan API kami.</p>
 <aside>Saat Anda scroll ke bawah, anda akan melihat contoh kode untuk menggunakan API dalam berbagai bahasa pemrograman di area gelap di sebelah kanan (atau sebagai bagian dari konten pada tampilan seluler).
@@ -353,7 +353,7 @@ Anda dapat mengganti bahasa pemrograman yang digunakan melalui tab di kanan atas
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/register"
+    "url/api/register"
 );
 
 const headers = {
@@ -384,7 +384,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/register';
+$url = 'url/api/register';
 $response = $client-&gt;post(
     $url,
     [
@@ -668,7 +668,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/login"
+    "url/api/login"
 );
 
 const headers = {
@@ -690,7 +690,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/login';
+$url = 'url/api/login';
 $response = $client-&gt;post(
     $url,
     [
@@ -819,7 +819,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/logout"
+    "url/api/logout"
 );
 
 const headers = {
@@ -836,7 +836,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/logout';
+$url = 'url/api/logout';
 $response = $client-&gt;post(
     $url,
     [
@@ -950,7 +950,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/user/13"
+    "url/api/user/13"
 );
 
 const headers = {
@@ -967,7 +967,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/user/13';
+$url = 'url/api/user/13';
 $response = $client-&gt;get(
     $url,
     [
@@ -1109,7 +1109,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/change-password"
+    "url/api/change-password"
 );
 
 const headers = {
@@ -1132,7 +1132,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/change-password';
+$url = 'url/api/change-password';
 $response = $client-&gt;post(
     $url,
     [
@@ -1273,7 +1273,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/user/10/status"
+    "url/api/user/10/status"
 );
 
 const headers = {
@@ -1295,7 +1295,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/user/10/status';
+$url = 'url/api/user/10/status';
 $response = $client-&gt;patch(
     $url,
     [
@@ -1443,7 +1443,7 @@ Tetapi jika ingin melakukan filter pada data yang dipanggil, buatlah parameter p
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/master/sips-users"
+    "url/api/master/sips-users"
 );
 
 const params = {
@@ -1470,7 +1470,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/master/sips-users';
+$url = 'url/api/master/sips-users';
 $response = $client-&gt;get(
     $url,
     [
@@ -1663,7 +1663,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/master/sips-fields"
+    "url/api/master/sips-fields"
 );
 
 const headers = {
@@ -1680,7 +1680,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/master/sips-fields';
+$url = 'url/api/master/sips-fields';
 $response = $client-&gt;get(
     $url,
     [
@@ -1810,7 +1810,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/master/sips-karyawans"
+    "url/api/master/sips-karyawans"
 );
 
 const params = {
@@ -1837,7 +1837,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/master/sips-karyawans';
+$url = 'url/api/master/sips-karyawans';
 $response = $client-&gt;get(
     $url,
     [
@@ -2030,7 +2030,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/master/sips-karyawans-kemandoran"
+    "url/api/master/sips-karyawans-kemandoran"
 );
 
 const params = {
@@ -2055,7 +2055,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/master/sips-karyawans-kemandoran';
+$url = 'url/api/master/sips-karyawans-kemandoran';
 $response = $client-&gt;get(
     $url,
     [
@@ -2225,7 +2225,7 @@ Tetapi jika ingin melakukan filter pada data yang dipanggil, buatlah parameter p
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/master/sips-kendaraan"
+    "url/api/master/sips-kendaraan"
 );
 
 const params = {
@@ -2251,7 +2251,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/master/sips-kendaraan';
+$url = 'url/api/master/sips-kendaraan';
 $response = $client-&gt;get(
     $url,
     [
@@ -2433,7 +2433,7 @@ Tetapi jika ingin melakukan filter pada data yang dipanggil, buatlah parameter p
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/master/sips-businessunit"
+    "url/api/master/sips-businessunit"
 );
 
 const params = {
@@ -2460,7 +2460,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/master/sips-businessunit';
+$url = 'url/api/master/sips-businessunit';
 $response = $client-&gt;get(
     $url,
     [
@@ -2661,7 +2661,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/karyawans"
+    "url/api/apps/karyawans"
 );
 
 const params = {
@@ -2689,7 +2689,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/karyawans';
+$url = 'url/api/apps/karyawans';
 $response = $client-&gt;get(
     $url,
     [
@@ -2905,7 +2905,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/karyawans"
+    "url/api/apps/karyawans"
 );
 
 const headers = {
@@ -2932,7 +2932,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/karyawans';
+$url = 'url/api/apps/karyawans';
 $response = $client-&gt;post(
     $url,
     [
@@ -3165,7 +3165,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/karyawans/1"
+    "url/api/apps/karyawans/1"
 );
 
 const headers = {
@@ -3182,7 +3182,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/karyawans/1';
+$url = 'url/api/apps/karyawans/1';
 $response = $client-&gt;get(
     $url,
     [
@@ -3324,7 +3324,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/karyawans/6"
+    "url/api/apps/karyawans/6"
 );
 
 const headers = {
@@ -3351,7 +3351,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/karyawans/6';
+$url = 'url/api/apps/karyawans/6';
 $response = $client-&gt;put(
     $url,
     [
@@ -3600,7 +3600,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/karyawans/17"
+    "url/api/apps/karyawans/17"
 );
 
 const headers = {
@@ -3617,7 +3617,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/karyawans/17';
+$url = 'url/api/apps/karyawans/17';
 $response = $client-&gt;delete(
     $url,
     [
@@ -3747,7 +3747,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/tphs"
+    "url/api/apps/tphs"
 );
 
 const params = {
@@ -3777,7 +3777,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/tphs';
+$url = 'url/api/apps/tphs';
 $response = $client-&gt;get(
     $url,
     [
@@ -4014,7 +4014,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/tphs"
+    "url/api/apps/tphs"
 );
 
 const headers = {
@@ -4043,7 +4043,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/tphs';
+$url = 'url/api/apps/tphs';
 $response = $client-&gt;post(
     $url,
     [
@@ -4278,7 +4278,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/tphs/6"
+    "url/api/apps/tphs/6"
 );
 
 const headers = {
@@ -4295,7 +4295,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/tphs/6';
+$url = 'url/api/apps/tphs/6';
 $response = $client-&gt;get(
     $url,
     [
@@ -4437,7 +4437,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/tphs/10"
+    "url/api/apps/tphs/10"
 );
 
 const headers = {
@@ -4466,7 +4466,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/tphs/10';
+$url = 'url/api/apps/tphs/10';
 $response = $client-&gt;put(
     $url,
     [
@@ -4717,7 +4717,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/tphs/9"
+    "url/api/apps/tphs/9"
 );
 
 const headers = {
@@ -4734,7 +4734,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/tphs/9';
+$url = 'url/api/apps/tphs/9';
 $response = $client-&gt;delete(
     $url,
     [
@@ -4866,7 +4866,7 @@ Data diurutkan berdasarkan FCBA, Afdeling, dan Nomor Ancak.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/ancaks"
+    "url/api/apps/ancaks"
 );
 
 const params = {
@@ -4896,7 +4896,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/ancaks';
+$url = 'url/api/apps/ancaks';
 $response = $client-&gt;get(
     $url,
     [
@@ -5145,7 +5145,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/ancaks"
+    "url/api/apps/ancaks"
 );
 
 const headers = {
@@ -5175,7 +5175,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/ancaks';
+$url = 'url/api/apps/ancaks';
 $response = $client-&gt;post(
     $url,
     [
@@ -5426,7 +5426,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/ancaks/1"
+    "url/api/apps/ancaks/1"
 );
 
 const headers = {
@@ -5443,7 +5443,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/ancaks/1';
+$url = 'url/api/apps/ancaks/1';
 $response = $client-&gt;get(
     $url,
     [
@@ -5595,7 +5595,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/ancaks/1"
+    "url/api/apps/ancaks/1"
 );
 
 const headers = {
@@ -5625,7 +5625,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/ancaks/1';
+$url = 'url/api/apps/ancaks/1';
 $response = $client-&gt;put(
     $url,
     [
@@ -5892,7 +5892,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/ancaks/1"
+    "url/api/apps/ancaks/1"
 );
 
 const headers = {
@@ -5909,7 +5909,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/ancaks/1';
+$url = 'url/api/apps/ancaks/1';
 $response = $client-&gt;delete(
     $url,
     [
@@ -6067,7 +6067,7 @@ buatlah parameter pada Url berdasarkan <em><strong>Query Parameter</strong></em>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/absensis"
+    "url/api/apps/absensis"
 );
 
 const params = {
@@ -6100,7 +6100,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/absensis';
+$url = 'url/api/apps/absensis';
 $response = $client-&gt;get(
     $url,
     [
@@ -6389,7 +6389,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/absensis"
+    "url/api/apps/absensis"
 );
 
 const headers = {
@@ -6422,7 +6422,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/absensis';
+$url = 'url/api/apps/absensis';
 $response = $client-&gt;post(
     $url,
     [
@@ -6848,7 +6848,7 @@ Must be one of:
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/absensis/3"
+    "url/api/apps/absensis/3"
 );
 
 const headers = {
@@ -6865,7 +6865,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/absensis/3';
+$url = 'url/api/apps/absensis/3';
 $response = $client-&gt;get(
     $url,
     [
@@ -7007,7 +7007,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/absensis/20"
+    "url/api/apps/absensis/20"
 );
 
 const headers = {
@@ -7037,7 +7037,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/absensis/20';
+$url = 'url/api/apps/absensis/20';
 $response = $client-&gt;put(
     $url,
     [
@@ -7423,7 +7423,7 @@ Must be one of:
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/absensis/11"
+    "url/api/apps/absensis/11"
 );
 
 const headers = {
@@ -7440,7 +7440,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/absensis/11';
+$url = 'url/api/apps/absensis/11';
 $response = $client-&gt;delete(
     $url,
     [
@@ -7566,7 +7566,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/absensis/7/status"
+    "url/api/apps/absensis/7/status"
 );
 
 const headers = {
@@ -7588,7 +7588,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/absensis/7/status';
+$url = 'url/api/apps/absensis/7/status';
 $response = $client-&gt;patch(
     $url,
     [
@@ -7738,7 +7738,7 @@ Data diurutkan berdasarkan Tanggal terbaru, Bisnit Unit, Afdeling, dan Kode Kary
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/panens"
+    "url/api/apps/panens"
 );
 
 const params = {
@@ -7767,7 +7767,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/panens';
+$url = 'url/api/apps/panens';
 $response = $client-&gt;get(
     $url,
     [
@@ -8004,7 +8004,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/panens"
+    "url/api/apps/panens"
 );
 
 const headers = {
@@ -8046,7 +8046,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/panens';
+$url = 'url/api/apps/panens';
 $response = $client-&gt;post(
     $url,
     [
@@ -8537,7 +8537,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/panens/8"
+    "url/api/apps/panens/8"
 );
 
 const headers = {
@@ -8554,7 +8554,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/panens/8';
+$url = 'url/api/apps/panens/8';
 $response = $client-&gt;get(
     $url,
     [
@@ -8696,7 +8696,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/panens/17"
+    "url/api/apps/panens/17"
 );
 
 const headers = {
@@ -8736,7 +8736,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/panens/17';
+$url = 'url/api/apps/panens/17';
 $response = $client-&gt;put(
     $url,
     [
@@ -9180,7 +9180,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/panens/20"
+    "url/api/apps/panens/20"
 );
 
 const headers = {
@@ -9197,7 +9197,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/panens/20';
+$url = 'url/api/apps/panens/20';
 $response = $client-&gt;delete(
     $url,
     [
@@ -9323,7 +9323,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/panens/11/status"
+    "url/api/apps/panens/11/status"
 );
 
 const headers = {
@@ -9345,7 +9345,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/panens/11/status';
+$url = 'url/api/apps/panens/11/status';
 $response = $client-&gt;patch(
     $url,
     [
@@ -9495,7 +9495,7 @@ Data diurutkan berdasarkan Tanggal terbaru, Afdeling, dan Kode Karyawan.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/pengangkutans"
+    "url/api/apps/pengangkutans"
 );
 
 const params = {
@@ -9538,7 +9538,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/pengangkutans';
+$url = 'url/api/apps/pengangkutans';
 $response = $client-&gt;get(
     $url,
     [
@@ -9956,7 +9956,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/pengangkutans"
+    "url/api/apps/pengangkutans"
 );
 
 const headers = {
@@ -9999,7 +9999,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/pengangkutans';
+$url = 'url/api/apps/pengangkutans';
 $response = $client-&gt;post(
     $url,
     [
@@ -10483,7 +10483,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/pengangkutans/9"
+    "url/api/apps/pengangkutans/9"
 );
 
 const headers = {
@@ -10500,7 +10500,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/pengangkutans/9';
+$url = 'url/api/apps/pengangkutans/9';
 $response = $client-&gt;get(
     $url,
     [
@@ -10642,7 +10642,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/pengangkutans/15"
+    "url/api/apps/pengangkutans/15"
 );
 
 const headers = {
@@ -10681,7 +10681,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/pengangkutans/15';
+$url = 'url/api/apps/pengangkutans/15';
 $response = $client-&gt;put(
     $url,
     [
@@ -11099,7 +11099,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/pengangkutans/14"
+    "url/api/apps/pengangkutans/14"
 );
 
 const headers = {
@@ -11116,7 +11116,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/pengangkutans/14';
+$url = 'url/api/apps/pengangkutans/14';
 $response = $client-&gt;delete(
     $url,
     [
@@ -11242,7 +11242,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/apps/pengangkutans/14/status"
+    "url/api/apps/pengangkutans/14/status"
 );
 
 const headers = {
@@ -11264,7 +11264,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/apps/pengangkutans/14/status';
+$url = 'url/api/apps/pengangkutans/14/status';
 $response = $client-&gt;patch(
     $url,
     [
@@ -11414,7 +11414,7 @@ Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afde
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/report/hasil-panen"
+    "url/api/report/hasil-panen"
 );
 
 const params = {
@@ -11444,7 +11444,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/report/hasil-panen';
+$url = 'url/api/report/hasil-panen';
 $response = $client-&gt;get(
     $url,
     [
@@ -11684,7 +11684,7 @@ Data diurutkan berdasarkan Tanggal terbaru, Afdeling, dan Kode Karyawan.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/report/hasil-pengangkutan"
+    "url/api/report/hasil-pengangkutan"
 );
 
 const params = {
@@ -11722,7 +11722,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/report/hasil-pengangkutan';
+$url = 'url/api/report/hasil-pengangkutan';
 $response = $client-&gt;get(
     $url,
     [
@@ -12078,7 +12078,7 @@ Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afde
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/report/hasil-langsir"
+    "url/api/report/hasil-langsir"
 );
 
 const params = {
@@ -12109,7 +12109,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/report/hasil-langsir';
+$url = 'url/api/report/hasil-langsir';
 $response = $client-&gt;get(
     $url,
     [
@@ -12366,7 +12366,7 @@ Data diurutkan berdasarkan Tanggal terbaru, FCBA, Afdeling, Gang, dan Kode Karya
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/report/upload-attendance"
+    "url/api/report/upload-attendance"
 );
 
 const params = {
@@ -12394,7 +12394,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/report/upload-attendance';
+$url = 'url/api/report/upload-attendance';
 $response = $client-&gt;get(
     $url,
     [
@@ -12647,7 +12647,7 @@ Data harus dikirim sebagai array dengan struktur sesuai format GET /report/uploa
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/uploads/attendance"
+    "url/api/uploads/attendance"
 );
 
 const headers = {
@@ -12671,7 +12671,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/uploads/attendance';
+$url = 'url/api/uploads/attendance';
 $response = $client-&gt;post(
     $url,
     [
@@ -13343,7 +13343,7 @@ Tetapi jika ingin melakukan filter pada data yang dipanggil, buatlah parameter p
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/settings/devices"
+    "url/api/settings/devices"
 );
 
 const params = {
@@ -13367,7 +13367,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/settings/devices';
+$url = 'url/api/settings/devices';
 $response = $client-&gt;get(
     $url,
     [
@@ -13548,7 +13548,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/settings/devices"
+    "url/api/settings/devices"
 );
 
 const headers = {
@@ -13584,7 +13584,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/settings/devices';
+$url = 'url/api/settings/devices';
 $response = $client-&gt;post(
     $url,
     [
@@ -13911,7 +13911,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/settings/devices/1"
+    "url/api/settings/devices/1"
 );
 
 const headers = {
@@ -13928,7 +13928,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/settings/devices/1';
+$url = 'url/api/settings/devices/1';
 $response = $client-&gt;get(
     $url,
     [
@@ -14084,7 +14084,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/settings/devices/1"
+    "url/api/settings/devices/1"
 );
 
 const headers = {
@@ -14120,7 +14120,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/settings/devices/1';
+$url = 'url/api/settings/devices/1';
 $response = $client-&gt;put(
     $url,
     [
@@ -14463,7 +14463,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://dev.skj.my.id:82/api/settings/devices/1"
+    "url/api/settings/devices/1"
 );
 
 const headers = {
@@ -14480,7 +14480,7 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'http://dev.skj.my.id:82/api/settings/devices/1';
+$url = 'url/api/settings/devices/1';
 $response = $client-&gt;delete(
     $url,
     [
