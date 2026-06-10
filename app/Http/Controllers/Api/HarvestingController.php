@@ -9,6 +9,7 @@ use Illuminate\Database\QueryException;
 use App\Http\Resources\AllResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @group Apps
@@ -34,6 +35,7 @@ class HarvestingController extends Controller
      * @queryParam fcba string Optional. Filter Panen berdasarkan bisnis unit. Example: MTE
      * @queryParam afdeling string Optional. Filter Panen berdasarkan afdeling. Example: AFD-01
      * @queryParam tph string Optional. Filter Panen berdasarkan TPH. Example: TPH-101
+     * @queryParam kemandoran string Optional. Filter Panen berdasarkan kemandoran. Example: MD011
      *
      * @response 200 scenario="success" {
      *  "success": true,
@@ -58,7 +60,10 @@ class HarvestingController extends Controller
      *          "brondol": "8",
      *          "alasbrondol": "0",
      *          "tangkai_panjang": "0",
+     *          "kemandoran": "MD011",
      *          "images": "",
+     *          "exception_case": "",
+     *          "no_ba_exca": "",
      *          "id_device": "Xiaomi",
      *          "status_harvesting": "Planned",
      *          "card_id": "NFC 1234567890"
@@ -78,6 +83,7 @@ class HarvestingController extends Controller
             $afdeling = $request->query('afdeling');
             $tph = $request->query('tph');
             $status_harvesting = $request->query('status_harvesting');
+            $kemandoran = $request->query('kemandoran');
 
             $query = "
                 SELECT
@@ -107,14 +113,22 @@ class HarvestingController extends Controller
                     HARVESTING.BRONDOL,
                     HARVESTING.ALASBRONDOL,
                     HARVESTING.TANGKAIPANJANG,
+                    HARVESTING.PARTENO,
+                    HARVESTING.PARTENO50PLUS,
                     HARVESTING.STATUS_ASSISTENSI,
                     HARVESTING.STATUS_HARVESTING,
+                    HARVESTING.KEMANDORAN,
                     HARVESTING.IMAGES,
+                    HARVESTING.NO_BA_EXCA,
+                    HARVESTING.EXCEPTION_CASE,
                     HARVESTING.ID_DEVICE,
-                    HARVESTING.CARD_ID
+                    HARVESTING.LOCATION,
+                    HARVESTING.CARD_ID,
+                    HARVESTING.CREATED_AT,
+                    HARVESTING.CREATED_BY
                 FROM
                     SIPSMOBILE.HARVESTING
-                INNER JOIN
+                LEFT JOIN
                     SIPSMOBILE.TPH
                 ON
                     HARVESTING.TPH = TPH.NOTPH 
@@ -139,7 +153,7 @@ class HarvestingController extends Controller
                 ON 
                     HARVESTING.KODE_KARYAWAN = KARYAWAN.FCCODE
                 WHERE 
-                    HARVESTING.TANGGAL IS NOT NULL
+                    HARVESTING.DELETED_AT IS NULL
             ";
 
             $bindings = [];
@@ -202,6 +216,11 @@ class HarvestingController extends Controller
                 $bindings['status_harvesting'] = $status_harvesting;
             }
 
+            if ($kemandoran) {
+                $query .= " AND HARVESTING.KEMANDORAN = :kemandoran";
+                $bindings['kemandoran'] = $kemandoran;
+            }
+
             // Tambahkan bagian akhir query
             $query .= "
                 ORDER BY 
@@ -225,6 +244,10 @@ class HarvestingController extends Controller
 
             return new AllResource(true, 'List Data Panen', $datas);
         } catch (\Exception $e) {
+            // Log::error('Error mengambil data harvesting (index)', [
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil data.',
@@ -247,6 +270,7 @@ class HarvestingController extends Controller
             'busuk2',
             'buahkecil',
             'parteno',
+            'parteno50plus',
             'brondol',
             'tangkaipanjang',
         ];
@@ -274,11 +298,16 @@ class HarvestingController extends Controller
             'kode_karyawan_mandor_panen' => 'nullable|string|exists:employee,fccode',
             'kode_karyawan_kerani' => 'nullable|string|exists:employee,fccode',
             'kode_karyawan' => 'required|string|exists:employee,fccode',
-            'noancak' => 'required|string|exists:tph,ancakno',
-            'tph' => 'required|string|exists:tph,notph',
-            'fieldcode' => 'required|string|exists:tph,fieldcode',
-            'afdeling' => 'required|string|exists:tph,afdeling',
-            'fcba' => 'required|string|exists:tph,fcba',
+            'noancak' => 'required|string',
+            // 'noancak' => 'required|string|exists:tph,ancakno',
+            'tph' => 'required|string',
+            // 'tph' => 'required|string|exists:tph,notph',
+            'fieldcode' => 'required|string',
+            // 'fieldcode' => 'required|string|exists:tph,fieldcode',
+            'afdeling' => 'required|string',
+            // 'afdeling' => 'required|string|exists:tph,afdeling',
+            'fcba' => 'required|string',
+            // 'fcba' => 'required|string|exists:tph,fcba',
             'output' => 'required|integer|min:0',
             'mentah' => 'nullable|integer|min:0',
             'overripe' => 'nullable|integer|min:0',
@@ -286,11 +315,16 @@ class HarvestingController extends Controller
             'busuk2' => 'nullable|integer|min:0',
             'buahkecil' => 'nullable|integer|min:0',
             'parteno' => 'nullable|integer|min:0',
+            'parteno50plus' => 'nullable|integer|min:0',
             'brondol' => 'nullable|integer|min:0',
             'tangkaipanjang' => 'nullable|integer|min:0',
             'alasbrondol' => 'nullable|string',
             'status_assistensi' => 'nullable',
+            'kemandoran' => 'nullable|exists:users,gangcode',
+            'location' => 'nullable',
             'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'exception_case' => 'nullable',
+            'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
             'id_device' => 'nullable',
             'card_id' => 'nullable',
             'created_by' => 'nullable',
@@ -309,6 +343,19 @@ class HarvestingController extends Controller
             }
 
             $imagePath = $imagePath ? asset($imagePath) : null;
+
+            // Inisialisasi variabel path image (default null jika tidak ada file)
+            $baExcaPath = null;
+
+            // Jika ada file image yang diunggah
+            if ($request->hasFile('no_ba_exca')) {
+                $baExca = $request->file('no_ba_exca');
+                $baExcaName = time() . '_' . $baExca->getClientOriginalName();
+                $baExca->move(public_path('file/harvesting_images'), $baExcaName); // Simpan di public/harvesting_images
+                $baExcaPath = 'file/harvesting_images/' . $baExcaName; // Path yang disimpan di database
+            }
+
+            $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
 
             // Simpan data Harvesting ke dalam database
             $datas = Harvesting::create([
@@ -330,25 +377,53 @@ class HarvestingController extends Controller
                 'BUSUK2' => $request->busuk2,
                 'BUAHKECIL' => $request->buahkecil,
                 'PARTENO' => $request->parteno,
+                'PARTENO50PLUS' => $request->parteno50plus,
                 'BRONDOL' => $request->brondol,
                 'TANGKAIPANJANG' => $request->tangkaipanjang,
                 'ALASBRONDOL' => $request->alasbrondol ?? "N",
+                'KEMANDORAN' => $request->kemandoran,
                 'STATUS_ASSISTENSI' => $request->status_assistensi,
                 'STATUS_HARVESTING' => 'Planned',
+                'LOCATION' => $request->location,
                 'IMAGES' => $imagePath, // Simpan path image jika ada
+                'EXCEPTION_CASE' => $request->exception_case,
+                'NO_BA_EXCA' => $baExcaPath,
                 'ID_DEVICE' => $request->id_device,
                 'CARD_ID' => $request->card_id,
                 'CREATED_BY' => Auth::user()->username,
             ]);
 
             // Kembalikan respons dengan data yang baru saja disimpan
+            // Log::info('Harvesting berhasil ditambahkan (store)', [
+            //     'id' => $datas->id,
+            //     'nodokumen' => $request->nodokumen,
+            //     'created_by' => Auth::user()->username,
+            // ]);
             return new AllResource(true, 'Data Panen berhasil ditambahkan.', $datas);
-        } catch (\Exception $e) {
-            // Menangkap error dan mengembalikan pesan yang mudah dipahami oleh user
+        } catch (\Illuminate\Database\QueryException $e) {
+
+            // Tangkap error duplicate Oracle
+            if (str_contains($e->getMessage(), 'ORA-00001')) {
+
+                // Log::warning('Duplicate data harvesting', [
+                //     'request' => $request->all()
+                // ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data sudah pernah dimasukkan, cek kembali data Anda.'
+                ], 400);
+            }
+
+            // Log error lainnya
+            // Log::error('Error simpan harvesting', [
+            //     'message' => $e->getMessage(),
+            //     'request' => $request->all()
+            // ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage() // Tambahkan pesan error teknis jika perlu
+                'message' => 'Terjadi kesalahan saat menyimpan data.',
             ], 500);
         }
     }
@@ -390,9 +465,15 @@ class HarvestingController extends Controller
                     HARVESTING.BRONDOL,
                     HARVESTING.ALASBRONDOL,
                     HARVESTING.TANGKAIPANJANG,
+                    HARVESTING.PARTENO,
+                    HARVESTING.PARTENO50PLUS,
+                    HARVESTING.KEMANDORAN,
                     HARVESTING.STATUS_ASSISTENSI,
                     HARVESTING.STATUS_HARVESTING,
                     HARVESTING.IMAGES,
+                    HARVESTING.EXCEPTION_CASE,
+                    HARVESTING.NO_BA_EXCA,
+                    HARVESTING.LOCATION,
                     HARVESTING.ID_DEVICE,
                     HARVESTING.CARD_ID,
                     HARVESTING.CREATED_BY,
@@ -442,6 +523,11 @@ class HarvestingController extends Controller
             // Jika data ditemukan, kembalikan data
             return new AllResource(true, 'Detail Data Panen', $data);
         } catch (\Exception $e) {
+            // Log::error('Error mengambil data harvesting (show)', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil data.',
@@ -466,6 +552,7 @@ class HarvestingController extends Controller
             'busuk2',
             'buahkecil',
             'parteno',
+            'parteno50plus',
             'brondol',
             'tangkaipanjang',
         ];
@@ -490,11 +577,16 @@ class HarvestingController extends Controller
             'kode_karyawan_mandor_panen' => 'nullable|string|exists:employee,fccode',
             'kode_karyawan_kerani' => 'nullable|string|exists:employee,fccode',
             'kode_karyawan' => 'required|string|exists:employee,fccode',
-            'noancak' => 'required|string|exists:tph,ancakno',
-            'tph' => 'required|string|exists:tph,notph',
-            'fieldcode' => 'required|string|exists:tph,fieldcode',
+            // 'noancak' => 'required|string|exists:tph,ancakno',
+            // 'fieldcode' => 'required|string|exists:tph,fieldcode',
+            // 'tph' => 'required|string|exists:tph,notph',
+            'noancak' => 'required|string',
+            'tph' => 'nullable|string',
+            'fieldcode' => 'required|string',
             'afdeling' => 'required|string|exists:tph,afdeling',
             'fcba' => 'required|string|exists:tph,fcba',
+            'exception_case' => 'nullable',
+            'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
             'output' => 'required|numeric|min:0',
             'mentah' => 'nullable|numeric|min:0',
             'overripe' => 'nullable|numeric|min:0',
@@ -502,9 +594,11 @@ class HarvestingController extends Controller
             'busuk2' => 'nullable|numeric|min:0',
             'buahkecil' => 'nullable|numeric|min:0',
             'parteno' => 'nullable|numeric|min:0',
+            'parteno50plus' => 'nullable|numeric|min:0',
             'brondol' => 'nullable|numeric|min:0',
             'tangkaipanjang' => 'nullable|numeric|min:0',
             'alasbrondol' => 'nullable|string',
+            // 'kemandoran' => 'nullable|exists:users,gangcode',
             'status_assistensi' => 'nullable',
             'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -532,6 +626,18 @@ class HarvestingController extends Controller
                 $imagePath = $imagePath ? asset($imagePath) : null;
             }
 
+            // Inisialisasi variabel path image (default null jika tidak ada file)
+            $baExcaPath = null;
+
+            // Jika ada file image yang diunggah
+            if ($request->hasFile('no_ba_exca')) {
+                $baExca = $request->file('no_ba_exca');
+                $baExcaName = time() . '_' . $baExca->getClientOriginalName();
+                $baExca->move(public_path('file/harvesting_images'), $baExcaName); // Simpan di public/harvesting_images
+                $baExcaPath = 'file/harvesting_images/' . $baExcaName; // Path yang disimpan di database
+                $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
+            }
+
             // Menyusun data untuk update
             $updateData = [
                 $validated['kode_karyawan_mandor1'] ?? null,        // 1
@@ -550,42 +656,87 @@ class HarvestingController extends Controller
                 $validated['busuk2'] ?? null,                       // 14
                 $validated['buahkecil'] ?? null,                    // 15
                 $validated['parteno'] ?? null,                      // 16
-                $validated['brondol'] ?? null,                      // 17
-                $validated['tangkaipanjang'] ?? null,               // 19
-                $validated['alasbrondol'] ?? "N",                   // 18
-                $validated['status_assistensi'] ?? null,            // 20
-                $imagePath,                                         // 21
-                Auth::user()->username,                             // 22
+                $validated['parteno50plus'] ?? null,                // 17
+                $validated['brondol'] ?? null,                      // 19
+                $validated['tangkaipanjang'] ?? null,               // 18
+                $validated['alasbrondol'] ?? "N",                   // 20
+                $validated['kemandoran'],                           // 22
+                $validated['status_assistensi'] ?? null,            // 21
+                $imagePath,                                         // 23
+                Auth::user()->username,                             // 24
+                $validated['exception_case'] ?? null,               // 25
                 $id,                                                // (ID untuk WHERE)
             ];
+
+            // Build dynamic SET clause
+            $setClause = "
+                \"KODE_KARYAWAN_MANDOR1\" = ?,
+                \"KODE_KARYAWAN_MANDOR_PANEN\" = ?,
+                \"KODE_KARYAWAN_KERANI\" = ?,
+                \"KODE_KARYAWAN\" = ?,
+                \"NOANCAK\" = ?,
+                \"TPH\" = ?,
+                \"FIELDCODE\" = ?,
+                \"AFDELING\" = ?,
+                \"FCBA\" = ?,
+                \"OUTPUT\" = ?,
+                \"MENTAH\" = ?,
+                \"OVERRIPE\" = ?,
+                \"BUSUK\" = ?,
+                \"BUSUK2\" = ?,
+                \"BUAHKECIL\" = ?,
+                \"PARTENO\" = ?,
+                \"PARTENO50PLUS\" = ?,
+                \"BRONDOL\" = ?,
+                \"TANGKAIPANJANG\" = ?,
+                \"ALASBRONDOL\" = ?,
+                \"KEMANDORAN\" = ?,
+                \"STATUS_ASSISTENSI\" = ?,
+                \"IMAGES\" = ?,
+                \"UPDATED_BY\" = ?,
+                \"UPDATED_AT\" = SYSDATE,
+                \"EXCEPTION_CASE\" = ?
+            ";
+
+            // Add NO_BA_EXCA to update only if file was uploaded
+            if ($baExcaPath !== null) {
+                $setClause = "
+                    \"KODE_KARYAWAN_MANDOR1\" = ?,
+                    \"KODE_KARYAWAN_MANDOR_PANEN\" = ?,
+                    \"KODE_KARYAWAN_KERANI\" = ?,
+                    \"KODE_KARYAWAN\" = ?,
+                    \"NOANCAK\" = ?,
+                    \"TPH\" = ?,
+                    \"FIELDCODE\" = ?,
+                    \"AFDELING\" = ?,
+                    \"FCBA\" = ?,
+                    \"OUTPUT\" = ?,
+                    \"MENTAH\" = ?,
+                    \"OVERRIPE\" = ?,
+                    \"BUSUK\" = ?,
+                    \"BUSUK2\" = ?,
+                    \"BUAHKECIL\" = ?,
+                    \"PARTENO\" = ?,
+                    \"PARTENO50PLUS\" = ?,
+                    \"BRONDOL\" = ?,
+                    \"TANGKAIPANJANG\" = ?,
+                    \"ALASBRONDOL\" = ?,
+                    \"KEMANDORAN\" = ?,
+                    \"STATUS_ASSISTENSI\" = ?,
+                    \"IMAGES\" = ?,
+                    \"UPDATED_BY\" = ?,
+                    \"UPDATED_AT\" = SYSDATE,
+                    \"EXCEPTION_CASE\" = ?,
+                    \"NO_BA_EXCA\" = ?
+                ";
+                // Insert baExcaPath at position 26
+                array_splice($updateData, 25, 0, [$baExcaPath]);
+            }
 
             // Update menggunakan query manual
             DB::update(
                 "UPDATE \"SIPSMOBILE\".\"HARVESTING\" 
-                SET 
-                    \"KODE_KARYAWAN_MANDOR1\" = ?, 
-                    \"KODE_KARYAWAN_MANDOR_PANEN\" = ?, 
-                    \"KODE_KARYAWAN_KERANI\" = ?, 
-                    \"KODE_KARYAWAN\" = ?, 
-                    \"NOANCAK\" = ?, 
-                    \"TPH\" = ?, 
-                    \"FIELDCODE\" = ?, 
-                    \"AFDELING\" = ?, 
-                    \"FCBA\" = ?, 
-                    \"OUTPUT\" = ?, 
-                    \"MENTAH\" = ?, 
-                    \"OVERRIPE\" = ?, 
-                    \"BUSUK\" = ?, 
-                    \"BUSUK2\" = ?, 
-                    \"BUAHKECIL\" = ?, 
-                    \"PARTENO\" = ?, 
-                    \"BRONDOL\" = ?, 
-                    \"TANGKAIPANJANG\" = ?, 
-                    \"ALASBRONDOL\" = ?, 
-                    \"STATUS_ASSISTENSI\" = ?, 
-                    \"IMAGES\" = ?, 
-                    \"UPDATED_BY\" = ?, 
-                    \"UPDATED_AT\" = SYSDATE
+                SET " . $setClause . "
                 WHERE \"ID\" = ?",
                 $updateData
             );
@@ -593,23 +744,40 @@ class HarvestingController extends Controller
             $datas = Harvesting::findOrFail($id);
 
             // Berhasil diupdate
+            // Log::info('Harvesting berhasil diperbarui (update)', [
+            //     'id' => $id,
+            //     'updated_by' => Auth::user()->username,
+            // ]);
             return response()->json([
                 'success' => true,
                 'message' => 'Data Panen berhasil diperbarui.',
                 'data' => $datas,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Log::warning('Harvesting tidak ditemukan (update)', [
+            //     'id' => $id,
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Data Panen tidak ditemukan.',
             ], 404);
         } catch (\Illuminate\Database\QueryException $e) {
+            // Log::error('Error QueryException saat update harvesting', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengupdate data.',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
+            // Log::error('Error Exception saat update harvesting', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan pada sistem.',
@@ -636,30 +804,48 @@ class HarvestingController extends Controller
 
             // Update status menggunakan query manual (konsisten dengan update lain)
             DB::update(
-                "UPDATE \"SIPSMOBILE\".\"HARVESTING\" \n                SET \"STATUS_HARVESTING\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n                WHERE \"ID\" = ?",
+                "UPDATE \"SIPSMOBILE\".\"HARVESTING\" \n SET \"STATUS_HARVESTING\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n                WHERE \"ID\" = ?",
                 [$validated['status_harvesting'], Auth::user()->username, $id]
             );
 
             // Ambil kembali data yang sudah diupdate
             $datas = Harvesting::findOrFail($id);
 
+            // Log::info('Status harvesting berhasil diperbarui (updateStatus)', [
+            //     'id' => $id,
+            //     'status_harvesting' => $validated['status_harvesting'],
+            //     'updated_by' => Auth::user()->username,
+            // ]);
             return response()->json([
                 'success' => true,
                 'message' => 'Status Harvesting berhasil diperbarui.',
                 'data' => $datas,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Log::warning('Harvesting tidak ditemukan (updateStatus)', [
+            //     'id' => $id,
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Data Harvesting tidak ditemukan.',
             ], 404);
         } catch (\Illuminate\Database\QueryException $e) {
+            // Log::error('Error QueryException saat updateStatus harvesting', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengupdate status harvesting.',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
+            // Log::error('Error Exception saat updateStatus harvesting', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan pada sistem.',
@@ -677,20 +863,42 @@ class HarvestingController extends Controller
     {
         try {
             $datas = Harvesting::findOrFail($id);
+
+            // isi deleted_by dulu
+            $datas->deleted_by = Auth::user()->username ?? null;
+            $datas->save();
+
             $datas->delete();
+            // Log::info('Harvesting berhasil dihapus (destroy)', [
+            //     'id' => $id,
+            //     'deleted_by' => Auth::user()->username ?? null,
+            // ]);
             return new AllResource(true, 'Data Panen berhasil dihapus.', $datas);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Log::warning('Harvesting tidak ditemukan (destroy)', [
+            //     'id' => $id,
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Data Panen tidak ditemukan.',
             ], 404);
         } catch (QueryException $e) {
+            // Log::error('Error QueryException saat menghapus harvesting', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menghapus data.',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
+            // Log::error('Error Exception saat menghapus harvesting', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan pada sistem.',

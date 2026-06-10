@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 class Harvesting extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'HARVESTING';
     protected $fillable = [
@@ -36,9 +37,13 @@ class Harvesting extends Model
         'IMAGES',
         'AFDELING',
         'FCBA',
+        'KEMANDORAN',
+        'LOCATION',
         'ID_DEVICE',
         'CARD_ID',
         'FLAG',
+        'EXCEPTION_CASE',
+        'NO_BA_EXCA',
         'CREATED_BY',
         'UPDATED_BY',
     ];

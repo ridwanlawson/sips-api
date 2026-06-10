@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Field;
 use App\Models\Employee;
+use App\Models\Karyawan;
 use App\Models\Tph;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -122,8 +123,7 @@ class MasterController extends Controller
         $panengangcode = "PN" . $lastsectionname . $lastgangcode;
 
         // Query dengan filter wajib
-        $query = Employee::whereNull('DATETERMINATE')
-            ->select('FCCODE', 'FCNAME', 'GANGCODE', 'SECTIONNAME', 'FCBA')
+        $query = Karyawan::select('FCCODE', 'FCNAME', 'GANGCODE', 'SECTIONNAME', 'FCBA', 'NOANCAK')
             ->where('GANGCODE', 'like', '%' . $panengangcode . '%')
             ->where('SECTIONNAME', 'like', '%' . $sectionname . '%')
             ->where('FCBA', 'like', '%' . $fcba . '%');
@@ -157,7 +157,7 @@ class MasterController extends Controller
      * 
      * @queryParam fccode string Optional. Filter Kendaraan berdasarkan kode kendaraan. Example: DT70
      * @queryParam fcname string Optional. Filter Kendaraan berdasarkan nama kendaraan. Example: Dump Truck 70
-     * @queryParam vehiclegroupcode string Optional. Filter Kendaraan berdasarkan kode grup kendaraan. Example: DT
+     * @queryParam vehiclegroupcode string Optional. Filter Kendaraan berdasarkan kode grup kendaraan. Example: DT atau grup kendaraan lebih dari 1 maka nilai 1 dan 2 dst dipisah oleh koma ',' ikuti format ini DT,TR,MB untuk mencari kendaraan dengan kode grup kendaraan DT atau TR ATAU MB
      * @queryParam registrationno string Optional. Filter Kendaraan berdasarkan plat nomor kendaraan tanpa spasi. Example: L9577BZ
      */
     public function vehicle(Request $request)
@@ -175,14 +175,22 @@ class MasterController extends Controller
         }
 
         if ($request->has('vehiclegroupcode')) {
-            $query->where('VEHICLEGROUPCODE', 'like', '%' . $request->vehiclegroupcode . '%');
+            $vehiclegroupcode = $request->vehiclegroupcode;
+            // Jika mengandung koma, gunakan whereIn untuk multiple values
+            if (strpos($vehiclegroupcode, ',') !== false) {
+                $codes = array_map('trim', explode(',', $vehiclegroupcode));
+                $query->whereIn('VEHICLEGROUPCODE', $codes);
+            } else {
+                // Jika tidak ada koma, gunakan like untuk partial match
+                $query->where('VEHICLEGROUPCODE', 'like', '%' . $vehiclegroupcode . '%');
+            }
         }
 
         if ($request->has('registrationno')) {
             $query->where('REGISTRATIONNO', 'like', '%' . $request->registrationno . '%');
         }
 
-        // $query->where('FCBA', '=', 'CNT');
+        $query->where('FCBA', '=', 'CNT');
 
         // Eksekusi query dan dapatkan data
         $query->orderBy('VEHICLEGROUPCODE', 'asc');

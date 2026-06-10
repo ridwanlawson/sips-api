@@ -64,11 +64,7 @@ class EmployeeController extends Controller
             $fctype = $request->query('fctype');
             $fccompanycode = $request->query('fccompanycode');
 
-            $datas = Karyawan::select(
-                'employee.*',
-                DB::raw('BUSINESSUNIT_API.GET_FCTYPE(FCBA) as fctype'),
-                DB::raw('BUSINESSUNIT_API.GET_COMPANYCODE(FCBA) as fccompanycode')
-            );
+            $datas = DB::table('V_EMPLOYEE_FULL');
 
             if ($fcba) {
                 $datas->where('FCBA', $fcba);
@@ -88,17 +84,11 @@ class EmployeeController extends Controller
 
             // 🔥 FILTER DARI ORACLE FUNCTION
             if ($fctype) {
-                $datas->whereRaw(
-                    'BUSINESSUNIT_API.GET_FCTYPE(FCBA) = ?',
-                    [$fctype]
-                );
+                $datas->where('FCTYPE', $fctype);
             }
 
             if ($fccompanycode) {
-                $datas->whereRaw(
-                    'BUSINESSUNIT_API.GET_COMPANYCODE(FCBA) = ?',
-                    [$fccompanycode]
-                );
+                $datas->where('FCCOMPANYCODE', $fccompanycode);
             }
 
             $datas = $datas
@@ -133,6 +123,9 @@ class EmployeeController extends Controller
             'noancak' => 'nullable|string',
             'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'created_by' => 'nullable',
+            'updated_by' => 'nullable',
+            'face_recognition' => 'nullable',
+            'fr_registered_at' => 'nullable|date',
         ]);
 
         try {
@@ -206,6 +199,9 @@ class EmployeeController extends Controller
             'gangcode' => 'required|string|max:255',
             'fcba' => 'required|string|exists:sips_production.Employee,fcba',
             'noancak' => 'required|string',
+            'face_recognition' => 'nullable',
+            'fr_registered_at' => 'nullable|date',
+            'aktif' => 'nullable|string',
             'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'updated_by' => 'nullable',
         ]);

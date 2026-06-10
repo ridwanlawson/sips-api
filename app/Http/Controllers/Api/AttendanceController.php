@@ -9,6 +9,8 @@ use App\Http\Resources\AllResource;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 /**
  * @group Apps
@@ -37,6 +39,8 @@ class AttendanceController extends Controller
      * @queryParam status_attendance string Optional. Filter Absensi berdasarkan status kehadiran salah satu dari Planned, AuthorizedOnProgress, Approved, Reject. Example: Planned
      * @queryParam attendance_type string Optional. Filter Absensi berdasarkan type kehadiran salah satu dari REGULAR, ASSISTENSI. Example: REGULAR
      * @queryParam fcba_destination string Optional. Filter Absensi berdasarkan fcba_destination. Example: MRE
+     * @queryParam section_destination string Optional. Filter Absensi berdasarkan section_destination. Example: AFD-01
+     * @queryParam kemandoran string Optional. Filter Absensi berdasarkan kemandoran. Example: MD011
      *
      * @response 200 scenario="success" {
      *  "success": true,
@@ -66,6 +70,8 @@ class AttendanceController extends Controller
      *          "mandays": 0.82,
      *          "status_attendance": "Planned",
      *          "fcba_destination": "MRE",
+     *          "section_destination": "AFD-01",
+     *          "kemandoran": "MD011",
      *          "image": "",
      *          "id_device": "",
      *          "mac_address": ""
@@ -87,7 +93,9 @@ class AttendanceController extends Controller
             $attendance     = $request->query('attendance');
             $status_attendance = $request->query('status_attendance');
             $fcba_destination = $request->query('fcba_destination');
+            $section_destination = $request->query('section_destination');
             $attendance_type  = $request->query('attendance_type');
+            $kemandoran       = $request->query('kemandoran');
 
             $query = "
             select
@@ -119,9 +127,13 @@ class AttendanceController extends Controller
                 ) AS MANDAYS,
                 ATTENDANCE.STATUS_ATTENDANCE,
                 ATTENDANCE.FCBA_DESTINATION,
+                ATTENDANCE.SECTION_DESTINATION,
+                ATTENDANCE.KEMANDORAN,
                 ATTENDANCE.IMAGES,
                 ATTENDANCE.ID_DEVICE,
-                ATTENDANCE.MAC_ADDRESS
+                ATTENDANCE.MAC_ADDRESS,
+                ATTENDANCE.CREATED_AT,
+                ATTENDANCE.CREATED_BY
             from 
                 SIPSMOBILE.ATTENDANCE
             inner join 
@@ -133,7 +145,7 @@ class AttendanceController extends Controller
                 on ATTENDANCE.KODE_KARYAWAN_MANDOR = MANDOR.FCCODE 
                 and ATTENDANCE.FCBA = MANDOR.FCBA 
             where 
-                ATTENDANCE.FCBA IS NOT NULL
+                ATTENDANCE.DELETED_AT IS NULL
         ";
 
             // Parameter binding
@@ -207,9 +219,24 @@ class AttendanceController extends Controller
                 $bindings['fcba_destination'] = $fcba_destination;
             }
 
+            if ($section_destination) {
+                $query .= " and ATTENDANCE.SECTION_DESTINATION = :section_destination";
+                $bindings['section_destination'] = $section_destination;
+            }
+
             if ($attendance_type) {
                 $query .= " and ATTENDANCE.ATTENDANCE_TYPE = :attendance_type";
                 $bindings['attendance_type'] = $attendance_type;
+            }
+
+            if ($attendance_type) {
+                $query .= " and ATTENDANCE.ATTENDANCE_TYPE = :attendance_type";
+                $bindings['attendance_type'] = $attendance_type;
+            }
+
+            if ($kemandoran) {
+                $query .= " and ATTENDANCE.KEMANDORAN = :kemandoran";
+                $bindings['kemandoran'] = $kemandoran;
             }
 
             // Tambahkan bagian akhir query
@@ -235,7 +262,10 @@ class AttendanceController extends Controller
 
             return new AllResource(true, 'List Data Absensi', $datas);
         } catch (\Exception $e) {
-            // Tangani kesalahan yang mungkin terjadi
+            // Log::error('Error mengambil data absensi (index)', [
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil data.',
@@ -256,7 +286,8 @@ class AttendanceController extends Controller
             'kode_karyawan' => 'required|string|exists:employee,fccode',
             'time_in' => 'required|date_format:Y-m-d H:i:s',
             'time_out' => 'nullable|date_format:Y-m-d H:i:s',
-            'location_in' => 'required',
+            'location_in' => 'nullable',
+            // 'location_in' => 'required',
             'location_out' => 'nullable',
             'pengancakan' => 'nullable',
             'total_late_time' => 'nullable|date_format:H:i',
@@ -270,6 +301,8 @@ class AttendanceController extends Controller
             'mandays' => 'nullable|numeric|max:1',
             'attendance' => 'required|string|in:KJ,WH,WS,MK,ML,P1,KB,OT',
             'fcba_destination' => 'nullable|exists:employee,fcba',
+            'section_destination' => 'nullable|exists:employee,sectionname',
+            'kemandoran' => 'nullable|exists:users,gangcode',
             'id_device' => 'nullable',
             'mac_address' => 'nullable',
             'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
@@ -303,10 +336,18 @@ class AttendanceController extends Controller
 
             $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
 
+            $kode_karyawan_mandor = User::where('STATUS', '=', 'Y')
+                ->select('IDKARYAWAN')
+                ->where('FCBA',     '=', $request->fcba)
+                ->where('AFDELING', '=', $request->section)
+                ->where('GANGCODE', '=', $request->kemandoran)
+                ->where('LEVEL',    '=', 'MDP');
+            $idkode_karyawan_mandor = $kode_karyawan_mandor->first();
+
             // Simpan data absensi ke dalam database
             $datas = Attendance::create([
                 'TANGGAL' => $request->tanggal,
-                'KODE_KARYAWAN_MANDOR' => $request->kode_karyawan_mandor,
+                'KODE_KARYAWAN_MANDOR' => $request->kode_karyawan_mandor ?? optional($idkode_karyawan_mandor)->idkaryawan,
                 'KODE_KARYAWAN' => $request->kode_karyawan,
                 'TIME_IN' => $request->time_in,
                 'TIME_OUT' => $request->time_out,
@@ -325,6 +366,8 @@ class AttendanceController extends Controller
                 'ATTENDANCE' => $request->attendance,
                 'STATUS_ATTENDANCE' => 'Planned',
                 'FCBA_DESTINATION' => $request->fcba_destination,
+                'SECTION_DESTINATION' => $request->section_destination,
+                'KEMANDORAN' => $request->kemandoran,
                 'ID_DEVICE' => $request->id_device,
                 'MAC_ADDRESS' => $request->mac_address,
                 'IMAGES' => $imagePath, // Simpan path image jika ada
@@ -332,13 +375,22 @@ class AttendanceController extends Controller
             ]);
 
             // Kembalikan respons dengan data yang baru saja disimpan
+            // Log::info('Absensi berhasil ditambahkan (store)', [
+            //     'id' => $datas->id,
+            //     'kode_karyawan' => $request->kode_karyawan,
+            //     'created_by' => Auth::user()->username,
+            // ]);
             return new AllResource(true, 'Data Absensi berhasil ditambahkan.', $datas);
         } catch (\Exception $e) {
-            // Menangkap error dan mengembalikan pesan yang mudah dipahami oleh user
+            // Log::error('Error menyimpan data absensi (store)', [
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            //     'request' => $request->all(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage() // Tambahkan pesan error teknis jika perlu
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -379,9 +431,13 @@ class AttendanceController extends Controller
                     )),0) AS MANDAYS,
                     ATTENDANCE.STATUS_ATTENDANCE,
                     ATTENDANCE.FCBA_DESTINATION,
+                    ATTENDANCE.SECTION_DESTINATION,
+                    ATTENDANCE.KEMANDORAN,
                     ATTENDANCE.IMAGES,
                     ATTENDANCE.ID_DEVICE,
-                    ATTENDANCE.MAC_ADDRESS
+                    ATTENDANCE.MAC_ADDRESS,
+                    ATTENDANCE.CREATED_AT,
+                    ATTENDANCE.CREATED_BY
                 from 
                     SIPSMOBILE.ATTENDANCE
                 inner join
@@ -412,11 +468,15 @@ class AttendanceController extends Controller
             // Jika data ditemukan, kembalikan data
             return new AllResource(true, 'Detail Data Absensi', $data);
         } catch (\Exception $e) {
-            // Tangani kesalahan yang mungkin terjadi
+            // Log::error('Error mengambil data absensi (show)', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan pada sistem.',
-                'error' => $e->getMessage(), // Tambahkan pesan error teknis jika diperlukan
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -439,13 +499,15 @@ class AttendanceController extends Controller
             'total_late_time' => 'nullable|date_format:H:i',
             'go_home_early' => 'nullable|date_format:H:i',
             'exception_case' => 'nullable',
-            'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
+            'no_ba_exca' => 'nullable',
             'fcba' => 'required|string|exists:employee,fcba',
             'section' => 'nullable|exists:employee,sectionname',
             'gang' => 'nullable|exists:employee,gangcode',
             'mandays' => 'nullable|numeric|max:1',
             'attendance' => 'required|string|in:KJ,WH,WS,MK,ML,P1,KB,OT',
             'fcba_destination' => 'nullable|exists:employee,fcba',
+            'section_destination' => 'nullable|exists:employee,sectionname',
+            'kemandoran' => 'nullable|exists:users,gangcode',
             'id_device' => 'nullable',
             'mac_address' => 'nullable',
             'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
@@ -483,9 +545,8 @@ class AttendanceController extends Controller
                 $baExcaName = time() . '_' . $baExca->getClientOriginalName();
                 $baExca->move(public_path('file/attendance_images'), $baExcaName); // Simpan di public/attendance_images
                 $baExcaPath = 'file/attendance_images/' . $baExcaName; // Path yang disimpan di database
+                $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
             }
-
-            $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
 
             // Menyusun data untuk update
             $updateData = [
@@ -498,24 +559,50 @@ class AttendanceController extends Controller
                 $validated['total_late_time'] ?? null,      // 7
                 $validated['go_home_early'] ?? null,        // 8
                 $validated['exception_case'] ?? null,       // 9
-                $baExcaPath,                                // 10
-                $validated['fcba'] ?? null,                 // 11
-                $validated['section'] ?? null,              // 12
-                $validated['gang'] ?? null,                 // 13
-                $validated['mandays'] ?? null,              // 15
+                $validated['fcba'] ?? null,                 // 10
+                $validated['section'] ?? null,              // 11
+                $validated['gang'] ?? null,                 // 12
+                $validated['mandays'] ?? null,              // 13
                 $validated['attendance'] ?? null,           // 14
-                $validated['fcba_destination'] ?? null,     // 16
-                $validated['id_device'] ?? null,            // 17
-                $validated['mac_address'] ?? null,          // 18
-                $imagePath,                                 // 19
-                Auth::user()->username,                     // 20
+                $validated['fcba_destination'] ?? null,     // 15
+                $validated['section_destination'] ?? null,  // 16
+                $validated['kemandoran'] ?? null,           // 17
+                $validated['id_device'] ?? null,            // 18
+                $validated['mac_address'] ?? null,          // 19
+                $imagePath,                                 // 20
+                Auth::user()->username,                     // 21
                 $id,                                        // (ID untuk WHERE)
             ];
 
-            // Update menggunakan query manual
-            DB::update(
-                "UPDATE \"SIPSMOBILE\".\"ATTENDANCE\" 
-                SET 
+            // Build dynamic SET clause
+            $setClause = "
+                \"KODE_KARYAWAN_MANDOR\" = ?,
+                \"KODE_KARYAWAN\" = ?,
+                \"ATTENDANCE_TYPE\" = ?,
+                \"TIME_OUT\" = ?,
+                \"LOCATION_OUT\" = ?,
+                \"PENGANCAKAN\" = ?,
+                \"TOTAL_LATE_TIME\" = ?,
+                \"GO_HOME_EARLY\" = ?,
+                \"EXCEPTION_CASE\" = ?,
+                \"FCBA\" = ?,
+                \"SECTION\" = ?,
+                \"GANG\" = ?,
+                \"MANDAYS\" = ?,
+                \"ATTENDANCE\" = ?,
+                \"FCBA_DESTINATION\" = ?,
+                \"SECTION_DESTINATION\" = ?,
+                \"KEMANDORAN\" = ?,
+                \"ID_DEVICE\" = ?,
+                \"MAC_ADDRESS\" = ?,
+                \"IMAGES\" = ?,
+                \"UPDATED_BY\" = ?,
+                \"UPDATED_AT\" = SYSDATE
+            ";
+
+            // Add NO_BA_EXCA to update only if file was uploaded
+            if ($baExcaPath !== null) {
+                $setClause = "
                     \"KODE_KARYAWAN_MANDOR\" = ?,
                     \"KODE_KARYAWAN\" = ?,
                     \"ATTENDANCE_TYPE\" = ?,
@@ -532,34 +619,62 @@ class AttendanceController extends Controller
                     \"MANDAYS\" = ?,
                     \"ATTENDANCE\" = ?,
                     \"FCBA_DESTINATION\" = ?,
+                    \"SECTION_DESTINATION\" = ?,
+                    \"KEMANDORAN\" = ?,
                     \"ID_DEVICE\" = ?,
                     \"MAC_ADDRESS\" = ?,
-                    \"IMAGES\" = ?, 
-                    \"UPDATED_BY\" = ?, 
+                    \"IMAGES\" = ?,
+                    \"UPDATED_BY\" = ?,
                     \"UPDATED_AT\" = SYSDATE
+                ";
+                // Insert baExcaPath at position 10
+                array_splice($updateData, 9, 0, [$baExcaPath]);
+            }
+
+            // Update menggunakan query manual
+            DB::update(
+                "UPDATE \"SIPSMOBILE\".\"ATTENDANCE\" 
+                SET " . $setClause . "
                 WHERE \"ID\" = ?",
                 $updateData
             );
             $datas = Attendance::findOrFail($id);
 
             // Berhasil diupdate
+            // Log::info('Absensi berhasil diperbarui (update)', [
+            //     'id' => $id,
+            //     'updated_by' => Auth::user()->username,
+            // ]);
             return response()->json([
                 'success' => true,
                 'message' => 'Data Absensi berhasil diperbarui.',
                 'data' => $datas,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Log::warning('Absensi tidak ditemukan (update)', [
+            //     'id' => $id,
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Data Absensi tidak ditemukan.',
             ], 404);
         } catch (\Illuminate\Database\QueryException $e) {
+            // Log::error('Error QueryException saat update absensi', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengupdate data.',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
+            // Log::error('Error Exception saat update absensi', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan pada sistem.',
@@ -586,30 +701,48 @@ class AttendanceController extends Controller
 
             // Update status menggunakan query manual (konsisten dengan update lain)
             DB::update(
-                "UPDATE \"SIPSMOBILE\".\"ATTENDANCE\" \n                SET \"STATUS_ATTENDANCE\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n                WHERE \"ID\" = ?",
+                "UPDATE \"SIPSMOBILE\".\"ATTENDANCE\" \n SET \"STATUS_ATTENDANCE\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n                WHERE \"ID\" = ?",
                 [$validated['status_attendance'], Auth::user()->username, $id]
             );
 
             // Ambil kembali data yang sudah diupdate
             $datas = Attendance::findOrFail($id);
 
+            // Log::info('Status absensi berhasil diperbarui (updateStatus)', [
+            //     'id' => $id,
+            //     'status_attendance' => $validated['status_attendance'],
+            //     'updated_by' => Auth::user()->username,
+            // ]);
             return response()->json([
                 'success' => true,
                 'message' => 'Status Absensi berhasil diperbarui.',
                 'data' => $datas,
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Log::warning('Absensi tidak ditemukan (updateStatus)', [
+            //     'id' => $id,
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Data Absensi tidak ditemukan.',
             ], 404);
         } catch (\Illuminate\Database\QueryException $e) {
+            // Log::error('Error QueryException saat updateStatus absensi', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengupdate status absensi.',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
+            // Log::error('Error Exception saat updateStatus absensi', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan pada sistem.',
@@ -627,20 +760,42 @@ class AttendanceController extends Controller
     {
         try {
             $datas = Attendance::findOrFail($id);
+
+            // isi deleted_by dulu
+            $datas->deleted_by = Auth::user()->username ?? null;
+            $datas->save();
+
             $datas->delete();
+            // Log::info('Absensi berhasil dihapus (destroy)', [
+            //     'id' => $id,
+            //     'deleted_by' => Auth::user()->username ?? null,
+            // ]);
             return new AllResource(true, 'Data Absensi berhasil dihapus.', $datas);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Log::warning('Absensi tidak ditemukan (destroy)', [
+            //     'id' => $id,
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Data Absensi tidak ditemukan.',
             ], 404);
         } catch (QueryException $e) {
+            // Log::error('Error QueryException saat menghapus absensi', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menghapus data.',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
+            // Log::error('Error Exception saat menghapus absensi', [
+            //     'id' => $id,
+            //     'message' => $e->getMessage(),
+            //     'trace' => $e->getTraceAsString(),
+            // ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan pada sistem.',

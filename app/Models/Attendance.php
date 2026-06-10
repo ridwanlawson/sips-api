@@ -1,14 +1,14 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 class Attendance extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'ATTENDANCE';
     protected $fillable = [
@@ -23,8 +23,6 @@ class Attendance extends Model
         'TOTAL_LATE_TIME',
         'GO_HOME_EARLY',
         'ATTENDANCE_TYPE',
-        'EXCEPTION_CASE',
-        'NO_BA_EXCA',
         'FCBA',
         'SECTION',
         'GANG',
@@ -32,10 +30,14 @@ class Attendance extends Model
         'MANDAYS',
         'STATUS_ATTENDANCE',
         'FCBA_DESTINATION',
+        'SECTION_DESTINATION',
+        'KEMANDORAN',
         'ID_DEVICE',
         'MAC_ADDRESS',
         'IMAGES',
         'FLAG',
+        'EXCEPTION_CASE',
+        'NO_BA_EXCA',
         'CREATED_BY',
         'UPDATED_BY',
     ];

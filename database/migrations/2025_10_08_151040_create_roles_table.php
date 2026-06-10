@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
             $table->string('code', 30)->unique();   // EM, ASISTEN, MANDOR1, MD.PANEN, KR.PANEN, KR.TRANS
+            $table->string('position', 100);
             $table->string('name', 100);
+            $table->integer('orderapproval');
             $table->timestamps();
         });
 

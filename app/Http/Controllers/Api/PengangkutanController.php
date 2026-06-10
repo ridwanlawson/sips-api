@@ -48,6 +48,8 @@ class PengangkutanController extends Controller
      * @queryParam fieldcode string Optional. Filter Pengangkutan berdasarkan FIELDCODE. Example: A02
      * @queryParam status_pengangkutan string Optional. Filter Pengangkutan berdasarkan Status Pengangkutan salah satu dari Planned, AuthorizedOnProgress, Approved. Example: Planned
      * @queryParam flag string Optional. Filter Pengangkutan berdasarkan Status Upload Pengangkutan yang sudah diangkut akan berstatus Y jika belum maka N. Example: Y
+     * @queryParam fcba_destination string Optional. Filter Pengangkutan berdasarkan FCBA tujuan. Example: MTE
+     * @queryParam afdeling_destination string Optional. Filter Pengangkutan berdasarkan afdeling tujuan. Example: AFD-02
      *
      * @response 200 scenario="success" {
      *  "success": true,
@@ -85,10 +87,16 @@ class PengangkutanController extends Controller
      *          "output": "155",
      *          "janjangnormal": "160",
      *          "brondolan": "2",
+     *          "mentah": "5",
+     *          "abnormal": "3",
      *          "status_pengangkutan": "Planned",
      *          "card_id": "NFC 1234567890",
      *          "flag": "Y",
-     *          "images": "http://172.16.5.199:82/file/pengangkutan_images/1735532659_Screenshot 2024-12-27 104602.png"
+     *          "images": "http://172.16.5.199:82/file/pengangkutan_images/1735532659_Screenshot 2024-12-27 104602.png",
+     *          "exception_case": "",
+     *          "no_ba_exca": "",
+     *          "afdeling_destination": "AFD-02",
+     *          "fcba_destination": "MTE"
      *      }
      *  ]
      * }
@@ -118,6 +126,8 @@ class PengangkutanController extends Controller
             $fieldcode = $request->query('fieldcode');
             $status_pengangkutan = $request->query('status_pengangkutan');
             $flag = $request->query('flag');
+            $fcba_destination = $request->query('fcba_destination');
+            $afdeling_destination = $request->query('afdeling_destination');
 
             $query = "
                 SELECT 
@@ -153,10 +163,20 @@ class PengangkutanController extends Controller
                     PENGANGKUTAN.OUTPUT,
                     PENGANGKUTAN.JANJANGNORMAL,
                     PENGANGKUTAN.BRONDOLAN,
+                    PENGANGKUTAN.MENTAH,
+                    PENGANGKUTAN.ABNORMAL,
+                    PENGANGKUTAN.ETD,
+                    PENGANGKUTAN.ETA,
                     PENGANGKUTAN.STATUS_PENGANGKUTAN,
                     PENGANGKUTAN.IMAGES,
+                    PENGANGKUTAN.NO_BA_EXCA,
+                    PENGANGKUTAN.EXCEPTION_CASE,
                     PENGANGKUTAN.CARD_ID,
-                    PENGANGKUTAN.FLAG
+                    PENGANGKUTAN.FLAG,
+                    PENGANGKUTAN.FCBA_DESTINATION,
+                    PENGANGKUTAN.AFDELING_DESTINATION,
+                    PENGANGKUTAN.CREATED_AT,
+                    PENGANGKUTAN.CREATED_BY
                 FROM
                     SIPSMOBILE.PENGANGKUTAN
                 LEFT JOIN
@@ -192,7 +212,7 @@ class PengangkutanController extends Controller
                 ON 
                     PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE 
                 WHERE 
-                    PENGANGKUTAN.TANGGAL IS NOT NULL
+                    PENGANGKUTAN.DELETED_AT IS NULL
             ";
 
             $bindings = [];
@@ -370,16 +390,24 @@ class PengangkutanController extends Controller
             'tkbm5' => 'nullable|string|exists:employee,fccode',
             'type_pengangkutan' => 'required|integer',
             'kode_kendaraan' => 'required|string',
-            'tph' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,notph',
-            'fieldcode' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,fieldcode',
-            'afdeling' => 'nullable|required_if:type_pengangkutan,1|string|exists:sips_production.field,division',
+            // 'tph' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,notph',
+            // 'fieldcode' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,fieldcode',
             'fcba' => 'nullable|required_if:type_pengangkutan,1|string|exists:sips_production.field,fcba',
+            'afdeling' => 'nullable|required_if:type_pengangkutan,1|string|exists:sips_production.field,division',
+            'fcba_destination' => 'nullable|string|exists:sips_production.field,fcba',
+            'afdeling_destination' => 'nullable|string|exists:sips_production.field,division',
             'pabrik_tujuan' => 'required|string',
             'totaljanjang' => 'required|numeric',
             'output' => 'required|numeric',
             'janjangnormal' => 'required|numeric',
             'brondolan' => 'nullable|numeric',
+            'mentah' => 'nullable|numeric',
+            'abnormal' => 'nullable|numeric',
+            'etd' => 'nullable|date_format:Y-m-d H:i:s',
+            'eta' => 'nullable|date_format:Y-m-d H:i:s',
             'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'exception_case' => 'nullable',
+            'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
             'card_id' => 'nullable',
             'created_by' => 'nullable',
         ]);
@@ -397,6 +425,19 @@ class PengangkutanController extends Controller
             }
 
             $imagePath = $imagePath ? asset($imagePath) : null;
+
+            // Inisialisasi variabel path image (default null jika tidak ada file)
+            $baExcaPath = null;
+
+            // Jika ada file image yang diunggah
+            if ($request->hasFile('no_ba_exca')) {
+                $baExca = $request->file('no_ba_exca');
+                $baExcaName = time() . '_' . $baExca->getClientOriginalName();
+                $baExca->move(public_path('file/pengangkutan_images'), $baExcaName); // Simpan di public/pengangkutan_images
+                $baExcaPath = 'file/pengangkutan_images/' . $baExcaName; // Path yang disimpan di database
+            }
+
+            $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
 
             // Jika afdeling dan fcba kosong, ambil dari pabrik_tujuan
             if (empty($afdeling) && empty($fcba) && !empty($pabrik_tujuan) && !empty($nopengangkutan)) {
@@ -424,15 +465,23 @@ class PengangkutanController extends Controller
                 'KODE_KENDARAAN' => $request->kode_kendaraan,
                 'TPH' => $request->tph,
                 'FIELDCODE' => $request->fieldcode,
-                'AFDELING' => $request->afdeling,
                 'FCBA' => $request->fcba,
+                'AFDELING' => $request->afdeling,
+                'FCBA_DESTINATION' => $request->fcba_destination,
+                'AFDELING_DESTINATION' => $request->afdeling_destination,
                 'PABRIK_TUJUAN' => $request->pabrik_tujuan,
                 'TOTALJANJANG' => $request->totaljanjang,
                 'OUTPUT' => $request->output,
                 'JANJANGNORMAL' => $request->janjangnormal,
                 'BRONDOLAN' => $request->brondolan,
+                'MENTAH' => $request->mentah,
+                'ABNORMAL' => $request->abnormal,
+                'ETD' => $request->etd,
+                'ETA' => $request->eta,
                 'STATUS_PENGANGKUTAN' => 'Planned',
                 'IMAGES' => $imagePath, // Simpan path image jika ada
+                'EXCEPTION_CASE' => $request->exception_case,
+                'NO_BA_EXCA' => $baExcaPath,
                 'CARD_ID' => $request->card_id,
                 'FLAG' => 'N',
                 'CREATED_BY' => Auth::user()->username,
@@ -491,10 +540,20 @@ class PengangkutanController extends Controller
                     PENGANGKUTAN.OUTPUT,
                     PENGANGKUTAN.JANJANGNORMAL,
                     PENGANGKUTAN.BRONDOLAN,
+                    PENGANGKUTAN.MENTAH,
+                    PENGANGKUTAN.ABNORMAL,
+                    PENGANGKUTAN.ETD,
+                    PENGANGKUTAN.ETA,
                     PENGANGKUTAN.STATUS_PENGANGKUTAN,
                     PENGANGKUTAN.IMAGES,
+                    PENGANGKUTAN.EXCEPTION_CASE,
+                    PENGANGKUTAN.NO_BA_EXCA,
                     PENGANGKUTAN.FLAG,
-                    PENGANGKUTAN.CARD_ID
+                    PENGANGKUTAN.FCBA_DESTINATION,
+                    PENGANGKUTAN.AFDELING_DESTINATION,
+                    PENGANGKUTAN.CARD_ID,
+                    PENGANGKUTAN.CREATED_AT,
+                    PENGANGKUTAN.CREATED_BY
                 FROM
                     SIPSMOBILE.PENGANGKUTAN
                 INNER JOIN
@@ -582,14 +641,22 @@ class PengangkutanController extends Controller
             'kode_kendaraan' => 'required|string',
             'tph' => 'required|string|exists:tph,notph',
             'fieldcode' => 'required|string|exists:tph,fieldcode',
-            'afdeling' => 'required|string|exists:sips_production.field,division',
             'fcba' => 'required|string|exists:sips_production.field,fcba',
+            'afdeling' => 'required|string|exists:sips_production.field,division',
+            'fcba_destination' => 'nullable|string|exists:sips_production.field,fcba',
+            'afdeling_destination' => 'nullable|string|exists:sips_production.field,division',
             'pabrik_tujuan' => 'required|string',
             'totaljanjang' => 'required|integer',
             'output' => 'required|integer',
             'janjangnormal' => 'required|integer',
             'brondolan' => 'nullable|integer',
+            'mentah' => 'nullable|integer',
+            'abnormal' => 'nullable|integer',
+            'eta' => 'nullable|date_format:Y-m-d H:i:s',
+            'etd' => 'nullable|date_format:Y-m-d H:i:s',
             'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'exception_case' => 'nullable',
+            'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
         ]);
 
         try {
@@ -615,6 +682,18 @@ class PengangkutanController extends Controller
                 $imagePath = $imagePath ? asset($imagePath) : null;
             }
 
+            // Inisialisasi variabel path image (default null jika tidak ada file)
+            $baExcaPath = null;
+
+            // Jika ada file image yang diunggah
+            if ($request->hasFile('no_ba_exca')) {
+                $baExca = $request->file('no_ba_exca');
+                $baExcaName = time() . '_' . $baExca->getClientOriginalName();
+                $baExca->move(public_path('file/pengangkutan_images'), $baExcaName); // Simpan di public/pengangkutan_images
+                $baExcaPath = 'file/pengangkutan_images/' . $baExcaName; // Path yang disimpan di database
+                $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
+            }
+
             // Menyusun data untuk update
             $updateData = [
                 $validated['kode_karyawan_kerani'] ?? null,         // 1
@@ -628,22 +707,60 @@ class PengangkutanController extends Controller
                 $validated['kode_kendaraan'] ?? null,               // 9
                 $validated['tph'] ?? null,                          // 10
                 $validated['fieldcode'] ?? null,                    // 11
-                $validated['afdeling'] ?? null,                     // 12
-                $validated['fcba'] ?? null,                         // 13
-                $validated['pabrik_tujuan'] ?? null,                // 14
-                $validated['totaljanjang'] ?? null,                 // 15
-                $validated['output'] ?? null,                       // 16
-                $validated['janjangnormal'] ?? null,                // 17
-                $validated['brondolan'] ?? null,                    // 18
-                $imagePath,                                         // 19
-                Auth::user()->username,                             // 20
+                $validated['fcba'] ?? null,                         // 12
+                $validated['afdeling'] ?? null,                     // 13
+                $validated['fcba_destination'] ?? null,             // 14
+                $validated['afdeling_destination'] ?? null,         // 15
+                $validated['pabrik_tujuan'] ?? null,                // 16
+                $validated['totaljanjang'] ?? null,                 // 17
+                $validated['output'] ?? null,                       // 18
+                $validated['janjangnormal'] ?? null,                // 19
+                $validated['brondolan'] ?? null,                    // 20
+                $validated['mentah'] ?? null,                       // 21
+                $validated['abnormal'] ?? null,                     // 22
+                $validated['eta'] ?? null,                          // 23
+                $validated['etd'] ?? null,                          // 24
+                $imagePath,                                         // 25
+                Auth::user()->username,                             // 26
+                $validated['exception_case'] ?? null,               // 27
                 $id,                                                // (ID untuk WHERE)
             ];
 
-            // Update menggunakan query manual
-            DB::update(
-                "UPDATE \"SIPSMOBILE\".\"PENGANGKUTAN\" 
-                SET 
+            // Build dynamic SET clause
+            $setClause = "
+                \"KODE_KARYAWAN_KERANI\" = ?, 
+                \"KODE_KARYAWAN_DRIVER\" = ?, 
+                \"TKBM1\" = ?, 
+                \"TKBM2\" = ?, 
+                \"TKBM3\" = ?, 
+                \"TKBM4\" = ?, 
+                \"TKBM5\" = ?, 
+                \"TYPE_PENGANGKUTAN\" = ?, 
+                \"KODE_KENDARAAN\" = ?, 
+                \"TPH\" = ?, 
+                \"FIELDCODE\" = ?, 
+                \"FCBA\" = ?,  
+                \"AFDELING\" = ?,  
+                \"FCBA_DESTINATION\" = ?,  
+                \"AFDELING_DESTINATION\" = ?, 
+                \"PABRIK_TUJUAN\" = ?,  
+                \"TOTALJANJANG\" = ?, 
+                \"OUTPUT\" = ?, 
+                \"JANJANGNORMAL\" = ?, 
+                \"BRONDOLAN\" = ?, 
+                \"MENTAH\" = ?, 
+                \"ABNORMAL\" = ?, 
+                \"ETA\" = ?, 
+                \"ETD\" = ?, 
+                \"IMAGES\" = ?, 
+                \"UPDATED_BY\" = ?, 
+                \"UPDATED_AT\" = SYSDATE,
+                \"EXCEPTION_CASE\" = ?
+            ";
+
+            // Add NO_BA_EXCA to update only if file was uploaded
+            if ($baExcaPath !== null) {
+                $setClause = "
                     \"KODE_KARYAWAN_KERANI\" = ?, 
                     \"KODE_KARYAWAN_DRIVER\" = ?, 
                     \"TKBM1\" = ?, 
@@ -655,16 +772,33 @@ class PengangkutanController extends Controller
                     \"KODE_KENDARAAN\" = ?, 
                     \"TPH\" = ?, 
                     \"FIELDCODE\" = ?, 
-                    \"AFDELING\" = ?, 
                     \"FCBA\" = ?,  
+                    \"AFDELING\" = ?, 
+                    \"FCBA_DESTINATION\" = ?,  
+                    \"AFDELING_DESTINATION\" = ?, 
                     \"PABRIK_TUJUAN\" = ?,  
                     \"TOTALJANJANG\" = ?, 
                     \"OUTPUT\" = ?, 
                     \"JANJANGNORMAL\" = ?, 
                     \"BRONDOLAN\" = ?, 
+                    \"MENTAH\" = ?, 
+                    \"ABNORMAL\" = ?, 
+                    \"ETA\" = ?, 
+                    \"ETD\" = ?, 
                     \"IMAGES\" = ?, 
                     \"UPDATED_BY\" = ?, 
-                    \"UPDATED_AT\" = SYSDATE
+                    \"UPDATED_AT\" = SYSDATE,
+                    \"EXCEPTION_CASE\" = ?
+                    \"NO_BA_EXCA\" = ?
+                ";
+                // Insert baExcaPath at position 26
+                array_splice($updateData, 22, 0, [$baExcaPath]);
+            }
+
+            // Update menggunakan query manual
+            DB::update(
+                "UPDATE \"SIPSMOBILE\".\"PENGANGKUTAN\" 
+                SET " . $setClause . "
                 WHERE \"ID\" = ?",
                 $updateData
             );
@@ -698,6 +832,57 @@ class PengangkutanController extends Controller
     }
 
     /**
+     * Update SPBNO dan ETD berdasarkan id Pengangkutan.
+     *
+     * @urlParam id integer required ID Pengangkutan.
+     */
+    public function updateSPBnETD(Request $request, string $id)
+    {
+        // Validasi input status yang diizinkan
+        $validated = $request->validate([
+            'spbno' => 'required|string',
+            'etd' => 'required|date_format:Y-m-d H:i:s',
+        ]);
+
+        try {
+            // Cari data berdasarkan ID
+            $datas = Pengangkutan::findOrFail($id);
+
+            // Update status menggunakan query manual (konsisten dengan update lain)
+            DB::update(
+                "UPDATE \"SIPSMOBILE\".\"PENGANGKUTAN\" \n SET \"NOSPB\" = ?, \"ETD\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n WHERE \"ID\" = ?",
+                [$validated['spbno'], $validated['etd'], Auth::user()->username, $id]
+            );
+
+            // Ambil kembali data yang sudah diupdate
+            $datas = Pengangkutan::findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'SPBNO dan ETD Pengangkutan berhasil diperbarui.',
+                'data' => $datas,
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Pengangkutan tidak ditemukan.',
+            ], 404);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupdate SPBNO dan ETD pengangkutan.',
+                'error' => $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada sistem.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Approved atau Reject status_pengangkutan (STATUS_PENGANGKUTAN) berdasarkan id Pengangkutan.
      *
      * @urlParam id integer required ID Pengangkutan.
@@ -715,7 +900,7 @@ class PengangkutanController extends Controller
 
             // Update status menggunakan query manual (konsisten dengan update lain)
             DB::update(
-                "UPDATE \"SIPSMOBILE\".\"PENGANGKUTAN\" \n                SET \"STATUS_PENGANGKUTAN\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n                WHERE \"ID\" = ?",
+                "UPDATE \"SIPSMOBILE\".\"PENGANGKUTAN\" \n SET \"STATUS_PENGANGKUTAN\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n WHERE \"ID\" = ?",
                 [$validated['status_pengangkutan'], Auth::user()->username, $id]
             );
 
@@ -756,6 +941,11 @@ class PengangkutanController extends Controller
     {
         try {
             $datas = Pengangkutan::findOrFail($id);
+
+            // isi deleted_by dulu
+            $datas->deleted_by = Auth::user()->username ?? null;
+            $datas->save();
+
             $datas->delete();
             return new AllResource(true, 'Data Pengangkutan berhasil dihapus.', $datas);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {

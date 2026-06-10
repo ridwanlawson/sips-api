@@ -13,9 +13,19 @@ use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\ApiLogController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\AncakController;
+use App\Http\Controllers\Api\AppUploadController;
+use App\Http\Controllers\Api\MapController;
 
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:3,1')->name('auth.register');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:3,1')->name('auth.login');
+
+// Public routes untuk App Update (tanpa auth agar bisa langsung diakses dari browser/mobile)
+Route::post('/app-update/check', [AppUploadController::class, 'checkUpdate'])->name('app.check-update');
+Route::prefix('app')->group(function () {
+    Route::post('/apk', [AppUploadController::class, 'upload_apk'])->name('app.upload-apk');
+    Route::get('/apks', [AppUploadController::class, 'list'])->name('app.list-versions');
+    Route::delete('/apk/{id}', [AppUploadController::class, 'delete'])->name('app.delete-version');
+});
 
 Route::middleware(['auth:sanctum', \App\Http\Middleware\ApiLogger::class])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
@@ -30,12 +40,17 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\ApiLogger::class])->grou
         Route::get('/sips-karyawans-kemandoran', [MasterController::class, 'karyawanKemandoran'])->name('master.karyawan.kemandoran');
         Route::get('/sips-kendaraan', [MasterController::class, 'vehicle'])->name('master.kendaraan');
         Route::get('/sips-businessunit', [MasterController::class, 'businessunit'])->name('master.businessunit');
+
+        Route::apiResource('maps', MapController::class)
+            ->parameters([
+                'maps' => 'id',
+            ]);
     });
 
     Route::prefix('apps')->group(function () {
         Route::apiResource('tphs', TphController::class)
             ->parameters([
-                'tphs' => 'id', // Ganti parameter menjadi 'id'
+                'tphs' => 'id',
             ]);
 
         Route::apiResource('ancaks', AncakController::class)
@@ -45,12 +60,12 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\ApiLogger::class])->grou
 
         Route::apiResource('karyawans', EmployeeController::class)
             ->parameters([
-                'karyawans' => 'id', // Ganti parameter menjadi 'id'
+                'karyawans' => 'id',
             ]);
 
         Route::apiResource('absensis', AttendanceController::class)
             ->parameters([
-                'absensis' => 'id', // Ganti parameter menjadi 'id'
+                'absensis' => 'id',
             ]);
 
         // Route untuk memperbarui hanya field status_absensi (STATUS_ATTENDANCE)
@@ -58,7 +73,7 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\ApiLogger::class])->grou
 
         Route::apiResource('panens', HarvestingController::class)
             ->parameters([
-                'panens' => 'id', // Ganti parameter menjadi 'id'
+                'panens' => 'id',
             ]);
 
         // Route untuk memperbarui hanya field status_absensi (STATUS_ATTENDANCE)
@@ -66,11 +81,12 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\ApiLogger::class])->grou
 
         Route::apiResource('pengangkutans', PengangkutanController::class)
             ->parameters([
-                'pengangkutans' => 'id', // Ganti parameter menjadi 'id'
+                'pengangkutans' => 'id',
             ]);
 
         // Route untuk memperbarui hanya field status_absensi (STATUS_ATTENDANCE)
         Route::patch('pengangkutans/{id}/status', [PengangkutanController::class, 'updateStatus'])->name('pengangkutans.updateStatus');
+        Route::patch('pengangkutans/{id}/spbno-etd', [PengangkutanController::class, 'updateSPBnETD'])->name('pengangkutans.updateSPBnETD');
     });
 
     Route::prefix('report')->group(function () {
@@ -78,10 +94,22 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\ApiLogger::class])->grou
         Route::get('/hasil-pengangkutan', [ReportController::class, 'hasil_pengangkutan'])->name('report.hasil-pengangkutan');
         Route::get('/hasil-langsir', [ReportController::class, 'hasil_langsir'])->name('report.hasil-langsir');
         Route::get('/upload-attendance', [ReportController::class, 'upload_attendance'])->name('report.upload-attendance');
+        Route::get('/upload-harvesting', [ReportController::class, 'upload_harvesting'])->name('report.upload-harvesting');
+        Route::get('/upload-harvesting-quality', [ReportController::class, 'upload_harvesting_quality'])->name('report.upload-harvesting-quality');
+        Route::get('/upload-lhm', [ReportController::class, 'upload_lhm'])->name('report.upload-lhm');
+        Route::get('/get-lhm', [ReportController::class, 'get_lhm'])->name('report.get-lhm');
+        Route::get('/get-lha', [ReportController::class, 'get_lha'])->name('report.get-lha');
+        Route::get('/get-harvesting', [ReportController::class, 'get_harvesting'])->name('report.get-harvesting');
     });
 
     Route::prefix('uploads')->group(function () {
         Route::post('/attendance', [UploadController::class, 'attendance'])->name('uploads.attendance');
+        Route::post('/harvesting', [UploadController::class, 'harvesting'])->name('uploads.harvesting');
+        Route::post('/harvestingquality', [UploadController::class, 'harvestingquality'])->name('upload.harvestingquality');
+        Route::post('/attendance/mobile', [UploadController::class, 'attendance_mobile'])->name('uploads.attendance.mobile');
+        Route::post('/harvesting/mobile', [UploadController::class, 'harvesting_mobile'])->name('uploads.harvesting.mobile');
+        Route::post('/harvestingquality/mobile', [UploadController::class, 'harvestingquality_mobile'])->name('upload.harvestingquality.mobile');
+        Route::post('/lhm_data/mobile', [UploadController::class, 'lhm_data'])->name('upload.lhm.data');
     });
 
     Route::prefix('settings')->group(function () {

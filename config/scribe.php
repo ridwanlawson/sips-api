@@ -127,8 +127,7 @@ return [
 
     <aside>Saat Anda scroll ke bawah, anda akan melihat contoh kode untuk menggunakan API dalam berbagai bahasa pemrograman di area gelap di sebelah kanan (atau sebagai bagian dari konten pada tampilan seluler).
     Anda dapat mengganti bahasa pemrograman yang digunakan melalui tab di kanan atas (atau melalui menu navigasi di kiri atas pada tampilan seluler).</aside>
-    INTRO
-    ,
+    INTRO,
 
     // Example requests for each endpoint will be shown in each of these languages.
     // Supported options are: bash, javascript, php, python

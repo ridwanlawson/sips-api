@@ -33,6 +33,8 @@ class TphController extends Controller
      * @queryParam fcba string Optional. Filter TPH berdasarkan fcba. Example: MTE
      * @queryParam afdeling string Optional. Filter TPH berdasarkan afdeling. Example: AFD-04
      * @queryParam ha string Optional. Filter TPH berdasarkan ha. Example: 2
+     * @queryParam tahuntanam string Optional. Filter TPH berdasarkan tahuntanam. Example: 2009
+     * @queryParam bjr string Optional. Filter TPH berdasarkan bjr. Example: 3.8
      *
      * @response 200 scenario="success" {
      *  "success": true,
@@ -48,7 +50,9 @@ class TphController extends Controller
      *          "location": "2.334993396214831, 117.95918991166465",
      *          "fcba": "MTE",
      *          "division": "AFD-04",
-     *          "ha": "2"
+     *          "ha": "2",
+     *          "tahuntanam": "2009",
+     *          "bjr": "3.8"
      *      }
      *  ]
      * }
@@ -65,6 +69,7 @@ class TphController extends Controller
             $fcba = $request->query('fcba');
             $afdeling = $request->query('afdeling');
             $ha = $request->query('ha');
+            $tahuntanam = $request->query('tahuntanam');
 
             $query = "
                 select 
@@ -77,7 +82,9 @@ class TphController extends Controller
                     TPH.LOCATION, 
                     TPH.FCBA, 
                     TPH.AFDELING,
-                    TPH.HA
+                    TPH.HA,
+                    TPH.TAHUNTANAM,
+                    TPH.BJR
                 from 
                     SIPSMOBILE.TPH
                 inner join 
@@ -128,8 +135,13 @@ class TphController extends Controller
             }
 
             if ($ha) {
-                $query .= " and tph.ha = :ha";
+                $query .= " and tph.HA = :ha";
                 $bindings['ha'] = $ha;
+            }
+
+            if ($tahuntanam) {
+                $query .= " and tph.TAHUNTANAM = :tahuntanam";
+                $bindings['tahuntanam'] = $tahuntanam;
             }
 
             // Tambahkan bagian akhir query
@@ -164,41 +176,77 @@ class TphController extends Controller
         }
     }
 
-
     /**
-     * Menyimpan data TPH ke dalam database SIPS Mobile.
+     * Menyimpan data TPH.
+     * Jika kombinasi notph + blok + afdeling + fcba sudah ada,
+     * maka hanya update: location, ancakno, tahuntanam, bjr.
      */
     public function store(Request $request)
     {
-        // Validasi input
         $validated = $request->validate([
-            'notph' => 'required|string',
-            'fieldcode' => 'required|string|exists:sips_production.field,fccode',
-            'ancakno' => 'required|string',
-            'fcba' => 'required|string|exists:sips_production.field,fcba',
-            'afdeling' => 'required|string|exists:sips_production.field,division',
-            'typetph' => 'required|integer',
-            'status' => 'required|string',
-            'location' => 'nullable',
-            'ha' => 'required|numeric',
-            'created_by' => 'nullable',
+            'notph'       => 'required|string',
+            'fieldcode'   => 'required|string|exists:sips_production.field,fccode',
+            'ancakno'     => 'required|string',
+            'fcba'        => 'required|string|exists:sips_production.field,fcba',
+            'afdeling'    => 'required|string|exists:sips_production.field,division',
+            'typetph'     => 'required|integer',
+            'status'      => 'required|string',
+            'location'    => 'nullable',
+            'ha'          => 'required|numeric',
+            'tahuntanam'  => 'nullable|integer',
+            'bjr'         => 'nullable|numeric',
+            'created_by'  => 'nullable',
         ]);
 
         try {
 
+            // cek data existing berdasarkan kombinasi unik
+            $existing = Tph::where('notph', $validated['notph'])
+                ->where('fieldcode', $validated['fieldcode']) // blok
+                ->where('afdeling', $validated['afdeling'])
+                ->where('fcba', $validated['fcba'])
+                ->first();
+
+            if ($existing) {
+
+                // hanya update field tertentu
+                $existing->update([
+                    'location'    => $validated['location'] ?? $existing->location,
+                    'ancakno'     => $validated['ancakno'],
+                    'tahuntanam'  => $validated['tahuntanam'],
+                    'bjr'         => $validated['bjr'],
+                    'updated_by'  => Auth::user()->username,
+                ]);
+
+                return new AllResource(
+                    true,
+                    'Data TPH sudah ada, berhasil diupdate.',
+                    $existing
+                );
+            }
+
+            // jika belum ada -> insert baru
             $validated['created_by'] = Auth::user()->username;
+            $validated['updated_by'] = Auth::user()->username;
 
-            // Menyimpan data ke database
-            $datas = Tph::create($validated);
+            $data = Tph::create($validated);
 
-            // Mengembalikan respon sukses
-            return new AllResource(true, 'Data TPH berhasil ditambahkan.', $datas);
-        } catch (\Exception $e) {
-            // Menangkap error dan mengembalikan pesan yang mudah dipahami oleh user
+            return new AllResource(
+                true,
+                'Data TPH berhasil disimpan.',
+                $data
+            );
+        } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage() // Tambahkan pesan error teknis jika perlu
+                'message' => 'Terjadi kesalahan database.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada sistem.',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
@@ -245,6 +293,8 @@ class TphController extends Controller
             'status' => 'required|string',
             'location' => 'nullable',
             'ha' => 'required|numeric',
+            'tahuntanam' => 'nullable|integer',
+            'bjr' => 'nullable|numeric',
             'updated_by' => 'nullable',
         ]);
 

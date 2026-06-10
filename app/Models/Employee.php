@@ -12,14 +12,15 @@ class Employee extends Model
 
     protected $connection = 'sips_production'; // Menggunakan koneksi oracle_iplas
     protected $table = 'employee';
-	protected $fillable = [
-		'FCCODE',
-		'FCNAME',
-		'SECTIONNAME',
-		'GANGCODE',
-		'FCBA',
-		'UPDATED_BY',
-	];
+    protected $fillable = [
+        'FCCODE',
+        'FCNAME',
+        'SECTIONNAME',
+        'GANGCODE',
+        'FCBA',
+        'AKTIF',
+        'UPDATED_BY',
+    ];
 
     public function getCreatedAtAttribute($value)
     {

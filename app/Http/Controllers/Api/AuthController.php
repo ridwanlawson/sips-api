@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Validation\Rule;
 use App\Models\User;
 use App\Models\Employee;
 use App\Models\BusinessUnit;
@@ -31,8 +30,8 @@ class AuthController extends Controller
      * @bodyParam fcba string required Kode FCBA. Salah satu dari: MSE, MTE, PTE, MRE, DOM, CNT, HOF, ROF, COF. Example: MSE
      * @bodyParam afdeling string Nama afdeling. Example: AFD-01
      * @bodyParam gangcode string Kode gang. Example: PN011
-     * @bodyParam level string Level pengguna. Salah satu dari: MGR, AST, MD1, MDP, KRP, KRT. Example: MGR
-     * @bodyParam position string Jabatan. Salah satu dari: EM, ASISTEN, MANDOR1, MD.PANEN, KR.PANEN, KR.TRANS. Example: MANDOR1
+     * @bodyParam level string Level pengguna. Salah satu dari: MGR, KSI, AST, MD1, MDP, KRA, KRT, KRP. Example: KRP
+     * @bodyParam position string Jabatan. Salah satu dari: EM, KASIE, ASISTEN, MANDOR1, MD.PANEN, KR.AFDELING, KR.TRANS, KR.PANEN. Example: KR.PANEN
      * @bodyParam photo file File gambar JPG/PNG (opsional). Max: 2MB
      * @bodyParam idkaryawan string Kode karyawan dari tabel employee pada SIPS PRODUCTION. Example: 06-930301-241213-0731
      */
@@ -147,7 +146,9 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('username', $request->username)->first();
+        $user = User::where('username', $request->username)
+            ->where('status', 'Y')
+            ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);

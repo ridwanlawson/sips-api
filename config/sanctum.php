@@ -80,4 +80,17 @@ return [
         'validate_csrf_token' => Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Redirect Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This value controls whether Sanctum should redirect unauthenticated
+    | requests to the login route. For API-only applications, this should
+    | be set to false so that Sanctum returns a 401 response instead.
+    |
+    */
+
+    'redirect' => false,
+
 ];

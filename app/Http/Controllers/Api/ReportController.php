@@ -6,13 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\AllResource;
-use App\Models\Field;
-use App\Models\Employee;
-use App\Models\Tph;
-use App\Models\Vehicle;
-use App\Models\Attendance;
-use App\Models\Harvesting;
-use App\Models\Pengangkutan;
 
 
 /**
@@ -84,7 +77,8 @@ class ReportController extends Controller
                         h.FIELDCODE BLOK,
                         h.AFDELING,
                         h.FCBA,
-                        SUM(h.OUTPUT) JJG,
+                        NVL(SUM(h.OUTPUT), 0) JJG,
+                        NVL(SUM(p.OUTPUT), 0) JJG_ANGKUT,
                         CASE
                             WHEN SUM(p.OUTPUT) IS NULL THEN 'BELUM'
                             WHEN SUM(p.OUTPUT) IS NOT NULL
@@ -178,221 +172,6 @@ class ReportController extends Controller
                     STATUS, 
                     TPH, 
                     BLOK
-            ";
-
-            // Jalankan query
-            $datas = DB::connection('oracle')->select($query, $bindings);
-
-            if (empty($datas)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'List Data Hasil Panen',
-                'data' => $datas
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Memanggil data hasil langsir.
-     *
-     * API ini digunakan untuk memperlihatkan hasil langsir pada report di Android SIPS Mobile
-     * Namun, jika ingin melakukan filter pada data yang dipanggil, 
-     * gunakan parameter pada URL berdasarkan _**Query Parameter**_.
-     * Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afdeling, tph, blok
-     *
-     * @queryParam tanggaldari string Optional. Filter Hasil Langsir berdasarkan rentang tanggal, parameter ini diisi tanggal dari. Harus dalam format YYYY-MM-DD. Example: 2025-11-01
-     * @queryParam tanggalsampai string Optional. Filter Hasil Langsir berdasarkan rentang tanggal, parameter ini diisi tanggal sampai. Harus dalam format YYYY-MM-DD. Example: 2025-12-20
-     * @queryParam nopengangkutan string Optional. Filter Hasil Langsir berdasarkan No Pengangkutan. Example: LGS2010101101
-     * @queryParam nodokumen string Optional. Filter Hasil Langsir berdasarkan No Dokumen. Example: SKJ-HOF/MTE/25/02/0001
-     * @queryParam kode_kendaraan string Optional. Filter Hasil Langsir berdasarkan kode_kendaraan. Example: DT-R-5818-MSE
-     * @queryParam fcba string Optional. Filter Hasil Langsir berdasarkan Bisnis Unit (FCBA). Example: MTE
-     * @queryParam afdeling string Optional. Filter Hasil Langsir berdasarkan afdeling. Example: AFD-01
-     * @queryParam tujuan string Optional. Filter Hasil Langsir berdasarkan tujuan. Example: DOM
-     * @queryParam status string Optional. Filter Hasil Langsir berdasarkan Status Hasil Langsir salah satu dari SELISIH,BELUM,SELESAI. Example: SELISIH
-     *
-     * @response 200 scenario="success" {
-     *  "success": true,
-     *  "message": "List Data Hasil Langsir",
-     *  "data": [
-     *      {
-     *          "id": "1",
-     *          "tanggal": "2024-12-31 00:00:00",
-     *          "nopengangkutan": "LGS2010101101",
-     *          "nodokumen": "SKJ-HOF/MTE/25/02/0001",
-     *          "kode_kendaraan": "DT-R-5818-MSE",
-     *          "nama_kendaraan": "Dump Truck Rental KT 5818 MSE",
-     *          "type_pengangkutan": "1",
-     *          "fcba": "MTE",
-     *          "afdeling": "AFD-01",
-     *          "tujuan": "26",
-     *          "janjang": "180",
-     *          "janjang_diangkut": "190",
-     *          "sisa": "-10",
-     *          "status": "SELISIH",
-     *          "informasi": "SELISIH : -10 JJG"
-     *      }
-     *  ]
-     * }
-     */
-    public function hasil_langsir(Request $request)
-    {
-        try {
-            // Ambil parameter dari query string
-            $nodokumen = $request->query('nodokumen');
-            $nopengangkutan = $request->query('nopengangkutan');
-            $tanggaldari = $request->query('tanggaldari');
-            $tanggalsampai = $request->query('tanggalsampai');
-            $kode_kendaraan = $request->query('kode_kendaraan');
-            $afdeling = $request->query('afdeling');
-            $fcba = $request->query('fcba');
-            $tujuan = $request->query('tujuan');
-            $status = $request->query('status');
-
-            $query = "
-                SELECT
-                    *
-                FROM
-                    (
-                    SELECT 
-                        PENGANGKUTAN.TANGGAL,
-                        PENGANGKUTAN.NOPENGANGKUTAN,
-                        PENGANGKUTAN.NODOKUMEN,
-                        PENGANGKUTAN.KODE_KENDARAAN,
-                        KENDARAAN.FCNAME NAMA_KENDARAAN,
-                        PENGANGKUTAN.TYPE_PENGANGKUTAN,
-                        PENGANGKUTAN.FCBA,
-                        PENGANGKUTAN.AFDELING,
-                        PENGANGKUTAN.PABRIK_TUJUAN TUJUAN,
-                        NVL(SUM(PENGANGKUTAN.OUTPUT),0) JANJANG,
-                        NVL(OUTPUT_PENGANGKUTAN, 0) JANJANG_DIANGKUT,
-                        NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0) SISA,
-                        CASE
-                            WHEN (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) > 0 THEN 'BELUM'
-                            WHEN (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) < 0 THEN 'SELISIH'
-                            ELSE 'SELESAI'
-                        END STATUS,
-                        CASE
-                            WHEN (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) > 0 THEN 'BELUM SELESAI DIANGKUT'
-                            WHEN (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) < 0 THEN 'SELISIH : ' || (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) || ' JJG'
-                            ELSE 'SELESAI DIANGKUT'
-                        END INFORMASI
-                    FROM
-                        SIPSMOBILE.PENGANGKUTAN
-                    LEFT JOIN
-                        (SELECT DISTINCT FCCODE, FCNAME FROM IPLASPROD.VEHICLE) KENDARAAN
-                    ON 
-                        PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE    
-                    LEFT JOIN (
-                        SELECT
-                            NODOKUMEN,
-                            SUM(OUTPUT) OUTPUT_PENGANGKUTAN
-                        FROM
-                            SIPSMOBILE.PENGANGKUTAN p
-                        WHERE TYPE_PENGANGKUTAN = 2
-                        GROUP BY
-                            NODOKUMEN
-                        ) p ON
-                        PENGANGKUTAN.NODOKUMEN = p.NODOKUMEN
-                    WHERE 
-                        PENGANGKUTAN.TYPE_PENGANGKUTAN = 1
-                    GROUP BY 
-                        PENGANGKUTAN.TANGGAL,
-                        PENGANGKUTAN.NOPENGANGKUTAN,
-                        PENGANGKUTAN.NODOKUMEN,
-                        PENGANGKUTAN.KODE_KENDARAAN,
-                        KENDARAAN.FCNAME,
-                        PENGANGKUTAN.TYPE_PENGANGKUTAN,
-                        PENGANGKUTAN.FCBA,
-                        PENGANGKUTAN.AFDELING,
-                        PENGANGKUTAN.PABRIK_TUJUAN,
-                        OUTPUT_PENGANGKUTAN
-                    ORDER BY 
-                        PENGANGKUTAN.TANGGAL DESC,
-                        PENGANGKUTAN.NOPENGANGKUTAN DESC,
-                        PENGANGKUTAN.NODOKUMEN DESC
-                    ) DATA
-                WHERE
-                    NODOKUMEN IS NOT NULL
-            ";
-
-            $bindings = [];
-
-            // Filter berdasarkan parameter
-            if ($tanggaldari && $tanggalsampai) {
-                // Optional: jaga-jaga kalau user kebalik isi (tanggaldari > tanggalsampai)
-                $startDate = $tanggaldari;
-                $endDate   = $tanggalsampai;
-
-                if ($startDate > $endDate) {
-                    $startDate = $tanggalsampai;
-                    $endDate   = $tanggaldari;
-                }
-
-                $query .= " and TRUNC(TANGGAL) between TO_DATE(:tanggaldari, 'YYYY-MM-DD') and TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
-                $bindings['tanggaldari'] = $startDate;
-                $bindings['tanggalsampai']   = $endDate;
-            } elseif ($tanggaldari) {
-                $query .= " and TRUNC(TANGGAL) = TO_DATE(:tanggaldari, 'YYYY-MM-DD') ";
-                $bindings['tanggaldari'] = $tanggaldari;
-            } elseif ($tanggalsampai) {
-                $query .= " and TRUNC(TANGGAL) = TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
-                $bindings['tanggalsampai'] = $tanggalsampai;
-            }
-
-            if ($nopengangkutan) {
-                $query .= " AND NOPENGANGKUTAN = :nopengangkutan";
-                $bindings['nopengangkutan'] = $nopengangkutan;
-            }
-
-            if ($nodokumen) {
-                $query .= " AND NODOKUMEN = :nodokumen";
-                $bindings['nodokumen'] = $nodokumen;
-            }
-
-            if ($kode_kendaraan) {
-                $query .= " AND KODE_KENDARAAN = :kode_kendaraan";
-                $bindings['kode_kendaraan'] = $kode_kendaraan;
-            }
-
-            if ($fcba) {
-                $query .= " AND FCBA = :fcba";
-                $bindings['fcba'] = $fcba;
-            }
-
-            if ($afdeling) {
-                $query .= " AND AFDELING = :afdeling";
-                $bindings['afdeling'] = $afdeling;
-            }
-
-            if ($tujuan) {
-                $query .= " AND TUJUAN = :tujuan";
-                $bindings['tujuan'] = $tujuan;
-            }
-
-            if ($status) {
-                $query .= " AND STATUS = :status";
-                $bindings['status'] = $status;
-            }
-
-            // Tambahkan bagian akhir query
-            $query .= "
-                ORDER BY 
-                    TANGGAL DESC,
-                    NOPENGANGKUTAN DESC,
-                    NODOKUMEN DESC
             ";
 
             // Jalankan query
@@ -601,14 +380,14 @@ class ReportController extends Controller
                     $endDate   = $tanggal;
                 }
 
-                $query .= " and TRUNC(PENGANGKUTAN.TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                $query .= " and PENGANGKUTAN.TANGGAL between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
                 $bindings['tanggal'] = $startDate;
                 $bindings['tanggal_end']   = $endDate;
             } elseif ($tanggal) {
-                $query .= " and TRUNC(PENGANGKUTAN.TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
+                $query .= " and PENGANGKUTAN.TANGGAL = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
                 $bindings['tanggal'] = $tanggal;
             } elseif ($tanggalEnd) {
-                $query .= " and TRUNC(PENGANGKUTAN.TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                $query .= " and PENGANGKUTAN.TANGGAL = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
                 $bindings['tanggal_end'] = $tanggalEnd;
             }
 
@@ -726,7 +505,222 @@ class ReportController extends Controller
     }
 
     /**
-     * Memanggil data Attendance GAD / Attendance GAD Temp from SIPS Mobile.
+     * Memanggil data hasil langsir.
+     *
+     * API ini digunakan untuk memperlihatkan hasil langsir pada report di Android SIPS Mobile
+     * Namun, jika ingin melakukan filter pada data yang dipanggil, 
+     * gunakan parameter pada URL berdasarkan _**Query Parameter**_.
+     * Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afdeling, tph, blok
+     *
+     * @queryParam tanggaldari string Optional. Filter Hasil Langsir berdasarkan rentang tanggal, parameter ini diisi tanggal dari. Harus dalam format YYYY-MM-DD. Example: 2025-11-01
+     * @queryParam tanggalsampai string Optional. Filter Hasil Langsir berdasarkan rentang tanggal, parameter ini diisi tanggal sampai. Harus dalam format YYYY-MM-DD. Example: 2025-12-20
+     * @queryParam nopengangkutan string Optional. Filter Hasil Langsir berdasarkan No Pengangkutan. Example: LGS2010101101
+     * @queryParam nodokumen string Optional. Filter Hasil Langsir berdasarkan No Dokumen. Example: SKJ-HOF/MTE/25/02/0001
+     * @queryParam kode_kendaraan string Optional. Filter Hasil Langsir berdasarkan kode_kendaraan. Example: DT-R-5818-MSE
+     * @queryParam fcba string Optional. Filter Hasil Langsir berdasarkan Bisnis Unit (FCBA). Example: MTE
+     * @queryParam afdeling string Optional. Filter Hasil Langsir berdasarkan afdeling. Example: AFD-01
+     * @queryParam tujuan string Optional. Filter Hasil Langsir berdasarkan tujuan. Example: DOM
+     * @queryParam status string Optional. Filter Hasil Langsir berdasarkan Status Hasil Langsir salah satu dari SELISIH,BELUM,SELESAI. Example: SELISIH
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "List Data Hasil Langsir",
+     *  "data": [
+     *      {
+     *          "id": "1",
+     *          "tanggal": "2024-12-31 00:00:00",
+     *          "nopengangkutan": "LGS2010101101",
+     *          "nodokumen": "SKJ-HOF/MTE/25/02/0001",
+     *          "kode_kendaraan": "DT-R-5818-MSE",
+     *          "nama_kendaraan": "Dump Truck Rental KT 5818 MSE",
+     *          "type_pengangkutan": "1",
+     *          "fcba": "MTE",
+     *          "afdeling": "AFD-01",
+     *          "tujuan": "26",
+     *          "janjang": "180",
+     *          "janjang_diangkut": "190",
+     *          "sisa": "-10",
+     *          "status": "SELISIH",
+     *          "informasi": "SELISIH : -10 JJG"
+     *      }
+     *  ]
+     * }
+     */
+    public function hasil_langsir(Request $request)
+    {
+        try {
+            // Ambil parameter dari query string
+            $nodokumen = $request->query('nodokumen');
+            $nopengangkutan = $request->query('nopengangkutan');
+            $tanggaldari = $request->query('tanggaldari');
+            $tanggalsampai = $request->query('tanggalsampai');
+            $kode_kendaraan = $request->query('kode_kendaraan');
+            $afdeling = $request->query('afdeling');
+            $fcba = $request->query('fcba');
+            $tujuan = $request->query('tujuan');
+            $status = $request->query('status');
+
+            $query = "
+                SELECT
+                    *
+                FROM
+                    (
+                    SELECT 
+                        PENGANGKUTAN.TANGGAL,
+                        PENGANGKUTAN.NOPENGANGKUTAN,
+                        PENGANGKUTAN.NODOKUMEN,
+                        PENGANGKUTAN.KODE_KENDARAAN,
+                        KENDARAAN.FCNAME NAMA_KENDARAAN,
+                        PENGANGKUTAN.TYPE_PENGANGKUTAN,
+                        PENGANGKUTAN.FCBA,
+                        PENGANGKUTAN.AFDELING,
+                        PENGANGKUTAN.PABRIK_TUJUAN TUJUAN,
+                        NVL(SUM(PENGANGKUTAN.OUTPUT),0) JANJANG,
+                        NVL(OUTPUT_PENGANGKUTAN, 0) JANJANG_DIANGKUT,
+                        NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0) SISA,
+                        CASE
+                            WHEN (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) > 0 THEN 'BELUM'
+                            WHEN (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) < 0 THEN 'SELISIH'
+                            ELSE 'SELESAI'
+                        END STATUS,
+                        CASE
+                            WHEN (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) > 0 THEN 'BELUM SELESAI DIANGKUT'
+                            WHEN (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) < 0 THEN 'SELISIH : ' || (NVL(SUM(PENGANGKUTAN.OUTPUT),0) - NVL(OUTPUT_PENGANGKUTAN, 0)) || ' JJG'
+                            ELSE 'SELESAI DIANGKUT'
+                        END INFORMASI
+                    FROM
+                        SIPSMOBILE.PENGANGKUTAN
+                    LEFT JOIN
+                        (SELECT DISTINCT FCCODE, FCNAME FROM IPLASPROD.VEHICLE) KENDARAAN
+                    ON 
+                        PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE    
+                    LEFT JOIN (
+                        SELECT
+                            NODOKUMEN,
+                            SUM(OUTPUT) OUTPUT_PENGANGKUTAN
+                        FROM
+                            SIPSMOBILE.PENGANGKUTAN p
+                        WHERE TYPE_PENGANGKUTAN = 2
+                        GROUP BY
+                            NODOKUMEN
+                        ) p ON
+                        PENGANGKUTAN.NODOKUMEN = p.NODOKUMEN
+                    WHERE 
+                        PENGANGKUTAN.TYPE_PENGANGKUTAN = 1
+                    GROUP BY 
+                        PENGANGKUTAN.TANGGAL,
+                        PENGANGKUTAN.NOPENGANGKUTAN,
+                        PENGANGKUTAN.NODOKUMEN,
+                        PENGANGKUTAN.KODE_KENDARAAN,
+                        KENDARAAN.FCNAME,
+                        PENGANGKUTAN.TYPE_PENGANGKUTAN,
+                        PENGANGKUTAN.FCBA,
+                        PENGANGKUTAN.AFDELING,
+                        PENGANGKUTAN.PABRIK_TUJUAN,
+                        OUTPUT_PENGANGKUTAN
+                    ORDER BY 
+                        PENGANGKUTAN.TANGGAL DESC,
+                        PENGANGKUTAN.NOPENGANGKUTAN DESC,
+                        PENGANGKUTAN.NODOKUMEN DESC
+                    ) DATA
+                WHERE
+                    NODOKUMEN IS NOT NULL
+            ";
+
+            $bindings = [];
+
+            // Filter berdasarkan parameter
+            if ($tanggaldari && $tanggalsampai) {
+                // Optional: jaga-jaga kalau user kebalik isi (tanggaldari > tanggalsampai)
+                $startDate = $tanggaldari;
+                $endDate   = $tanggalsampai;
+
+                if ($startDate > $endDate) {
+                    $startDate = $tanggalsampai;
+                    $endDate   = $tanggaldari;
+                }
+
+                $query .= " and TANGGAL between TO_DATE(:tanggaldari, 'YYYY-MM-DD') and TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
+                $bindings['tanggaldari'] = $startDate;
+                $bindings['tanggalsampai']   = $endDate;
+            } elseif ($tanggaldari) {
+                $query .= " and TANGGAL = TO_DATE(:tanggaldari, 'YYYY-MM-DD') ";
+                $bindings['tanggaldari'] = $tanggaldari;
+            } elseif ($tanggalsampai) {
+                $query .= " and TANGGAL = TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
+                $bindings['tanggalsampai'] = $tanggalsampai;
+            }
+
+            if ($nopengangkutan) {
+                $query .= " AND NOPENGANGKUTAN = :nopengangkutan";
+                $bindings['nopengangkutan'] = $nopengangkutan;
+            }
+
+            if ($nodokumen) {
+                $query .= " AND NODOKUMEN = :nodokumen";
+                $bindings['nodokumen'] = $nodokumen;
+            }
+
+            if ($kode_kendaraan) {
+                $query .= " AND KODE_KENDARAAN = :kode_kendaraan";
+                $bindings['kode_kendaraan'] = $kode_kendaraan;
+            }
+
+            if ($fcba) {
+                $query .= " AND FCBA = :fcba";
+                $bindings['fcba'] = $fcba;
+            }
+
+            if ($afdeling) {
+                $query .= " AND AFDELING = :afdeling";
+                $bindings['afdeling'] = $afdeling;
+            }
+
+            if ($tujuan) {
+                $query .= " AND TUJUAN = :tujuan";
+                $bindings['tujuan'] = $tujuan;
+            }
+
+            if ($status) {
+                $query .= " AND STATUS = :status";
+                $bindings['status'] = $status;
+            }
+
+            // Tambahkan bagian akhir query
+            $query .= "
+                ORDER BY 
+                    TANGGAL DESC,
+                    NOPENGANGKUTAN DESC,
+                    NODOKUMEN DESC
+            ";
+
+            // Jalankan query
+            $datas = DB::connection('oracle')->select($query, $bindings);
+
+            if (empty($datas)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data tidak ditemukan.',
+                    'data' => []
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'List Data Hasil Panen',
+                'data' => $datas
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Memanggil data Attendance GAD / Attendance GAD Temp dari SIPS Mobile.
      *
      * API ini digunakan untuk memanggil SIPS Mobile untuk dimasukkan ke Attendance GAD / Attendance GAD Temp. 
      * Namun, jika ingin melakukan filter pada data yang dipanggil, 
@@ -797,7 +791,6 @@ class ReportController extends Controller
     public function upload_attendance(Request $request)
     {
         try {
-            // Ambil parameter dari query string
             $totalcount = $request->query('totalcount');
             $tanggal = $request->query('tanggal');
             $tanggalEnd = $request->query('tanggal_end');
@@ -805,214 +798,60 @@ class ReportController extends Controller
             $afdeling = $request->query('afdeling');
             $gangcode = $request->query('gangcode');
 
-            $query = "
-                SELECT
-                    * 
-                FROM
-                    (
-                    SELECT 
-                        COUNT(*) OVER (PARTITION BY h.TANGGAL, h.FIELDCODE, h.KODE_KARYAWAN) TOTALCOUNT,
-                        a.ID,
-                        a.GANG GANGCODE,
-                        a.SECTION AFDELING,
-                        a.TANGGAL FDDATE,
-                        h.KODE_KARYAWAN_MANDOR1 SUPERVISION_1,
-                        h.KODE_KARYAWAN_MANDOR_PANEN SUPERVISION_2,
-                        h.KODE_KARYAWAN_KERANI SUPERVISION_3,
-                        '' SUPERVISION_4,
-                        '' SUPERVISION_5,
-                        a.KODE_KARYAWAN EMPLOYEECODE,
-                        a.ATTENDANCE,
-                        CASE 
-                            WHEN ATTENDANCE_TYPE = 'REGULAR' THEN (SELECT DISTINCT FCCODE FROM IPLASPROD.JOB WHERE FCNAME LIKE '%POTONG BUAH%')
-                            ELSE (SELECT mit.FCCODE FROM IPLASPROD.MAPPING_INTRACO_TAB mit WHERE FCBA = a.FCBA_DESTINATION)
-                        END JOBCODE,
-                        CASE 
-                            WHEN ATTENDANCE_TYPE = 'REGULAR' THEN (SELECT DISTINCT JOB_CATEGORY FROM IPLASPROD.JOB WHERE FCNAME LIKE '%POTONG BUAH%')
-                            ELSE (SELECT IPLASPROD.JOB_API.GET_JOB_CATEGORY(mit.FCCODE, 'HOF') TT FROM IPLASPROD.MAPPING_INTRACO_TAB mit WHERE FCBA = a.FCBA)
-                        END LOCATIONTYPE,
-                        CASE 
-                            WHEN ATTENDANCE_TYPE = 'REGULAR' THEN f.FCCODE
-                            ELSE 'BS'
-                        END LOCATIONCODE,
-                        CASE 
-                            WHEN TO_NUMBER(NVL(a.MANDAYS, 0)) = 0 THEN 0
-                            ELSE TO_NUMBER(a.MANDAYS) / COUNT(*) OVER (PARTITION BY h.TANGGAL, h.KODE_KARYAWAN)
-                        END	MANDAYS,
-                        0 OTHRS,
-                        0 RATE,
-                        CASE 
-                            WHEN TO_NUMBER(OUTPUT) = 0 THEN 0
-                            ELSE TO_NUMBER(OUTPUT) / COUNT(*) OVER (PARTITION BY h.TANGGAL, h.FIELDCODE, h.KODE_KARYAWAN)
-                        END	UNIT,
-                        CASE 
-                            WHEN TO_NUMBER(LUAS) = 0 THEN 0
-                            ELSE TO_NUMBER(LUAS) / COUNT(*) OVER (PARTITION BY h.TANGGAL, h.FIELDCODE, h.KODE_KARYAWAN)
-                        END OUTPUT,
-                        '' REFERENCE, 
-                        'SIPS MOBILE' REMARKS, 
-                        a.CREATED_BY FCENTRY,
-                        a.UPDATED_BY FCEDIT,
-                        a.MAC_ADDRESS FCIP,
-                        a.FCBA, 
-                        SYSDATE LASTUPDATE,
-                        TO_CHAR(SYSDATE, 'HH24:MI') LASTTIME,
-                        bm.base_max + ROW_NUMBER() OVER (ORDER BY a.TANGGAL, a.KODE_KARYAWAN) AS LINENOKEY,
-                        0 OVERTIME_HOURS,
-                        0 TYPE_OVERTIME,
-                        CASE 
-                            WHEN ATTENDANCE_TYPE <> 'REGULAR' THEN (SELECT DISTINCT FCCODE FROM IPLASPROD.JOB WHERE FCNAME LIKE '%POTONG BUAH%')
-                            ELSE ''
-                        END CHARGEJOB,
-                        CASE 
-                            WHEN ATTENDANCE_TYPE <> 'REGULAR' THEN (SELECT DISTINCT JOB_CATEGORY FROM IPLASPROD.JOB WHERE FCNAME LIKE '%POTONG BUAH%')
-                            ELSE ''
-                        END CHARGETYPE,
-                        CASE 
-                            WHEN ATTENDANCE_TYPE <> 'REGULAR' THEN f.FCCODE
-                            ELSE ''
-                        END CHARGECODE,
-                        '' BUCKET,
-                        '' SPBNO,
-                        CASE 
-                            WHEN TO_NUMBER(h.BRONDOL) = 0 THEN 0
-                            ELSE TO_NUMBER(h.BRONDOL) / COUNT(*) OVER (PARTITION BY h.TANGGAL, h.FIELDCODE, h.KODE_KARYAWAN)
-                        END	KG_BRONDOLAN,
-                        'Approved' ROWSTATE,
-                        501 DOCUMENT_CLASSIFICATION,
-                        0 BASIS_BM,
-                        CASE 
-                            WHEN TO_NUMBER(OUTPUT) = 0 THEN 0
-                            ELSE (TO_NUMBER(OUTPUT) / COUNT(*) OVER (PARTITION BY h.TANGGAL, h.FIELDCODE, h.KODE_KARYAWAN)) * f.PRESSEMESTER_ABW
-                        END	KG_JANJANG,
-                        f.PRESSEMESTER_ABW BJR,
-                        a.ID DOCUMENTNO,
-                        a.CREATED_AT SOURCETIME,
-                        0 JANJANG,
-                        'SIPS MOBILE GENERATE' GENERATE,
-                        SYSDATE GENERATETIME,
-                        h.FIELDCODE
-                    FROM
-                        SIPSMOBILE.ATTENDANCE a
-                    INNER JOIN 
-                        (
-                        SELECT
-                            h.TANGGAL,
-                            h.KODE_KARYAWAN_MANDOR1,
-                            h.KODE_KARYAWAN_MANDOR_PANEN,
-                            h.KODE_KARYAWAN_KERANI,
-                            h.KODE_KARYAWAN,
-                            h.FIELDCODE,
-                            h.AFDELING,
-                            h.FCBA,
-                            SUM(a.LUAS) LUAS,
-                            SUM(OUTPUT) OUTPUT,
-                            SUM(MENTAH) MENTAH,
-                            SUM(OVERRIPE) OVERRIPE,
-                            SUM(BUSUK) BUSUK,
-                            SUM(BUSUK2) BUSUK2,
-                            SUM(BUAHKECIL) BUAHKECIL,
-                            SUM(PARTENO) PARTENO,
-                            SUM(BRONDOL) BRONDOL,
-                            SUM(TANGKAIPANJANG) TANGKAIPANJANG
-                        FROM
-                            SIPSMOBILE.HARVESTING h
-                        LEFT JOIN SIPSMOBILE.ANCAKS a ON
-                            h.NOANCAK = a.NOANCAK
-                            AND h.FIELDCODE = a.FIELDCODE
-                            AND h.AFDELING = a.AFDELING
-                            AND h.FCBA = a.FCBA
-                        GROUP BY
-                            h.TANGGAL,
-                            h.KODE_KARYAWAN_MANDOR1,
-                            h.KODE_KARYAWAN_MANDOR_PANEN,
-                            h.KODE_KARYAWAN_KERANI,
-                            h.KODE_KARYAWAN,
-                            h.FIELDCODE,
-                            h.AFDELING,
-                            h.FCBA
-                        ) h
-                        ON
-                        a.FCBA = h.FCBA
-                        AND a.TANGGAL = h.TANGGAL
-                        AND a.KODE_KARYAWAN = h.KODE_KARYAWAN
-                    CROSS JOIN
-                        (SELECT NVL(MAX(LINENOKEY), 0) AS base_max FROM IPLASPROD.ATTENDANCE_GAD) bm
-                    LEFT JOIN 
-                        IPLASPROD.FIELD f 
-                        ON
-                        f.FIELD_INFO_02 = h.FIELDCODE AND f.FCBA = h.FCBA AND ACTIVATION = 'Y'
-                    )
-                WHERE 
-                    NOT EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD agt WHERE agt.DOCUMENTNO = ID)
-            ";
+            $datas = DB::connection('oracle')
+                ->table('V_UPLOAD_ATTD');
 
-            $bindings = [];
-
-            // Filter berdasarkan parameter
+            // 🔹 FILTER BASIC
             if ($totalcount) {
-                $query .= " AND TOTALCOUNT > :totalcount";
-                $bindings['totalcount'] = $totalcount;
-            }
-
-            /**
-             * LOGIKA FILTER TANGGAL:
-             * - Jika tanggal & tanggal_end diisi -> rentang tanggal (BETWEEN)
-             * - Jika hanya tanggal diisi        -> = tanggal
-             * - Jika hanya tanggal_end diisi    -> = tanggal_end
-             * - Jika dua-duanya kosong          -> tidak ada filter tanggal
-             */
-            if ($tanggal && $tanggalEnd) {
-                // Optional: jaga-jaga kalau user kebalik isi (tanggal > tanggalEnd)
-                $startDate = $tanggal;
-                $endDate   = $tanggalEnd;
-
-                if ($startDate > $endDate) {
-                    $startDate = $tanggalEnd;
-                    $endDate   = $tanggal;
-                }
-
-                $query .= " and TRUNC(FDDATE) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
-                $bindings['tanggal'] = $startDate;
-                $bindings['tanggal_end']   = $endDate;
-            } elseif ($tanggal) {
-                $query .= " and TRUNC(FDDATE) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
-                $bindings['tanggal'] = $tanggal;
-            } elseif ($tanggalEnd) {
-                $query .= " and TRUNC(FDDATE) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
-                $bindings['tanggal_end'] = $tanggalEnd;
+                $datas->where('TOTALCOUNT', '>', $totalcount);
             }
 
             if ($fcba) {
-                $query .= " AND FCBA = :fcba";
-                $bindings['fcba'] = $fcba;
+                $datas->where('FCBA', $fcba);
             }
 
             if ($afdeling) {
-                $query .= " AND AFDELING = :afdeling";
-                $bindings['afdeling'] = $afdeling;
+                $datas->where('AFDELING', $afdeling);
             }
 
             if ($gangcode) {
-                $query .= " AND GANGCODE = :gangcode";
-                $bindings['gangcode'] = $gangcode;
+                $datas->where('GANGCODE', $gangcode);
             }
 
-            // Tambahkan bagian akhir query
-            $query .= "
-                ORDER BY 
-                    FDDATE,
-                    FCBA,
-                    AFDELING,
-                    GANGCODE,
-                    EMPLOYEECODE,
-                    LOCATIONCODE
-            ";
+            // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA TRUNC)
+            if ($tanggal && $tanggalEnd) {
 
-            // Jalankan query
-            $datas = DB::connection('oracle')->select($query, $bindings);
+                // Handle jika user kebalik input
+                $startDate = min($tanggal, $tanggalEnd);
+                $endDate   = max($tanggal, $tanggalEnd);
 
-            // 🔥 NORMALISASI FORMAT ANGKA ORACLE
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$startDate, $endDate]);
+            } elseif ($tanggal) {
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$tanggal, $tanggal]);
+            } elseif ($tanggalEnd) {
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$tanggalEnd, $tanggalEnd]);
+            }
+
+            // 🔹 ORDERING
+            $datas = $datas
+                ->orderBy('FDDATE')
+                ->orderBy('FCBA')
+                ->orderBy('AFDELING')
+                ->orderBy('GANGCODE')
+                ->orderBy('EMPLOYEECODE')
+                ->orderBy('LOCATIONCODE')
+                ->get();
+
+            // 🔥 NORMALISASI ANGKA
             foreach ($datas as &$row) {
                 foreach ($row as $key => $value) {
                     if (is_numeric($value)) {
@@ -1021,7 +860,7 @@ class ReportController extends Controller
                 }
             }
 
-            if (empty($datas)) {
+            if ($datas->isEmpty()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Data tidak ditemukan.',
@@ -1030,6 +869,913 @@ class ReportController extends Controller
             }
 
             return new AllResource(true, 'List Data Attendance GAD / Attendance GAD Temp', $datas);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Memanggil data Harvesting SPB dari SIPS Mobile.
+     *
+     * API ini digunakan untuk memanggil data harvesting SPB dari SIPS Mobile.
+     * Data menampilkan informasi bunch, bucket, dan weight calculations berdasarkan weighbridge ticket untuk tipe pengangkutan DIRECT TRANSPORT.
+     * Namun, jika ingin melakukan filter pada data yang dipanggil, gunakan parameter pada URL berdasarkan _**Query Parameter**_.
+     * Data diurutkan berdasarkan Tanggal penerimaan terbaru, No SPB, dan Chit Number.
+     *
+     * @queryParam nospb string Optional. Filter berdasarkan No SPB. Example: SPB2026004804
+     * @queryParam tanggal string Optional. Filter berdasarkan tanggal penerimaan. Harus dalam format YYYY-MM-DD. Example: 2026-02-08
+     * @queryParam tanggal_end string Optional. Filter berdasarkan rentang tanggal penerimaan. Harus dalam format YYYY-MM-DD. Example: 2026-02-09
+     * @queryParam kode_kendaraan string Optional. Filter berdasarkan Kode Kendaraan. Example: L9770CL
+     * @queryParam kode_karyawan_driver string Optional. Filter berdasarkan Nama Driver. Example: HENDRA
+     * @queryParam mill string Optional. Filter berdasarkan Pabrik Tujuan. Example: DOM
+     * @queryParam fcba string Optional. Filter berdasarkan FCBA. Example: PTE
+     * @queryParam chitno string Optional. Filter berdasarkan Weighbridge Chit Number. Example: TBS2026004804
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "List Data Detail Pengangkutan dengan Weighbridge",
+     *  "data": [
+     *      {
+     *          "nospb": "SPB2026004804",
+     *          "fieldcode": "M06",
+     *          "receptiondate": "2026-02-08 00:00:00",
+     *          "harvestdate": "2026-02-08 00:00:00",
+     *          "cropcode": "OP",
+     *          "productcode": "TBS",
+     *          "own": "OWN",
+     *          "vehicle": "L9770CL",
+     *          "driver": "HENDRA",
+     *          "mill": "DOM",
+     *          "agreementcode": "",
+     *          "transporttype": "DIRECTTRANSPORT",
+     *          "spb_type": 0,
+     *          "bunch": "127",
+     *          "bucket": "",
+     *          "pressemester_abw": "11.19",
+     *          "bunch_estateweight": "1421",
+     *          "fcentry": "PTE_PRODUKSI",
+     *          "fcedit": "PTE_PRODUKSI",
+     *          "fcip": "114.10.139.104",
+     *          "fcba": "PTE",
+     *          "lastupdate": "2026-02-09 10:38:37",
+     *          "lasttime": "10:38",
+     *          "chitno": "TBS2026004804",
+     *          "mill_weight_bruto": "10090",
+     *          "mill_weight_gross": "5920",
+     *          "mill_weight_tarra": "4170",
+     *          "mill_weight_potongan": "295.92",
+     *          "mill_weight_netto": "5624.08",
+     *          "mentah": "",
+     *          "tankos": "",
+     *          "hilang": "",
+     *          "keterangan": "",
+     *          "mill_weight_dtl": "1173.27",
+     *          "bjr_chit": "9.24"
+     *      }
+     *  ]
+     * }
+     */
+    public function upload_harvesting(Request $request)
+    {
+        try {
+            $nospb = $request->query('nospb');
+            $tanggal = $request->query('tanggal');
+            $tanggalEnd = $request->query('tanggal_end');
+            $kode_kendaraan = $request->query('kode_kendaraan');
+            $kode_karyawan_driver = $request->query('kode_karyawan_driver');
+            $mill = $request->query('mill');
+            $fcba = $request->query('fcba');
+            $chitno = $request->query('chitno');
+
+            $datas = DB::connection('oracle')
+                ->table('V_UPLOAD_HVTG');
+
+            // 🔹 FILTER BASIC
+            if ($nospb) {
+                $datas->where('NOSPB', $nospb);
+            }
+
+            if ($kode_kendaraan) {
+                $datas->where('KODE_KENDARAAN', $kode_kendaraan);
+            }
+
+            if ($kode_karyawan_driver) {
+                $datas->where('KODE_KARYAWAN_DRIVER', $kode_karyawan_driver);
+            }
+
+            if ($mill) {
+                $datas->where('MILL', $mill);
+            }
+
+            if ($fcba) {
+                $datas->where('FCBA', $fcba);
+            }
+
+            if ($chitno) {
+                $datas->where('CHITNO', $chitno);
+            }
+
+            // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
+            if ($tanggal && $tanggalEnd) {
+
+                $startDate = min($tanggal, $tanggalEnd);
+                $endDate   = max($tanggal, $tanggalEnd);
+
+                $datas->whereRaw("
+                    RECEPTIONDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND RECEPTIONDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$startDate, $endDate]);
+            } elseif ($tanggal) {
+
+                $datas->whereRaw("
+                    RECEPTIONDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND RECEPTIONDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$tanggal, $tanggal]);
+            } elseif ($tanggalEnd) {
+
+                $datas->whereRaw("
+                    RECEPTIONDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND RECEPTIONDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$tanggalEnd, $tanggalEnd]);
+            }
+
+            // 🔹 ORDERING
+            $datas = $datas
+                ->orderByDesc('NOSPB')
+                ->get();
+
+            // 🔥 NORMALISASI ANGKA
+            foreach ($datas as &$row) {
+                foreach ($row as $key => $value) {
+                    if (is_numeric($value)) {
+                        $row->$key = $this->formatNumber($value);
+                    }
+                }
+            }
+
+            if ($datas->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data tidak ditemukan.',
+                    'data' => []
+                ], 404);
+            }
+
+            return new AllResource(true, 'List Data Harvesting SPB', $datas);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Memanggil data Harvesting Quality dari SIPS Mobile.
+     *
+     * API ini digunakan untuk memanggil data Harvesting Quality yang belum tersinkronisasi ke sistem SIPS Production
+     * Gunakan parameter pada URL untuk filtering data berdasarkan _**Query Parameter**_.
+     * Data diurutkan berdasarkan tanggal panen dan kode blok.
+     *
+     * @queryParam empcode string Optional. Filter berdasarkan Kode Karyawan. Example: 06-000223-230221-0323
+     * @queryParam fddate string Optional. Filter berdasarkan tanggal panen, parameter ini untuk tanggal awal. Harus dalam format YYYY-MM-DD. Example: 2025-11-05
+     * @queryParam fddate_end string Optional. Filter berdasarkan rentang tanggal, parameter ini untuk tanggal akhir. Harus dalam format YYYY-MM-DD. Example: 2025-11-15
+     * @queryParam fieldcode string Optional. Filter berdasarkan Kode Blok. Example: I43
+     * @queryParam fcba string Optional. Filter berdasarkan Bisnis Unit (FCBA). Example: MTE
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "List Data Harvesting Quality",
+     *  "data": [
+     *      {
+     *          "empcode": "06-000223-230221-0323",
+     *          "fddate": "2025-11-05",
+     *          "fieldcode": "I43",
+     *          "under_ripe": "1",
+     *          "overripe": "1",
+     *          "abnormal": "1",
+     *          "long_stalk": "1",
+     *          "eaten_by_rat": "0",
+     *          "unharvest_ffb": "1",
+     *          "uncollect_lf_circle": "0",
+     *          "uncollect_lf_piece": "0",
+     *          "unarrange_ffb": "0",
+     *          "unprune_frond": "0",
+     *          "qe_1_pelepah_tidak_disusun": "0",
+     *          "qe_2_buah_matahari": "0",
+     *          "qe_3_buah_busuk": "1",
+     *          "qe_4_buah_mentah_diperam": "0",
+     *          "qe_5_over_pruning": "0",
+     *          "qe_6_brondolan_tidak_dialas": "0",
+     *          "qe_7_brondolan_kotor_sampah": "0",
+     *          "qe_8_buah_dibelah": "0",
+     *          "qe_9": "0",
+     *          "qe_10": "0",
+     *          "fcentry": "",
+     *          "fcedit": "",
+     *          "fcip": "",
+     *          "fcba": "MTE",
+     *          "lastupdate": "2026-02-11",
+     *          "lasttime": "11:02",
+     *          "qe_11_buah_mentah_a1": "0",
+     *          "qe_12_buah_tinggal_s": "0",
+     *          "qe_13_b_ggng_pjg_t_dipotong": "0",
+     *          "qe_14": "0",
+     *          "qe_15": "0",
+     *          "qe_16_buah_mentah_kerani": "0",
+     *          "qe_17_buah_mentah_mandor": "0",
+     *          "documentno": "42"
+     *      }
+     *  ]
+     * }
+     */
+    public function upload_harvesting_quality(Request $request)
+    {
+        try {
+            $empcode = $request->query('empcode');
+            $fddate = $request->query('fddate');
+            $fddateEnd = $request->query('fddate_end');
+            $fieldcode = $request->query('fieldcode');
+            $fcba = $request->query('fcba');
+
+            $datas = DB::connection('oracle')
+                ->table('V_UPLOAD_HVTG_QLTY');
+
+            // 🔹 FILTER BASIC
+            if ($empcode) {
+                $datas->where('EMPCODE', $empcode);
+            }
+
+            if ($fieldcode) {
+                $datas->where('FIELDCODE', $fieldcode);
+            }
+
+            if ($fcba) {
+                $datas->where('FCBA', $fcba);
+            }
+
+            // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
+            if ($fddate && $fddateEnd) {
+
+                $startDate = min($fddate, $fddateEnd);
+                $endDate   = max($fddate, $fddateEnd);
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$startDate, $endDate]);
+            } elseif ($fddate) {
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$fddate, $fddate]);
+            } elseif ($fddateEnd) {
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$fddateEnd, $fddateEnd]);
+            }
+
+            // 🔹 ORDERING
+            $datas = $datas
+                ->orderBy('FDDATE')
+                ->orderBy('FIELDCODE')
+                ->get();
+
+            // 🔥 NORMALISASI ANGKA
+            foreach ($datas as &$row) {
+                foreach ($row as $key => $value) {
+                    if (is_numeric($value)) {
+                        $row->$key = $this->formatNumber($value);
+                    }
+                }
+            }
+
+            if ($datas->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data tidak ditemukan.',
+                    'data' => []
+                ], 404);
+            }
+
+            return new AllResource(true, 'List Data Harvesting Quality', $datas);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Memanggil data LHM dari SIPS Mobile.
+     *
+     * API ini digunakan untuk memanggil data LHM untuk upload ke sistem SIPS Production
+     * Gunakan parameter pada URL untuk filtering data berdasarkan _**Query Parameter**_.
+     *
+     * @queryParam fddate string Optional. Filter berdasarkan tanggal panen, parameter ini untuk tanggal awal. Harus dalam format YYYY-MM-DD. Example: 2025-11-05
+     * @queryParam fddate_end string Optional. Filter berdasarkan rentang tanggal, parameter ini untuk tanggal akhir. Harus dalam format YYYY-MM-DD. Example: 2025-11-15
+     * @queryParam kemandoran string Optional. Filter berdasarkan Kemandoran. Example: MD011
+     * @queryParam employeecode string Optional. Filter berdasarkan Kode Karyawan. Example: 06-000223-230221-0323
+     * @queryParam fcba string Optional. Filter berdasarkan Bisnis Unit (FCBA). Example: MTE
+     * @queryParam afdeling string Optional. Filter berdasarkan Afdeling. Example: AFD-01
+     * @queryParam tahuntanam string Optional. Filter berdasarkan Tahun tanam. Example: 2010
+     * @queryParam blok string Optional. Filter berdasarkan Kode Blok. Example: I43
+     * @queryParam attendance string Optional. Filter berdasarkan Kode Attendance. Example: KJ
+     * @queryParam level_user string Optional. Filter berdasarkan Kode Level_User. Example: MDP
+     * @queryParam upload string Optional. Filter berdasarkan Kode Upload Y atau N. Example: N
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "List Data LHM",
+     *  "data": [
+     *      {
+     *         "id": 12606,
+     *         "rowdata": "1",
+     *         "kemandoran": "MD011",
+     *         "fddate": "2026-04-21 00:00:00",
+     *         "fcba": "MTE",
+     *         "afdeling": "AFD-01",
+     *         "employeecode": "06-031201-231107-0466",
+     *         "nama": "AKBAR TANJUNG",
+     *         "attendance": "KJ",
+     *         "hk": null,
+     *         "blok": "G50",
+     *         "tahuntanam": "2009",
+     *         "jjg": "69",
+     *         "ha": "0",
+     *         "mentahqty": "0",
+     *         "mentahrp": "0",
+     *         "emptybunchqty": "0",
+     *         "emptybunchrp": "0",
+     *         "jumlahdenda": "0",
+     *         "totalalljjg": "173",
+     *         "basis": "90",
+     *         "rpbasis": "20000",
+     *         "premilv1": "49",
+     *         "rate1": "1044",
+     *         "rplv1": "51156",
+     *         "premilv2": "34",
+     *         "rate2": "1128",
+     *         "rplv2": "38352",
+     *         "premilv3": "0",
+     *         "rate3": "0",
+     *         "rplv3": "0",
+     *         "totalrppremi": "89508",
+     *         "kurangbasis": "0",
+     *         "harilibur": "0",
+     *         "rphk": "175849",
+     *         "total": "285357"
+     *      }
+     *  ]
+     * }
+     */
+    public function upload_lhm(Request $request)
+    {
+        try {
+            // 🔹 Ambil parameter
+            $fddate = $request->query('fddate');
+            $fddateEnd = $request->query('fddate_end');
+            $kemandoran = $request->query('kemandoran');
+            $fcba = $request->query('fcba');
+            $afdeling = $request->query('afdeling');
+            $tahuntanam = $request->query('tahuntanam');
+            $blok = $request->query('blok');
+            $employeecode = $request->query('employeecode');
+            $attendance = $request->query('attendance');
+            $level_user = $request->query('level_user');
+            $upload = $request->query('upload');
+
+            // 🔹 Base Query
+            $datas = DB::connection('oracle')
+                ->table('V_LHM_DATA');
+
+            // 🔹 FILTER BASIC
+            if ($upload) {
+                if ($upload === 'Y') {
+                    $datas->whereRaw('EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = ID)');
+                }
+                if ($upload === 'N') {
+                    $datas->whereRaw('NOT EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = ID)');
+                }
+            }
+
+            if ($fcba) {
+                $datas->where('FCBA', $fcba);
+            }
+
+            if ($afdeling) {
+                $datas->where('AFDELING', $afdeling);
+            }
+
+            if ($kemandoran) {
+                $datas->where('KEMANDORAN', $kemandoran);
+            }
+
+            if ($tahuntanam) {
+                $datas->where('TAHUNTANAM', $tahuntanam);
+            }
+
+            if ($blok) {
+                $datas->where('BLOK', $blok);
+            }
+
+            if ($employeecode) {
+                $datas->where('EMPLOYEECODE', $employeecode);
+            }
+
+            if ($attendance) {
+                $datas->where('ATTENDANCE', $attendance);
+            }
+
+            if ($level_user) {
+                $datas->where('LEVEL_USER', $level_user);
+            }
+
+            // 🔥 FILTER TANGGAL (OPTIMIZED)
+            if ($fddate && $fddateEnd) {
+
+                $startDate = min($fddate, $fddateEnd);
+                $endDate   = max($fddate, $fddateEnd);
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$startDate, $endDate]);
+            } elseif ($fddate) {
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$fddate, $fddate]);
+            } elseif ($fddateEnd) {
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$fddateEnd, $fddateEnd]);
+            }
+
+            // 🔹 ORDERING
+            $datas = $datas
+                ->orderBy('FDDATE')
+                ->orderBy('FCBA')
+                ->orderBy('AFDELING')
+                ->orderBy('KEMANDORAN')
+                ->orderBy('EMPLOYEECODE')
+                ->orderBy('ROWDATA')
+                ->get();
+
+            // 🔥 NORMALISASI ANGKA
+            foreach ($datas as &$row) {
+                foreach ($row as $key => $value) {
+                    if (is_numeric($value)) {
+                        $row->$key = $this->formatNumber($value);
+                    }
+                }
+            }
+
+            // 🔹 RESPONSE
+            if ($datas->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data tidak ditemukan.',
+                    'data' => []
+                ], 404);
+            }
+
+            return new AllResource(true, 'List Data LHM', $datas);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Memanggil data LHM dari SIPS Mobile yang akan diupload.
+     *
+     * API ini digunakan untuk memanggil data LHM untuk Approval agar terupload ke sistem SIPS Production
+     * Gunakan parameter pada URL untuk filtering data berdasarkan _**Query Parameter**_.
+     *
+     * @queryParam fddate string Optional. Filter berdasarkan tanggal panen, parameter ini untuk tanggal awal. Harus dalam format YYYY-MM-DD. Example: 2025-11-05
+     * @queryParam fddate_end string Optional. Filter berdasarkan rentang tanggal, parameter ini untuk tanggal akhir. Harus dalam format YYYY-MM-DD. Example: 2025-11-15
+     * @queryParam kemandoran string Optional. Filter berdasarkan Kemandoran. Example: MD011
+     * @queryParam employeecode string Optional. Filter berdasarkan Kode Karyawan. Example: 06-000223-230221-0323
+     * @queryParam fcba string Optional. Filter berdasarkan Bisnis Unit (FCBA). Example: MTE
+     * @queryParam afdeling string Optional. Filter berdasarkan Afdeling. Example: AFD-01
+     * @queryParam tahuntanam string Optional. Filter berdasarkan Tahun tanam. Example: 2010
+     * @queryParam blok string Optional. Filter berdasarkan Kode Blok. Example: I43
+     * @queryParam attendance string Optional. Filter berdasarkan Kode Attendance. Example: KJ
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "List Data LHM yang akan diupload",
+     *  "data": [
+     *      {
+     *         "id": 12606,
+     *         "rowdata": "1",
+     *         "kemandoran": "MD011",
+     *         "fddate": "2026-04-21 00:00:00",
+     *         "fcba": "MTE",
+     *         "afdeling": "AFD-01",
+     *         "employeecode": "06-031201-231107-0466",
+     *         "nama": "AKBAR TANJUNG",
+     *         "attendance": "KJ",
+     *         "hk": null,
+     *         "blok": "G50",
+     *         "tahuntanam": "2009",
+     *         "jjg": "69",
+     *         "ha": "0",
+     *         "mentahqty": "0",
+     *         "mentahrp": "0",
+     *         "emptybunchqty": "0",
+     *         "emptybunchrp": "0",
+     *         "jumlahdenda": "0",
+     *         "totalalljjg": "173",
+     *         "basis": "90",
+     *         "rpbasis": "20000",
+     *         "premilv1": "49",
+     *         "rate1": "1044",
+     *         "rplv1": "51156",
+     *         "premilv2": "34",
+     *         "rate2": "1128",
+     *         "rplv2": "38352",
+     *         "premilv3": "0",
+     *         "rate3": "0",
+     *         "rplv3": "0",
+     *         "totalrppremi": "89508",
+     *         "kurangbasis": "0",
+     *         "harilibur": "0",
+     *         "rphk": "175849",
+     *         "total": "285357"
+     *      }
+     *  ]
+     * }
+     */
+    public function get_lhm(Request $request)
+    {
+        try {
+            // 🔹 Ambil parameter
+            $fddate = $request->query('fddate');
+            $fddateEnd = $request->query('fddate_end');
+            $kemandoran = $request->query('kemandoran');
+            $fcba = $request->query('fcba');
+            $afdeling = $request->query('afdeling');
+            $tahuntanam = $request->query('tahuntanam');
+            $blok = $request->query('blok');
+            $employeecode = $request->query('employeecode');
+            $attendance = $request->query('attendance');
+
+            // 🔹 Base Query
+            $datas = DB::connection('oracle')
+                ->table('LHM_DATA');
+
+            // 🔹 FILTER BASIC
+            if ($fcba) {
+                $datas->where('FCBA', $fcba);
+            }
+
+            if ($afdeling) {
+                $datas->where('AFDELING', $afdeling);
+            }
+
+            if ($kemandoran) {
+                $datas->where('KEMANDORAN', $kemandoran);
+            }
+
+            if ($tahuntanam) {
+                $datas->where('TAHUNTANAM', $tahuntanam);
+            }
+
+            if ($blok) {
+                $datas->where('BLOK', $blok);
+            }
+
+            if ($employeecode) {
+                $datas->where('EMPLOYEECODE', $employeecode);
+            }
+
+            if ($attendance) {
+                $datas->where('ATTENDANCE', $attendance);
+            }
+
+            // 🔥 FILTER TANGGAL (OPTIMIZED)
+            if ($fddate && $fddateEnd) {
+
+                $startDate = min($fddate, $fddateEnd);
+                $endDate   = max($fddate, $fddateEnd);
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$startDate, $endDate]);
+            } elseif ($fddate) {
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$fddate, $fddate]);
+            } elseif ($fddateEnd) {
+
+                $datas->whereRaw("
+                    FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$fddateEnd, $fddateEnd]);
+            }
+
+            // 🔹 ORDERING
+            $datas = $datas
+                ->orderBy('FDDATE')
+                ->orderBy('FCBA')
+                ->orderBy('AFDELING')
+                ->orderBy('KEMANDORAN')
+                ->orderBy('EMPLOYEECODE')
+                ->orderBy('ROWDATA')
+                ->get();
+
+            // 🔥 NORMALISASI ANGKA
+            foreach ($datas as &$row) {
+                foreach ($row as $key => $value) {
+                    if (is_numeric($value)) {
+                        $row->$key = $this->formatNumber($value);
+                    }
+                }
+            }
+
+            // 🔹 RESPONSE
+            if ($datas->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data tidak ditemukan.',
+                    'data' => []
+                ], 404);
+            }
+
+            return new AllResource(true, 'List Data LHM', $datas);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Memanggil data LHA dari SIPS Mobile.
+     *
+     * API ini digunakan untuk memanggil data LHA dari SIPS Mobile.
+     * Data menampilkan informasi panen.
+     * Namun, jika ingin melakukan filter pada data yang dipanggil, gunakan parameter pada URL berdasarkan _**Query Parameter**_.
+     * Data diurutkan berdasarkan Tanggal panen.
+     *
+     * @queryParam tanggal string Optional. Filter berdasarkan tanggal penerimaan. Harus dalam format YYYY-MM-DD. Example: 2026-02-08
+     * @queryParam tanggal_end string Optional. Filter berdasarkan rentang tanggal penerimaan. Harus dalam format YYYY-MM-DD. Example: 2026-02-09
+     * @queryParam fcba string Optional. Filter berdasarkan FCBA. Example: MTE
+     * @queryParam afdeling string Optional. Filter berdasarkan Afdeling. Example: AFD-01
+     * @queryParam kemandoran string Optional. Filter berdasarkan Kemandoran. Example: MD011
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "List Data LHA",
+     *  "data": [
+     *      {
+     *          "tanggal": "2026-05-07 00:00:00",
+     *          "kemandoran": "MD011",
+     *          "fcba": "MTE",
+     *          "afdeling": "AFD-01",
+     *          "fccode": "G47",
+     *          "fcname": "G47",
+     *          "output": "186",
+     *          "mentah": "0",
+     *          "overripe": "6",
+     *          "busuk": "0",
+     *          "busuk2": "0",
+     *          "buahkecil": "0",
+     *          "parteno": "29",
+     *          "tangkaipanjang": "0",
+     *          "parteno50plus": "0"
+     *      },
+     *  ]
+     * }
+     */
+    public function get_lha(Request $request)
+    {
+        try {
+            $fcba = $request->query('fcba');
+            $afdeling = $request->query('afdeling');
+            $kemandoran = $request->query('kemandoran');
+            $tanggal = $request->query('tanggal');
+            $tanggalEnd = $request->query('tanggal_end');
+
+            $datas = DB::connection('oracle')
+                ->table('V_LHA');
+
+            if ($fcba) {
+                $datas->where('FCBA', $fcba);
+            }
+
+            if ($afdeling) {
+                $datas->where('AFDELING', $afdeling);
+            }
+
+            if ($kemandoran) {
+                $datas->where('KEMANDORAN', $kemandoran);
+            }
+
+            // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
+            if ($tanggal && $tanggalEnd) {
+
+                $startDate = min($tanggal, $tanggalEnd);
+                $endDate   = max($tanggal, $tanggalEnd);
+
+                $datas->whereRaw("
+                    TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$startDate, $endDate]);
+            } elseif ($tanggal) {
+
+                $datas->whereRaw("
+                    TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$tanggal, $tanggal]);
+            } elseif ($tanggalEnd) {
+
+                $datas->whereRaw("
+                    TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$tanggalEnd, $tanggalEnd]);
+            }
+
+            // 🔥 LOG DI SINI (SEBELUM GET)
+            // \Log::info('SQL:', [
+            //     'query' => $datas->toSql(),
+            //     'bindings' => $datas->getBindings()
+            // ]);
+
+            // 🔹 ORDERING
+            $datas = $datas
+                ->orderByDesc('TANGGAL')
+                ->orderByDesc('KEMANDORAN')
+                ->orderByDesc('FCBA')
+                ->orderByDesc('AFDELING')
+                ->orderByDesc('FCCODE')
+                ->get();
+
+            // 🔥 NORMALISASI ANGKA
+            foreach ($datas as &$row) {
+                foreach ($row as $key => $value) {
+                    if (is_numeric($value)) {
+                        $row->$key = $this->formatNumber($value);
+                    }
+                }
+            }
+
+            if ($datas->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data tidak ditemukan.',
+                    'data' => []
+                ], 404);
+            }
+
+            return new AllResource(true, 'List Data LHA', $datas);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Memanggil data Harvesting dari SIPS Mobile.
+     *
+     * API ini digunakan untuk memanggil data harvesting dari SIPS Mobile.
+     * Data menampilkan informasi panen.
+     * Namun, jika ingin melakukan filter pada data yang dipanggil, gunakan parameter pada URL berdasarkan _**Query Parameter**_.
+     * Data diurutkan berdasarkan Tanggal panen.
+     *
+     * @queryParam tanggal string Optional. Filter berdasarkan tanggal penerimaan. Harus dalam format YYYY-MM-DD. Example: 2026-02-08
+     * @queryParam tanggal_end string Optional. Filter berdasarkan rentang tanggal penerimaan. Harus dalam format YYYY-MM-DD. Example: 2026-02-09
+     * @queryParam fcba string Optional. Filter berdasarkan FCBA. Example: MTE
+     * @queryParam afdeling string Optional. Filter berdasarkan Afdeling. Example: AFD-01
+     * @queryParam kemandoran string Optional. Filter berdasarkan Kemandoran. Example: MD011
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "List Data LHA",
+     *  "data": [
+     *      {
+     *         "nodokumen": "MTE/AFD-01/G50-1B/240426/0029",
+     *         "tanggal": "2026-04-24 00:00:00",
+     *         "images": "http://dev.skj.my.id:82/file/harvesting_images/1777015776_compressed_1777002816922.jpg",
+     *         "kode_karyawan_mandor1": null,
+     *         "kode_karyawan_mandor_panen": null,
+     *         "kode_karyawan_kerani": "06-830717-190901-0112",
+     *         "tph": "46",
+     *         "output": "31",
+     *         "mentah": "0",
+     *         "overripe": "0",
+     *         "busuk": "0",
+     *         "busuk2": "0",
+     *         "buahkecil": "0",
+     *         "parteno": "1",
+     *         "brondol": "100",
+     *         "alasbrondol": "N",
+     *         "tangkaipanjang": "0",
+     *         "parteno50plus": "0",
+     *         "afdeling": "AFD-01",
+     *         "fcba": "MTE",
+     *         "notph": "46",
+     *         "fieldcode": "G50",
+     *         "ancakno": "1B",
+     *         "typetph": "1",
+     *         "location": "2.286671,118.042097",
+     *         "status": "SELESAI"
+     *      }
+     *  ]
+     * }
+     */
+    public function get_harvesting(Request $request)
+    {
+        try {
+            $fcba = $request->query('fcba');
+            $afdeling = $request->query('afdeling');
+            $tanggal = $request->query('tanggal');
+            $tanggalEnd = $request->query('tanggal_end');
+
+            $datas = DB::connection('oracle')
+                ->table('V_PANEN');
+
+            if ($fcba) {
+                $datas->where('FCBA', $fcba);
+            }
+
+            if ($afdeling) {
+                $datas->where('AFDELING', $afdeling);
+            }
+
+            // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
+            if ($tanggal && $tanggalEnd) {
+
+                $startDate = min($tanggal, $tanggalEnd);
+                $endDate   = max($tanggal, $tanggalEnd);
+
+                $datas->whereRaw("
+                    TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$startDate, $endDate]);
+            } elseif ($tanggal) {
+
+                $datas->whereRaw("
+                    TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$tanggal, $tanggal]);
+            } elseif ($tanggalEnd) {
+
+                $datas->whereRaw("
+                    TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
+                    AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
+                ", [$tanggalEnd, $tanggalEnd]);
+            }
+
+            // 🔹 ORDERING
+            $datas = $datas
+                ->orderByDesc('TANGGAL')
+                ->get();
+
+            // 🔥 NORMALISASI ANGKA
+            foreach ($datas as &$row) {
+                foreach ($row as $key => $value) {
+                    if (is_numeric($value)) {
+                        $row->$key = $this->formatNumber($value);
+                    }
+                }
+            }
+
+            if ($datas->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data tidak ditemukan.',
+                    'data' => []
+                ], 404);
+            }
+
+            return new AllResource(true, 'List Data Panen', $datas);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -126,6 +126,8 @@ return [
             'prefix_schema' => env('DB_SCHEMA_PREFIX', ''),
             'edition'       => 'ora$base',
             'prefix_schema' => env('DB_SCHEMA', 'SIPSMOBILE'), // Tambahkan schema default
+            'timeout'       => env('DB_TIMEOUT', 120), // Connection timeout in seconds
+            'persistent'    => false,
         ],
 
         'sips_production' => [
@@ -142,6 +144,8 @@ return [
             'prefix_schema' => env('DB_SCHEMA_PREFIX', ''),
             'edition'       => 'ora$base',
             'prefix_schema' => env('DB_SCHEMA', 'IPLASPROD'), // Tambahkan schema default
+            'timeout'       => env('DB_TIMEOUT', 120), // Connection timeout in seconds
+            'persistent'    => false,
         ],
 
     ],
@@ -179,7 +183,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [

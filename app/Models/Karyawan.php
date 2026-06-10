@@ -22,6 +22,8 @@ class Karyawan extends Model
 		'photo',
 		'created_by',
 		'updated_by',
+		'face_recognition',
+		'fr_registered_at',
 	];
 
 	public function getCreatedAtAttribute($value)

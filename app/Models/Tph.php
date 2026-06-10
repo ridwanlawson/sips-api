@@ -25,6 +25,8 @@ class Tph extends Model
 		'status',
 		'location',
 		'ha',
+		'tahuntanam',
+		'bjr',
 		'created_by',
 		'updated_by',
 	];

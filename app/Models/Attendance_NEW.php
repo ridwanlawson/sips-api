@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -7,41 +7,35 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
-class Pengangkutan extends Model
+class Attendance extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'PENGANGKUTAN';
+    protected $table = 'ATTENDANCE';
     protected $fillable = [
-        'NOPENGANGKUTAN',
-        'NOSPB',
-        'NODOKUMEN',
         'TANGGAL',
-        'KODE_KARYAWAN_KERANI',
-        'KODE_KARYAWAN_DRIVER',
-        'TKBM1',
-        'TKBM2',
-        'TKBM3',
-        'TKBM4',
-        'TKBM5',
-        'TYPE_PENGANGKUTAN',
-        'KODE_KENDARAAN',
-        'TPH',
-        'FIELDCODE',
-        'TOTALJANJANG',
-        'OUTPUT',
-        'JANJANGNORMAL',
-        'BRONDOLAN',
-        'MENTAH',
-        'ABNORMAL',
-        'ETD',
-        'ETA',
-        'STATUS_PENGANGKUTAN',
-        'AFDELING',
+        'KODE_KARYAWAN_MANDOR',
+        'KODE_KARYAWAN',
+        'TIME_IN',
+        'LOCATION_IN',
+        'TIME_OUT',
+        'LOCATION_OUT',
+        'PENGANCAKAN',
+        'TOTAL_LATE_TIME',
+        'GO_HOME_EARLY',
+        'ATTENDANCE_TYPE',
         'FCBA',
-        'PABRIK_TUJUAN',
+        'SECTION',
+        'GANG',
+        'ATTENDANCE',
+        'MANDAYS',
+        'STATUS_ATTENDANCE',
+        'FCBA_DESTINATION',
+        'SECTION_DESTINATION',
+        'KEMANDORAN',
+        'ID_DEVICE',
+        'MAC_ADDRESS',
         'IMAGES',
-        'CARD_ID',
         'FLAG',
         'EXCEPTION_CASE',
         'NO_BA_EXCA',
