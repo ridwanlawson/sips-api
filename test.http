@@ -1,0 +1,135 @@
+###
+GET http://172.16.5.199:82/api/debug-cache
+Accept: application/json
+
+###
+GET http://172.16.5.199:82/api/apps/karyawans?noancak=2
+Authorization: Bearer 4561|IBkvsv2dI4yjqHjn8r9Ow1jTHYmKb3oDIsnILYQx6003f53e
+Accept: application/json
+
+###
+GET http://dev.skj.my.id:82/api/apps/panens
+Authorization: Bearer 4561|IBkvsv2dI4yjqHjn8r9Ow1jTHYmKb3oDIsnILYQx6003f53e
+Accept: application/json
+
+###
+GET http://172.16.5.199:82/api/apps/karyawans/3603
+Authorization: Bearer 4561|IBkvsv2dI4yjqHjn8r9Ow1jTHYmKb3oDIsnILYQx6003f53e
+Accept: application/json
+
+###
+DELETE http://172.16.5.199:82/api/apps/karyawans/3603
+Authorization: Bearer 4561|IBkvsv2dI4yjqHjn8r9Ow1jTHYmKb3oDIsnILYQx6003f53e
+Accept: application/json
+
+###
+GET http://dev.skj.my.id:82/api/master/sips-fields
+Authorization: Bearer 62|j66hnzb3PFHjEdm97ySFc296ehJ1dP2gdHWNSnhOc1793f68
+Accept: application/json
+
+###
+GET http://dev.skj.my.id:82/api/logs?start_date=2025-09-21&end_date=2025-09-22&method=GET&per_page=20
+Authorization: Bearer 62|j66hnzb3PFHjEdm97ySFc296ehJ1dP2gdHWNSnhOc1793f68
+Accept: application/json
+
+###
+GET http://dev.skj.my.id:82/api/logs/123
+Authorization: Bearer 62|j66hnzb3PFHjEdm97ySFc296ehJ1dP2gdHWNSnhOc1793f68
+Accept: application/json
+
+### ============================================================
+### MAPS GEOJSON API - NEW TYPE_MAP IMPLEMENTATION
+### ============================================================
+
+### Get all maps
+GET http://dev.skj.my.id:82/api/maps
+Authorization: Bearer {YOUR_TOKEN}
+Accept: application/json
+
+### Get maps filtered by type (JALAN, BLOK, ANCAK)
+GET http://dev.skj.my.id:82/api/maps?type_map=JALAN
+Authorization: Bearer {YOUR_TOKEN}
+Accept: application/json
+
+### Get specific map by ID
+GET http://dev.skj.my.id:82/api/maps/1
+Authorization: Bearer {YOUR_TOKEN}
+Accept: application/json
+
+### Create new map from file upload (JALAN type)
+POST http://dev.skj.my.id:82/api/maps
+Authorization: Bearer {YOUR_TOKEN}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="geojson"; filename="jalan_mte1_mre5.geojson"
+Content-Type: application/json
+
+< C:\Users\ridwa\Downloads\jalan_mte1_mre5.geojson
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_map"
+
+JALAN
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Create new map from file upload (BLOK type)
+POST http://dev.skj.my.id:82/api/maps
+Authorization: Bearer {YOUR_TOKEN}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="geojson"; filename="field_mte1_mre5.geojson"
+Content-Type: application/json
+
+< C:\Users\ridwa\Downloads\field_mte1_mre5.geojson
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_map"
+
+BLOK
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Create new map from file upload (ANCAK type)
+POST http://dev.skj.my.id:82/api/maps
+Authorization: Bearer {YOUR_TOKEN}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="geojson"; filename="ancak_tph_mte1_mre5.geojson"
+Content-Type: application/json
+
+< C:\Users\ridwa\Downloads\ancak_tph_mte1_mre5.geojson
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_map"
+
+ANCAK
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Update existing map (change type_map)
+PUT http://dev.skj.my.id:82/api/maps/1
+Authorization: Bearer {YOUR_TOKEN}
+Content-Type: application/json
+
+{
+  "type_map": "BLOK"
+}
+
+### Update existing map with new geojson file
+POST http://dev.skj.my.id:82/api/maps/1
+Authorization: Bearer {YOUR_TOKEN}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="geojson"; filename="updated_jalan.geojson"
+Content-Type: application/json
+
+< C:\Users\ridwa\Downloads\jalan_mte1_mre5.geojson
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type_map"
+
+JALAN
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Delete map by ID
+DELETE http://dev.skj.my.id:82/api/maps/1
+Authorization: Bearer {YOUR_TOKEN}
+Accept: application/json
