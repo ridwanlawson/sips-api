@@ -15,7 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\AllResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+// use Illuminate\Support\Facades\Log;
 
 /**
  * @group Master
@@ -417,7 +417,7 @@ class MasterController extends Controller
         $query = Gang::where("ACTIVATION", "=", "Y")->select(
             "FCCODE",
             "FCNAME",
-            "REMARKS AFDELING",
+            DB::raw('"REMARKS AFDELING"'),
             "FCBA",
         );
 
