@@ -126,7 +126,7 @@ class MasterController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Semua filter harus diisi dengan nilai yang valid.",
+                    "Semua filter harus diisi dengan nilai yang valid.",
                 ],
                 400,
             );
@@ -414,7 +414,7 @@ class MasterController extends Controller
      */
     public function gang(Request $request)
     {
-        $query = BusinessUnit::where("ACTIVATION", "=", "Y")->select(
+        $query = Gang::where("ACTIVATION", "=", "Y")->select(
             "FCCODE",
             "FCNAME",
             "REMARKS AFDELING",
