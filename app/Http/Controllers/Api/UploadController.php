@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\AllResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @group Uploads
@@ -86,19 +87,22 @@ class UploadController extends Controller
     {
         try {
             // Ambil data dari request (diasumsikan array of records)
-            $datas = $request->input('data');
+            $datas = $request->input("data");
             if (!$datas || !is_array($datas)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid atau kosong.'
-                ], 400);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
             }
 
             // Gunakan UUID atau timestamp-based ID untuk mencegah race condition
             // Baca dari database dengan locking untuk generate LINENOKEY yang unique
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
-            $currentTime = $currentDateTime->format('H:i'); // Format HH:MM
+            $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
             foreach ($datas as $r_data) {
                 // Normalisasi keys dari snake_case ke UPPERCASE
@@ -107,38 +111,52 @@ class UploadController extends Controller
                 try {
                     // Generate unique LINENOKEY menggunakan timestamp + microseconds + random
                     // Ini lebih aman daripada hanya MAX() karena mencegah race condition
-                    $newLinenoKey1 = intval((microtime(true) * 10000) + rand(1, 99));
-                    $newLinenoKey2 = intval((microtime(true) * 10000) + rand(1, 99));
+                    $newLinenoKey1 = intval(
+                        microtime(true) * 10000 + rand(1, 99),
+                    );
+                    $newLinenoKey2 = intval(
+                        microtime(true) * 10000 + rand(1, 99),
+                    );
 
                     // Pastikan tidak duplicate dengan cek di database
                     $maxAttempts = 5;
                     $attempt = 0;
                     while ($attempt < $maxAttempts) {
-                        $check1 = DB::connection('oracle')->selectOne(
+                        $check1 = DB::connection("oracle")->selectOne(
                             "SELECT COUNT(*) as cnt FROM IPLASPROD.ATTENDANCE_GAD WHERE LINENOKEY = ?",
-                            [$newLinenoKey1]
+                            [$newLinenoKey1],
                         );
-                        if ($check1->cnt == 0) break;
-                        $newLinenoKey1 = intval((microtime(true) * 10000) + rand(1, 99));
+                        if ($check1->cnt == 0) {
+                            break;
+                        }
+                        $newLinenoKey1 = intval(
+                            microtime(true) * 10000 + rand(1, 99),
+                        );
                         $attempt++;
                     }
 
                     if ($attempt >= $maxAttempts) {
                         // Jika masih conflict, gunakan sequence atau fallback
-                        $seqResult = DB::connection('oracle')->selectOne(
-                            "SELECT IPLASPROD.SEQ_LINENOKEY.NEXTVAL as seq_val FROM DUAL"
+                        $seqResult = DB::connection("oracle")->selectOne(
+                            "SELECT IPLASPROD.SEQ_LINENOKEY.NEXTVAL as seq_val FROM DUAL",
                         );
-                        $newLinenoKey1 = $seqResult->seq_val ?? intval((microtime(true) * 10000) + rand(100, 999));
+                        $newLinenoKey1 =
+                            $seqResult->seq_val ??
+                            intval(microtime(true) * 10000 + rand(100, 999));
                     }
 
                     $attempt = 0;
                     while ($attempt < $maxAttempts) {
-                        $check2 = DB::connection('oracle')->selectOne(
+                        $check2 = DB::connection("oracle")->selectOne(
                             "SELECT COUNT(*) as cnt FROM IPLASPROD.ATTENDANCE_GAD_TEMP WHERE LINENOKEY = ?",
-                            [$newLinenoKey2]
+                            [$newLinenoKey2],
                         );
-                        if ($check2->cnt == 0) break;
-                        $newLinenoKey2 = intval((microtime(true) * 10000) + rand(1, 99));
+                        if ($check2->cnt == 0) {
+                            break;
+                        }
+                        $newLinenoKey2 = intval(
+                            microtime(true) * 10000 + rand(1, 99),
+                        );
                         $attempt++;
                     }
 
@@ -149,48 +167,49 @@ class UploadController extends Controller
                     :GANGCODE, :FDDATE, :SUPERVISION_1, :SUPERVISION_2, :SUPERVISION_3, :SUPERVISION_4, :SUPERVISION_5, :EMPLOYEECODE, :ATTENDANCE, :JOBCODE, :LOCATIONTYPE, :LOCATIONCODE, :MANDAYS, :OTHRS, :RATE, :UNIT, :OUTPUT, :REFERENCE, :REMARKS, :FCENTRY, :FCEDIT, :FCIP, :FCBA, :LASTUPDATE, :LASTTIME, :LINENOKEY, :OVERTIME_HOURS, :TYPE_OVERTIME, :CHARGEJOB, :CHARGETYPE, :CHARGECODE, :BUCKET, :SPBNO, :KG_JANJANG, :KG_BRONDOLAN, :ROWSTATE, :DOCUMENT_CLASSIFICATION, :BASIS_BM, :BJR, :DOCUMENTNO
                 )";
                     $params1 = [
-                        'GANGCODE' => $data['GANGCODE'] ?? null,
-                        'FDDATE' => $data['FDDATE'] ?? null,
-                        'SUPERVISION_1' => $data['SUPERVISION_1'] ?? null,
-                        'SUPERVISION_2' => $data['SUPERVISION_2'] ?? null,
-                        'SUPERVISION_3' => $data['SUPERVISION_3'] ?? null,
-                        'SUPERVISION_4' => $data['SUPERVISION_4'] ?? null,
-                        'SUPERVISION_5' => $data['SUPERVISION_5'] ?? null,
-                        'EMPLOYEECODE' => $data['EMPLOYEECODE'] ?? null,
-                        'ATTENDANCE' => $data['ATTENDANCE'] ?? 0,  // Default 0 untuk mandatory field
-                        'JOBCODE' => $data['JOBCODE'] ?? '505030101',  // Default jobcode jika kosong
-                        'LOCATIONTYPE' => $data['LOCATIONTYPE'] ?? null,
-                        'LOCATIONCODE' => $data['LOCATIONCODE'] ?? null,
-                        'MANDAYS' => $data['MANDAYS'] ?? 0,  // Default 0 untuk numeric field
-                        'OTHRS' => $data['OTHRS'] ?? 0,
-                        'RATE' => $data['RATE'] ?? 0,
-                        'UNIT' => $data['UNIT'] ?? null,
-                        'OUTPUT' => $data['OUTPUT'] ?? 0,
-                        'REFERENCE' => $data['REFERENCE'] ?? null,
-                        'REMARKS' => $data['REMARKS'] ?? null,
-                        'FCENTRY' => $data['FCENTRY'] ?? 'SYSTEM',  // Default system
-                        'FCEDIT' => $data['FCEDIT'] ?? 'SYSTEM',
-                        'FCIP' => $data['FCIP'] ?? '0.0.0.0',
-                        'FCBA' => $data['FCBA'] ?? null,
-                        'LASTUPDATE' => $currentDateTime,
-                        'LASTTIME' => $currentTime,
-                        'LINENOKEY' => $newLinenoKey1,
-                        'OVERTIME_HOURS' => $data['OVERTIME_HOURS'] ?? 0,
-                        'TYPE_OVERTIME' => $data['TYPE_OVERTIME'] ?? null,
-                        'CHARGEJOB' => $data['CHARGEJOB'] ?? null,
-                        'CHARGETYPE' => $data['CHARGETYPE'] ?? null,
-                        'CHARGECODE' => $data['CHARGECODE'] ?? null,
-                        'BUCKET' => $data['BUCKET'] ?? null,
-                        'SPBNO' => $data['SPBNO'] ?? null,
-                        'KG_JANJANG' => $data['KG_JANJANG'] ?? 0,
-                        'KG_BRONDOLAN' => $data['KG_BRONDOLAN'] ?? 0,
-                        'ROWSTATE' => $data['ROWSTATE'] ?? null,
-                        'DOCUMENT_CLASSIFICATION' => $data['DOCUMENT_CLASSIFICATION'] ?? null,
-                        'BASIS_BM' => $data['BASIS_BM'] ?? 0,
-                        'BJR' => $data['BJR'] ?? 0,
-                        'DOCUMENTNO' => $data['DOCUMENTNO'] ?? null,
+                        "GANGCODE" => $data["GANGCODE"] ?? null,
+                        "FDDATE" => $data["FDDATE"] ?? null,
+                        "SUPERVISION_1" => $data["SUPERVISION_1"] ?? null,
+                        "SUPERVISION_2" => $data["SUPERVISION_2"] ?? null,
+                        "SUPERVISION_3" => $data["SUPERVISION_3"] ?? null,
+                        "SUPERVISION_4" => $data["SUPERVISION_4"] ?? null,
+                        "SUPERVISION_5" => $data["SUPERVISION_5"] ?? null,
+                        "EMPLOYEECODE" => $data["EMPLOYEECODE"] ?? null,
+                        "ATTENDANCE" => $data["ATTENDANCE"] ?? 0, // Default 0 untuk mandatory field
+                        "JOBCODE" => $data["JOBCODE"] ?? "505030101", // Default jobcode jika kosong
+                        "LOCATIONTYPE" => $data["LOCATIONTYPE"] ?? null,
+                        "LOCATIONCODE" => $data["LOCATIONCODE"] ?? null,
+                        "MANDAYS" => $data["MANDAYS"] ?? 0, // Default 0 untuk numeric field
+                        "OTHRS" => $data["OTHRS"] ?? 0,
+                        "RATE" => $data["RATE"] ?? 0,
+                        "UNIT" => $data["UNIT"] ?? null,
+                        "OUTPUT" => $data["OUTPUT"] ?? 0,
+                        "REFERENCE" => $data["REFERENCE"] ?? null,
+                        "REMARKS" => $data["REMARKS"] ?? null,
+                        "FCENTRY" => $data["FCENTRY"] ?? "SYSTEM", // Default system
+                        "FCEDIT" => $data["FCEDIT"] ?? "SYSTEM",
+                        "FCIP" => $data["FCIP"] ?? "0.0.0.0",
+                        "FCBA" => $data["FCBA"] ?? null,
+                        "LASTUPDATE" => $currentDateTime,
+                        "LASTTIME" => $currentTime,
+                        "LINENOKEY" => $newLinenoKey1,
+                        "OVERTIME_HOURS" => $data["OVERTIME_HOURS"] ?? 0,
+                        "TYPE_OVERTIME" => $data["TYPE_OVERTIME"] ?? null,
+                        "CHARGEJOB" => $data["CHARGEJOB"] ?? null,
+                        "CHARGETYPE" => $data["CHARGETYPE"] ?? null,
+                        "CHARGECODE" => $data["CHARGECODE"] ?? null,
+                        "BUCKET" => $data["BUCKET"] ?? null,
+                        "SPBNO" => $data["SPBNO"] ?? null,
+                        "KG_JANJANG" => $data["KG_JANJANG"] ?? 0,
+                        "KG_BRONDOLAN" => $data["KG_BRONDOLAN"] ?? 0,
+                        "ROWSTATE" => $data["ROWSTATE"] ?? null,
+                        "DOCUMENT_CLASSIFICATION" =>
+                            $data["DOCUMENT_CLASSIFICATION"] ?? null,
+                        "BASIS_BM" => $data["BASIS_BM"] ?? 0,
+                        "BJR" => $data["BJR"] ?? 0,
+                        "DOCUMENTNO" => $data["DOCUMENTNO"] ?? null,
                     ];
-                    DB::connection('oracle')->insert($sql1, $params1);
+                    DB::connection("oracle")->insert($sql1, $params1);
 
                     // Insert ke ATTENDANCE_GAD_TEMP dengan SOURCETIME
                     $sql2 = "INSERT INTO IPLASPROD.ATTENDANCE_GAD_TEMP (
@@ -199,63 +218,77 @@ class UploadController extends Controller
                     :GANGCODE, :FDDATE, :SUPERVISION_1, :SUPERVISION_2, :SUPERVISION_3, :SUPERVISION_4, :SUPERVISION_5, :EMPLOYEECODE, :ATTENDANCE, :JOBCODE, :LOCATIONTYPE, :LOCATIONCODE, :MANDAYS, :OTHRS, :RATE, :UNIT, :OUTPUT, :REFERENCE, :REMARKS, :FCENTRY, :FCEDIT, :FCIP, :FCBA, :LASTUPDATE, :LASTTIME, :LINENOKEY, :OVERTIME_HOURS, :TYPE_OVERTIME, :CHARGEJOB, :CHARGETYPE, :CHARGECODE, :JANJANG, :ROWSTATE, :DOCUMENT_CLASSIFICATION, :GENERATE, :GENERATETIME, :BASIS_BM, :KG_JANJANG, :BJR, :DOCUMENTNO
                 )";
                     $params2 = [
-                        'GANGCODE' => $data['GANGCODE'] ?? null,
-                        'FDDATE' => $data['FDDATE'] ?? null,
-                        'SUPERVISION_1' => $data['SUPERVISION_1'] ?? null,
-                        'SUPERVISION_2' => $data['SUPERVISION_2'] ?? null,
-                        'SUPERVISION_3' => $data['SUPERVISION_3'] ?? null,
-                        'SUPERVISION_4' => $data['SUPERVISION_4'] ?? null,
-                        'SUPERVISION_5' => $data['SUPERVISION_5'] ?? null,
-                        'EMPLOYEECODE' => $data['EMPLOYEECODE'] ?? null,
-                        'ATTENDANCE' => $data['ATTENDANCE'] ?? 0,  // Default 0 untuk mandatory field
-                        'JOBCODE' => $data['JOBCODE'] ?? '505030101',  // Default jobcode jika kosong
-                        'LOCATIONTYPE' => $data['LOCATIONTYPE'] ?? null,
-                        'LOCATIONCODE' => $data['LOCATIONCODE'] ?? null,
-                        'MANDAYS' => $data['MANDAYS'] ?? 0,  // Default 0 untuk numeric field
-                        'OTHRS' => $data['OTHRS'] ?? 0,
-                        'RATE' => $data['RATE'] ?? 0,
-                        'UNIT' => $data['UNIT'] ?? null,
-                        'OUTPUT' => $data['OUTPUT'] ?? 0,
-                        'REFERENCE' => $data['REFERENCE'] ?? null,
-                        'REMARKS' => $data['REMARKS'] ?? null,
-                        'FCENTRY' => $data['FCENTRY'] ?? 'SYSTEM',  // Default system
-                        'FCEDIT' => $data['FCEDIT'] ?? 'SYSTEM',
-                        'FCIP' => $data['FCIP'] ?? '0.0.0.0',
-                        'FCBA' => $data['FCBA'] ?? null,
-                        'LASTUPDATE' => $currentDateTime,
-                        'LASTTIME' => $currentTime,
-                        'LINENOKEY' => $newLinenoKey2,
-                        'OVERTIME_HOURS' => $data['OVERTIME_HOURS'] ?? 0,
-                        'TYPE_OVERTIME' => $data['TYPE_OVERTIME'] ?? null,
-                        'CHARGEJOB' => $data['CHARGEJOB'] ?? null,
-                        'CHARGETYPE' => $data['CHARGETYPE'] ?? null,
-                        'CHARGECODE' => $data['CHARGECODE'] ?? null,
-                        'JANJANG' => $data['JANJANG'] ?? 0,  // Default 0 untuk numeric field
-                        'ROWSTATE' => $data['ROWSTATE'] ?? null,
-                        'DOCUMENT_CLASSIFICATION' => $data['DOCUMENT_CLASSIFICATION'] ?? null,
-                        'GENERATE' => $data['GENERATE'] ?? 'SIPS MOBILE',
-                        'GENERATETIME' => $currentDateTime,
-                        'BASIS_BM' => $data['BASIS_BM'] ?? 0,
-                        'KG_JANJANG' => $data['KG_JANJANG'] ?? 0,
-                        'BJR' => $data['BJR'] ?? 0,
-                        'DOCUMENTNO' => $data['DOCUMENTNO'] ?? null,
+                        "GANGCODE" => $data["GANGCODE"] ?? null,
+                        "FDDATE" => $data["FDDATE"] ?? null,
+                        "SUPERVISION_1" => $data["SUPERVISION_1"] ?? null,
+                        "SUPERVISION_2" => $data["SUPERVISION_2"] ?? null,
+                        "SUPERVISION_3" => $data["SUPERVISION_3"] ?? null,
+                        "SUPERVISION_4" => $data["SUPERVISION_4"] ?? null,
+                        "SUPERVISION_5" => $data["SUPERVISION_5"] ?? null,
+                        "EMPLOYEECODE" => $data["EMPLOYEECODE"] ?? null,
+                        "ATTENDANCE" => $data["ATTENDANCE"] ?? 0, // Default 0 untuk mandatory field
+                        "JOBCODE" => $data["JOBCODE"] ?? "505030101", // Default jobcode jika kosong
+                        "LOCATIONTYPE" => $data["LOCATIONTYPE"] ?? null,
+                        "LOCATIONCODE" => $data["LOCATIONCODE"] ?? null,
+                        "MANDAYS" => $data["MANDAYS"] ?? 0, // Default 0 untuk numeric field
+                        "OTHRS" => $data["OTHRS"] ?? 0,
+                        "RATE" => $data["RATE"] ?? 0,
+                        "UNIT" => $data["UNIT"] ?? null,
+                        "OUTPUT" => $data["OUTPUT"] ?? 0,
+                        "REFERENCE" => $data["REFERENCE"] ?? null,
+                        "REMARKS" => $data["REMARKS"] ?? null,
+                        "FCENTRY" => $data["FCENTRY"] ?? "SYSTEM", // Default system
+                        "FCEDIT" => $data["FCEDIT"] ?? "SYSTEM",
+                        "FCIP" => $data["FCIP"] ?? "0.0.0.0",
+                        "FCBA" => $data["FCBA"] ?? null,
+                        "LASTUPDATE" => $currentDateTime,
+                        "LASTTIME" => $currentTime,
+                        "LINENOKEY" => $newLinenoKey2,
+                        "OVERTIME_HOURS" => $data["OVERTIME_HOURS"] ?? 0,
+                        "TYPE_OVERTIME" => $data["TYPE_OVERTIME"] ?? null,
+                        "CHARGEJOB" => $data["CHARGEJOB"] ?? null,
+                        "CHARGETYPE" => $data["CHARGETYPE"] ?? null,
+                        "CHARGECODE" => $data["CHARGECODE"] ?? null,
+                        "JANJANG" => $data["JANJANG"] ?? 0, // Default 0 untuk numeric field
+                        "ROWSTATE" => $data["ROWSTATE"] ?? null,
+                        "DOCUMENT_CLASSIFICATION" =>
+                            $data["DOCUMENT_CLASSIFICATION"] ?? null,
+                        "GENERATE" => $data["GENERATE"] ?? "SIPS MOBILE",
+                        "GENERATETIME" => $currentDateTime,
+                        "BASIS_BM" => $data["BASIS_BM"] ?? 0,
+                        "KG_JANJANG" => $data["KG_JANJANG"] ?? 0,
+                        "BJR" => $data["BJR"] ?? 0,
+                        "DOCUMENTNO" => $data["DOCUMENTNO"] ?? null,
                     ];
-                    DB::connection('oracle')->insert($sql2, $params2);
-                    $inserted[] = $data['DOCUMENTNO'] ?? null;
+                    DB::connection("oracle")->insert($sql2, $params2);
+                    $inserted[] = $data["DOCUMENTNO"] ?? null;
                 } catch (\Exception $e) {
                     // Log error untuk record ini tapi lanjut ke record berikutnya
-                    \Log::error('Error inserting attendance record: ' . $data['DOCUMENTNO'] . ' - ' . $e->getMessage());
+                    Log::error(
+                        "Error inserting attendance record: " .
+                            $data["DOCUMENTNO"] .
+                            " - " .
+                            $e->getMessage(),
+                    );
                     continue;
                 }
             }
 
-            return new AllResource(true, 'Data Karyawan berhasil ditambahkan.', $inserted);
+            return new AllResource(
+                true,
+                "Data Karyawan berhasil ditambahkan.",
+                $inserted,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -276,11 +309,11 @@ class UploadController extends Controller
      * @bodyParam data[].vehicle string required Kode kendaraan. Example: L9770CL
      * @bodyParam data[].driver string required Nama driver. Example: HENDRA
      * @bodyParam data[].mill string required Pabrik tujuan. Example: DOM
-     * @bodyParam data[].agreementcode string optional Kode agreement. Example: 
+     * @bodyParam data[].agreementcode string optional Kode agreement. Example:
      * @bodyParam data[].transporttype string required Tipe transportasi. Example: DIRECTTRANSPORT
      * @bodyParam data[].spb_type integer required Tipe SPB. Example: 0
      * @bodyParam data[].bunch float required Jumlah bunch. Example: 127
-     * @bodyParam data[].bucket float optional Jumlah bucket. Example: 
+     * @bodyParam data[].bucket float optional Jumlah bucket. Example:
      * @bodyParam data[].pressemester_abw float required Press semester ABW. Example: 11.19
      * @bodyParam data[].bunch_estateweight float required Berat bunch estate. Example: 1421
      * @bodyParam data[].fcentry string required Dibuat oleh. Example: PTE_PRODUKSI
@@ -293,10 +326,10 @@ class UploadController extends Controller
      * @bodyParam data[].mill_weight_tarra float required Berat tarra pabrik (kg). Example: 4170
      * @bodyParam data[].mill_weight_potongan float required Berat potongan pabrik (kg). Example: 295.92
      * @bodyParam data[].mill_weight_netto float required Berat netto pabrik (kg). Example: 5624.08
-     * @bodyParam data[].mentah string optional Mentah. Example: 
-     * @bodyParam data[].tankos string optional Tankos. Example: 
-     * @bodyParam data[].hilang string optional Hilang. Example: 
-     * @bodyParam data[].keterangan string optional Keterangan. Example: 
+     * @bodyParam data[].mentah string optional Mentah. Example:
+     * @bodyParam data[].tankos string optional Tankos. Example:
+     * @bodyParam data[].hilang string optional Hilang. Example:
+     * @bodyParam data[].keterangan string optional Keterangan. Example:
      * @bodyParam data[].mill_weight_dtl float required Detail berat pabrik (kg). Example: 1173.27
      * @bodyParam data[].bjr_chit float required BJR per Chit. Example: 9.24
      *
@@ -319,17 +352,20 @@ class UploadController extends Controller
     {
         try {
             // Ambil data dari request (diasumsikan array of records)
-            $datas = $request->input('data');
+            $datas = $request->input("data");
             if (!$datas || !is_array($datas)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid atau kosong.'
-                ], 400);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
             }
 
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
-            $currentTime = $currentDateTime->format('H:i'); // Format HH:MM
+            $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
             foreach ($datas as $r_data) {
                 // Normalisasi keys dari snake_case ke UPPERCASE
@@ -343,54 +379,64 @@ class UploadController extends Controller
                 )";
 
                 $params = [
-                    'SPBNO' => $data['SPBNO'] ?? null,
-                    'FIELDCODE' => $data['FIELDCODE'] ?? null,
-                    'RECEPTIONDATE' => $data['RECEPTIONDATE'] ?? null,
-                    'HARVESTDATE' => $data['HARVESTDATE'] ?? null,
-                    'CROPCODE' => $data['CROPCODE'] ?? null,
-                    'PRODUCTCODE' => $data['PRODUCTCODE'] ?? 'TBS',
-                    'OWN' => $data['OWN'] ?? 'OWN',
-                    'VEHICLE' => $data['VEHICLE'] ?? null,
-                    'DRIVER' => $data['DRIVER'] ?? null,
-                    'MILL' => $data['MILL'] ?? null,
-                    'AGREEMENTCODE' => $data['AGREEMENTCODE'] ?? null,
-                    'TRANSPORTTYPE' => $data['TRANSPORTTYPE'] ?? 'DIRECTTRANSPORT',
-                    'SPB_TYPE' => $data['SPB_TYPE'] ?? 0,
-                    'BUNCH' => $data['BUNCH'] ?? null,
-                    'BUCKET' => $data['BUCKET'] ?? null,
-                    'PRESSEMESTER_ABW' => $data['PRESSEMESTER_ABW'] ?? null,
-                    'BUNCH_ESTATEWEIGHT' => $data['BUNCH_ESTATEWEIGHT'] ?? null,
-                    'FCENTRY' => $data['FCENTRY'] ?? null,
-                    'FCEDIT' => $data['FCEDIT'] ?? null,
-                    'FCIP' => $data['FCIP'] ?? null,
-                    'FCBA' => $data['FCBA'] ?? null,
-                    'LASTUPDATE' => $currentDateTime,
-                    'LASTTIME' => $currentTime,
-                    'CHITNO' => $data['CHITNO'] ?? null,
-                    'MILL_WEIGHT_BRUTO' => $data['MILL_WEIGHT_BRUTO'] ?? null,
-                    'MILL_WEIGHT_GROSS' => $data['MILL_WEIGHT_GROSS'] ?? null,
-                    'MILL_WEIGHT_TARRA' => $data['MILL_WEIGHT_TARRA'] ?? null,
-                    'MILL_WEIGHT_POTONGAN' => $data['MILL_WEIGHT_POTONGAN'] ?? null,
-                    'MILL_WEIGHT_NETTO' => $data['MILL_WEIGHT_NETTO'] ?? null,
-                    'MENTAH' => $data['MENTAH'] ?? null,
-                    'TANKOS' => $data['TANKOS'] ?? null,
-                    'HILANG' => $data['HILANG'] ?? null,
-                    'KETERANGAN' => $data['KETERANGAN'] ?? 'SIPSMOBILE',
-                    'MILL_WEIGHT_DTL' => $data['MILL_WEIGHT_DTL'] ?? null,
-                    'BJR_CHIT' => $data['BJR_CHIT'] ?? null,
+                    "SPBNO" => $data["SPBNO"] ?? null,
+                    "FIELDCODE" => $data["FIELDCODE"] ?? null,
+                    "RECEPTIONDATE" => $data["RECEPTIONDATE"] ?? null,
+                    "HARVESTDATE" => $data["HARVESTDATE"] ?? null,
+                    "CROPCODE" => $data["CROPCODE"] ?? null,
+                    "PRODUCTCODE" => $data["PRODUCTCODE"] ?? "TBS",
+                    "OWN" => $data["OWN"] ?? "OWN",
+                    "VEHICLE" => $data["VEHICLE"] ?? null,
+                    "DRIVER" => $data["DRIVER"] ?? null,
+                    "MILL" => $data["MILL"] ?? null,
+                    "AGREEMENTCODE" => $data["AGREEMENTCODE"] ?? null,
+                    "TRANSPORTTYPE" =>
+                        $data["TRANSPORTTYPE"] ?? "DIRECTTRANSPORT",
+                    "SPB_TYPE" => $data["SPB_TYPE"] ?? 0,
+                    "BUNCH" => $data["BUNCH"] ?? null,
+                    "BUCKET" => $data["BUCKET"] ?? null,
+                    "PRESSEMESTER_ABW" => $data["PRESSEMESTER_ABW"] ?? null,
+                    "BUNCH_ESTATEWEIGHT" => $data["BUNCH_ESTATEWEIGHT"] ?? null,
+                    "FCENTRY" => $data["FCENTRY"] ?? null,
+                    "FCEDIT" => $data["FCEDIT"] ?? null,
+                    "FCIP" => $data["FCIP"] ?? null,
+                    "FCBA" => $data["FCBA"] ?? null,
+                    "LASTUPDATE" => $currentDateTime,
+                    "LASTTIME" => $currentTime,
+                    "CHITNO" => $data["CHITNO"] ?? null,
+                    "MILL_WEIGHT_BRUTO" => $data["MILL_WEIGHT_BRUTO"] ?? null,
+                    "MILL_WEIGHT_GROSS" => $data["MILL_WEIGHT_GROSS"] ?? null,
+                    "MILL_WEIGHT_TARRA" => $data["MILL_WEIGHT_TARRA"] ?? null,
+                    "MILL_WEIGHT_POTONGAN" =>
+                        $data["MILL_WEIGHT_POTONGAN"] ?? null,
+                    "MILL_WEIGHT_NETTO" => $data["MILL_WEIGHT_NETTO"] ?? null,
+                    "MENTAH" => $data["MENTAH"] ?? null,
+                    "TANKOS" => $data["TANKOS"] ?? null,
+                    "HILANG" => $data["HILANG"] ?? null,
+                    "KETERANGAN" => $data["KETERANGAN"] ?? "SIPSMOBILE",
+                    "MILL_WEIGHT_DTL" => $data["MILL_WEIGHT_DTL"] ?? null,
+                    "BJR_CHIT" => $data["BJR_CHIT"] ?? null,
                 ];
 
-                DB::connection('oracle')->insert($sql, $params);
-                $inserted[] = $data['SPBNO'] ?? null;
+                DB::connection("oracle")->insert($sql, $params);
+                $inserted[] = $data["SPBNO"] ?? null;
             }
 
-            return new AllResource(true, 'Data Harvesting SPB berhasil ditambahkan.', $inserted);
+            return new AllResource(
+                true,
+                "Data Harvesting SPB berhasil ditambahkan.",
+                $inserted,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -424,9 +470,9 @@ class UploadController extends Controller
      * @bodyParam data[].qe_8 integer required QE 8 - Buah dibelah. Example: 0
      * @bodyParam data[].qe_9 integer required QE 9. Example: 0
      * @bodyParam data[].qe_10 integer required QE 10. Example: 0
-     * @bodyParam data[].fcentry string optional Dibuat oleh. Example: 
-     * @bodyParam data[].fcedit string optional Diubah oleh. Example: 
-     * @bodyParam data[].fcip string optional IP address. Example: 
+     * @bodyParam data[].fcentry string optional Dibuat oleh. Example:
+     * @bodyParam data[].fcedit string optional Diubah oleh. Example:
+     * @bodyParam data[].fcip string optional IP address. Example:
      * @bodyParam data[].fcba string required Kode FCBA. Example: MTE
      * @bodyParam data[].qe_11 integer required QE 11 - Buah mentah A1. Example: 0
      * @bodyParam data[].qe_12 integer required QE 12 - Buah tinggal S. Example: 0
@@ -456,17 +502,20 @@ class UploadController extends Controller
     {
         try {
             // Ambil data dari request (diasumsikan array of records)
-            $datas = $request->input('data');
+            $datas = $request->input("data");
             if (!$datas || !is_array($datas)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid atau kosong.'
-                ], 400);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
             }
 
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
-            $currentTime = $currentDateTime->format('H:i'); // Format HH:MM
+            $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
             foreach ($datas as $r_data) {
                 // Normalisasi keys dari snake_case ke UPPERCASE
@@ -480,56 +529,64 @@ class UploadController extends Controller
                 )";
 
                 $params = [
-                    'EMPCODE' => $data['EMPCODE'] ?? null,
-                    'FDDATE' => $data['FDDATE'] ?? null,
-                    'FIELDCODE' => $data['FIELDCODE'] ?? null,
-                    'UNDER_RIPE' => $data['UNDER_RIPE'] ?? 0,
-                    'OVER_RIPE' => $data['OVER_RIPE'] ?? 0,
-                    'ABNORMAL' => $data['ABNORMAL'] ?? 0,
-                    'LONG_STALK' => $data['LONG_STALK'] ?? 0,
-                    'EATEN_BY_RAT' => $data['EATEN_BY_RAT'] ?? 0,
-                    'UNHARVEST_FFB' => $data['UNHARVEST_FFB'] ?? 0,
-                    'UNCOLLECT_LF_CIRCLE' => $data['UNCOLLECT_LF_CIRCLE'] ?? 0,
-                    'UNCOLLECT_LF_PIECE' => $data['UNCOLLECT_LF_PIECE'] ?? 0,
-                    'UNARRANGE_FFB' => $data['UNARRANGE_FFB'] ?? 0,
-                    'UNPRUNE_FROND' => $data['UNPRUNE_FROND'] ?? 0,
-                    'QE_1' => $data['QE_1'] ?? 0,
-                    'QE_2' => $data['QE_2'] ?? 0,
-                    'QE_3' => $data['QE_3'] ?? 0,
-                    'QE_4' => $data['QE_4'] ?? 0,
-                    'QE_5' => $data['QE_5'] ?? 0,
-                    'QE_6' => $data['QE_6'] ?? 0,
-                    'QE_7' => $data['QE_7'] ?? 0,
-                    'QE_8' => $data['QE_8'] ?? 0,
-                    'QE_9' => $data['QE_9'] ?? 0,
-                    'QE_10' => $data['QE_10'] ?? 0,
-                    'FCENTRY' => $data['FCENTRY'] ?? null,
-                    'FCEDIT' => $data['FCEDIT'] ?? null,
-                    'FCIP' => $data['FCIP'] ?? null,
-                    'FCBA' => $data['FCBA'] ?? null,
-                    'LASTUPDATE' => $currentDateTime,
-                    'LASTTIME' => $currentTime,
-                    'QE_11' => $data['QE_11'] ?? 0,
-                    'QE_12' => $data['QE_12'] ?? 0,
-                    'QE_13' => $data['QE_13'] ?? 0,
-                    'QE_14' => $data['QE_14'] ?? 0,
-                    'QE_15' => $data['QE_15'] ?? 0,
-                    'QE_16' => $data['QE_16'] ?? 0,
-                    'QE_17' => $data['QE_17'] ?? 0,
-                    'DOCUMENTNO' => $data['DOCUMENTNO'] ?? null,
+                    "EMPCODE" => $data["EMPCODE"] ?? null,
+                    "FDDATE" => $data["FDDATE"] ?? null,
+                    "FIELDCODE" => $data["FIELDCODE"] ?? null,
+                    "UNDER_RIPE" => $data["UNDER_RIPE"] ?? 0,
+                    "OVER_RIPE" => $data["OVER_RIPE"] ?? 0,
+                    "ABNORMAL" => $data["ABNORMAL"] ?? 0,
+                    "LONG_STALK" => $data["LONG_STALK"] ?? 0,
+                    "EATEN_BY_RAT" => $data["EATEN_BY_RAT"] ?? 0,
+                    "UNHARVEST_FFB" => $data["UNHARVEST_FFB"] ?? 0,
+                    "UNCOLLECT_LF_CIRCLE" => $data["UNCOLLECT_LF_CIRCLE"] ?? 0,
+                    "UNCOLLECT_LF_PIECE" => $data["UNCOLLECT_LF_PIECE"] ?? 0,
+                    "UNARRANGE_FFB" => $data["UNARRANGE_FFB"] ?? 0,
+                    "UNPRUNE_FROND" => $data["UNPRUNE_FROND"] ?? 0,
+                    "QE_1" => $data["QE_1"] ?? 0,
+                    "QE_2" => $data["QE_2"] ?? 0,
+                    "QE_3" => $data["QE_3"] ?? 0,
+                    "QE_4" => $data["QE_4"] ?? 0,
+                    "QE_5" => $data["QE_5"] ?? 0,
+                    "QE_6" => $data["QE_6"] ?? 0,
+                    "QE_7" => $data["QE_7"] ?? 0,
+                    "QE_8" => $data["QE_8"] ?? 0,
+                    "QE_9" => $data["QE_9"] ?? 0,
+                    "QE_10" => $data["QE_10"] ?? 0,
+                    "FCENTRY" => $data["FCENTRY"] ?? null,
+                    "FCEDIT" => $data["FCEDIT"] ?? null,
+                    "FCIP" => $data["FCIP"] ?? null,
+                    "FCBA" => $data["FCBA"] ?? null,
+                    "LASTUPDATE" => $currentDateTime,
+                    "LASTTIME" => $currentTime,
+                    "QE_11" => $data["QE_11"] ?? 0,
+                    "QE_12" => $data["QE_12"] ?? 0,
+                    "QE_13" => $data["QE_13"] ?? 0,
+                    "QE_14" => $data["QE_14"] ?? 0,
+                    "QE_15" => $data["QE_15"] ?? 0,
+                    "QE_16" => $data["QE_16"] ?? 0,
+                    "QE_17" => $data["QE_17"] ?? 0,
+                    "DOCUMENTNO" => $data["DOCUMENTNO"] ?? null,
                 ];
 
-                DB::connection('oracle')->insert($sql, $params);
-                $inserted[] = $data['DOCUMENTNO'] ?? null;
+                DB::connection("oracle")->insert($sql, $params);
+                $inserted[] = $data["DOCUMENTNO"] ?? null;
             }
 
-            return new AllResource(true, 'Data Harvesting Quality berhasil ditambahkan.', $inserted);
+            return new AllResource(
+                true,
+                "Data Harvesting Quality berhasil ditambahkan.",
+                $inserted,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -605,22 +662,28 @@ class UploadController extends Controller
     {
         try {
             // Ambil data dari request (diasumsikan array of records)
-            $datas = $request->input('data');
+            $datas = $request->input("data");
             if (!$datas || !is_array($datas)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid atau kosong.'
-                ], 400);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
             }
 
             // Dapatkan base_max LINENOKEY dari ATTENDANCE_GAD dan ATTENDANCE_GAD_TEMP
-            $baseMaxQuery1 = "SELECT NVL(MAX(LINENOKEY), 0) AS base_max FROM SIPSMOBILE.ATTENDANCE_GAD";
-            $baseMaxResult1 = DB::connection('oracle')->selectOne($baseMaxQuery1);
+            $baseMaxQuery1 =
+                "SELECT NVL(MAX(LINENOKEY), 0) AS base_max FROM SIPSMOBILE.ATTENDANCE_GAD";
+            $baseMaxResult1 = DB::connection("oracle")->selectOne(
+                $baseMaxQuery1,
+            );
             $baseMax1 = $baseMaxResult1->base_max ?? 0;
 
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
-            $currentTime = $currentDateTime->format('H:i'); // Format HH:MM
+            $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
             foreach ($datas as $r_data) {
                 try {
@@ -628,27 +691,35 @@ class UploadController extends Controller
                     $data = array_change_key_case($r_data, CASE_UPPER);
 
                     // Generate unique LINENOKEY menggunakan timestamp + microseconds + random
-                    $newLinenoKey1 = intval((microtime(true) * 10000) + rand(1, 99));
+                    $newLinenoKey1 = intval(
+                        microtime(true) * 10000 + rand(1, 99),
+                    );
 
                     // Pastikan tidak duplicate dengan cek di database
                     $maxAttempts = 5;
                     $attempt = 0;
                     while ($attempt < $maxAttempts) {
-                        $check1 = DB::connection('oracle')->selectOne(
+                        $check1 = DB::connection("oracle")->selectOne(
                             "SELECT COUNT(*) as cnt FROM SIPSMOBILE.ATTENDANCE_GAD WHERE LINENOKEY = ?",
-                            [$newLinenoKey1]
+                            [$newLinenoKey1],
                         );
-                        if ($check1->cnt == 0) break;
-                        $newLinenoKey1 = intval((microtime(true) * 10000) + rand(1, 99));
+                        if ($check1->cnt == 0) {
+                            break;
+                        }
+                        $newLinenoKey1 = intval(
+                            microtime(true) * 10000 + rand(1, 99),
+                        );
                         $attempt++;
                     }
 
                     if ($attempt >= $maxAttempts) {
                         // Jika masih conflict, gunakan sequence atau fallback
-                        $seqResult = DB::connection('oracle')->selectOne(
-                            "SELECT SIPSMOBILE.SEQ_LINENOKEY.NEXTVAL as seq_val FROM DUAL"
+                        $seqResult = DB::connection("oracle")->selectOne(
+                            "SELECT SIPSMOBILE.SEQ_LINENOKEY.NEXTVAL as seq_val FROM DUAL",
                         );
-                        $newLinenoKey1 = $seqResult->seq_val ?? intval((microtime(true) * 10000) + rand(100, 999));
+                        $newLinenoKey1 =
+                            $seqResult->seq_val ??
+                            intval(microtime(true) * 10000 + rand(100, 999));
                     }
 
                     // Insert ke ATTENDANCE_GAD dengan SOURCETIME
@@ -658,64 +729,79 @@ class UploadController extends Controller
                     :GANGCODE, :FDDATE, :SUPERVISION_1, :SUPERVISION_2, :SUPERVISION_3, :SUPERVISION_4, :SUPERVISION_5, :EMPLOYEECODE, :ATTENDANCE, :JOBCODE, :LOCATIONTYPE, :LOCATIONCODE, :MANDAYS, :OTHRS, :RATE, :UNIT, :OUTPUT, :REFERENCE, :REMARKS, :FCENTRY, :FCEDIT, :FCIP, :FCBA, :LASTUPDATE, :LASTTIME, :LINENOKEY, :OVERTIME_HOURS, :TYPE_OVERTIME, :CHARGEJOB, :CHARGETYPE, :CHARGECODE, :BUCKET, :SPBNO, :KG_JANJANG, :KG_BRONDOLAN, :ROWSTATE, :DOCUMENT_CLASSIFICATION, :BASIS_BM, :BJR, :DOCUMENTNO, :LASTAPPROVAL
                 )";
                     $params1 = [
-                        'GANGCODE' => $data['GANGCODE'] ?? null,
-                        'FDDATE' => $data['FDDATE'] ?? null,
-                        'SUPERVISION_1' => $data['SUPERVISION_1'] ?? null,
-                        'SUPERVISION_2' => $data['SUPERVISION_2'] ?? null,
-                        'SUPERVISION_3' => $data['SUPERVISION_3'] ?? null,
-                        'SUPERVISION_4' => $data['SUPERVISION_4'] ?? null,
-                        'SUPERVISION_5' => $data['SUPERVISION_5'] ?? null,
-                        'EMPLOYEECODE' => $data['EMPLOYEECODE'] ?? null,
-                        'ATTENDANCE' => $data['ATTENDANCE'] ?? 0,  // Default 0 untuk mandatory field
-                        'JOBCODE' => $data['JOBCODE'] ?? '505030101',  // Default jobcode jika kosong
-                        'LOCATIONTYPE' => $data['LOCATIONTYPE'] ?? null,
-                        'LOCATIONCODE' => $data['LOCATIONCODE'] ?? null,
-                        'MANDAYS' => $data['MANDAYS'] ?? 0,  // Default 0 untuk numeric field
-                        'OTHRS' => $data['OTHRS'] ?? 0,
-                        'RATE' => $data['RATE'] ?? 0,
-                        'UNIT' => $data['UNIT'] ?? null,
-                        'OUTPUT' => $data['OUTPUT'] ?? 0,
-                        'REFERENCE' => $data['REFERENCE'] ?? null,
-                        'REMARKS' => $data['REMARKS'] ?? null,
-                        'FCENTRY' => $data['FCENTRY'] ?? 'SYSTEM',  // Default system
-                        'FCEDIT' => $data['FCEDIT'] ?? 'SYSTEM',
-                        'FCIP' => $data['FCIP'] ?? '0.0.0.0',
-                        'FCBA' => $data['FCBA'] ?? null,
-                        'LASTUPDATE' => $currentDateTime,
-                        'LASTTIME' => $currentTime,
-                        'LINENOKEY' => $newLinenoKey1,
-                        'OVERTIME_HOURS' => $data['OVERTIME_HOURS'] ?? 0,
-                        'TYPE_OVERTIME' => $data['TYPE_OVERTIME'] ?? null,
-                        'CHARGEJOB' => $data['CHARGEJOB'] ?? null,
-                        'CHARGETYPE' => $data['CHARGETYPE'] ?? null,
-                        'CHARGECODE' => $data['CHARGECODE'] ?? null,
-                        'BUCKET' => $data['BUCKET'] ?? null,
-                        'SPBNO' => $data['SPBNO'] ?? null,
-                        'KG_JANJANG' => $data['KG_JANJANG'] ?? 0,
-                        'KG_BRONDOLAN' => $data['KG_BRONDOLAN'] ?? 0,
-                        'ROWSTATE' => $data['ROWSTATE'] ?? null,
-                        'DOCUMENT_CLASSIFICATION' => $data['DOCUMENT_CLASSIFICATION'] ?? null,
-                        'BASIS_BM' => $data['BASIS_BM'] ?? 0,
-                        'BJR' => $data['BJR'] ?? 0,
-                        'DOCUMENTNO' => $data['DOCUMENTNO'] ?? null,
-                        'LASTAPPROVAL' => Auth::user()->username ?? 'SIPSMOBILE',
+                        "GANGCODE" => $data["GANGCODE"] ?? null,
+                        "FDDATE" => $data["FDDATE"] ?? null,
+                        "SUPERVISION_1" => $data["SUPERVISION_1"] ?? null,
+                        "SUPERVISION_2" => $data["SUPERVISION_2"] ?? null,
+                        "SUPERVISION_3" => $data["SUPERVISION_3"] ?? null,
+                        "SUPERVISION_4" => $data["SUPERVISION_4"] ?? null,
+                        "SUPERVISION_5" => $data["SUPERVISION_5"] ?? null,
+                        "EMPLOYEECODE" => $data["EMPLOYEECODE"] ?? null,
+                        "ATTENDANCE" => $data["ATTENDANCE"] ?? 0, // Default 0 untuk mandatory field
+                        "JOBCODE" => $data["JOBCODE"] ?? "505030101", // Default jobcode jika kosong
+                        "LOCATIONTYPE" => $data["LOCATIONTYPE"] ?? null,
+                        "LOCATIONCODE" => $data["LOCATIONCODE"] ?? null,
+                        "MANDAYS" => $data["MANDAYS"] ?? 0, // Default 0 untuk numeric field
+                        "OTHRS" => $data["OTHRS"] ?? 0,
+                        "RATE" => $data["RATE"] ?? 0,
+                        "UNIT" => $data["UNIT"] ?? null,
+                        "OUTPUT" => $data["OUTPUT"] ?? 0,
+                        "REFERENCE" => $data["REFERENCE"] ?? null,
+                        "REMARKS" => $data["REMARKS"] ?? null,
+                        "FCENTRY" => $data["FCENTRY"] ?? "SYSTEM", // Default system
+                        "FCEDIT" => $data["FCEDIT"] ?? "SYSTEM",
+                        "FCIP" => $data["FCIP"] ?? "0.0.0.0",
+                        "FCBA" => $data["FCBA"] ?? null,
+                        "LASTUPDATE" => $currentDateTime,
+                        "LASTTIME" => $currentTime,
+                        "LINENOKEY" => $newLinenoKey1,
+                        "OVERTIME_HOURS" => $data["OVERTIME_HOURS"] ?? 0,
+                        "TYPE_OVERTIME" => $data["TYPE_OVERTIME"] ?? null,
+                        "CHARGEJOB" => $data["CHARGEJOB"] ?? null,
+                        "CHARGETYPE" => $data["CHARGETYPE"] ?? null,
+                        "CHARGECODE" => $data["CHARGECODE"] ?? null,
+                        "BUCKET" => $data["BUCKET"] ?? null,
+                        "SPBNO" => $data["SPBNO"] ?? null,
+                        "KG_JANJANG" => $data["KG_JANJANG"] ?? 0,
+                        "KG_BRONDOLAN" => $data["KG_BRONDOLAN"] ?? 0,
+                        "ROWSTATE" => $data["ROWSTATE"] ?? null,
+                        "DOCUMENT_CLASSIFICATION" =>
+                            $data["DOCUMENT_CLASSIFICATION"] ?? null,
+                        "BASIS_BM" => $data["BASIS_BM"] ?? 0,
+                        "BJR" => $data["BJR"] ?? 0,
+                        "DOCUMENTNO" => $data["DOCUMENTNO"] ?? null,
+                        "LASTAPPROVAL" =>
+                            Auth::user()->username ?? "SIPSMOBILE",
                     ];
-                    DB::connection('oracle')->insert($sql1, $params1);
-                    $inserted[] = $data['DOCUMENTNO'] ?? null;
+                    DB::connection("oracle")->insert($sql1, $params1);
+                    $inserted[] = $data["DOCUMENTNO"] ?? null;
                 } catch (\Exception $e) {
                     // Log error untuk record ini tapi lanjut ke record berikutnya
-                    \Log::error('Error inserting attendance record (SIPSMOBILE): ' . $data['DOCUMENTNO'] . ' - ' . $e->getMessage());
+                    Log::error(
+                        "Error inserting attendance record (SIPSMOBILE): " .
+                            $data["DOCUMENTNO"] .
+                            " - " .
+                            $e->getMessage(),
+                    );
                     continue;
                 }
             }
 
-            return new AllResource(true, 'Data Karyawan berhasil ditambahkan.', $inserted);
+            return new AllResource(
+                true,
+                "Data Karyawan berhasil ditambahkan.",
+                $inserted,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -736,11 +822,11 @@ class UploadController extends Controller
      * @bodyParam data[].vehicle string required Kode kendaraan. Example: L9770CL
      * @bodyParam data[].driver string required Nama driver. Example: HENDRA
      * @bodyParam data[].mill string required Pabrik tujuan. Example: DOM
-     * @bodyParam data[].agreementcode string optional Kode agreement. Example: 
+     * @bodyParam data[].agreementcode string optional Kode agreement. Example:
      * @bodyParam data[].transporttype string required Tipe transportasi. Example: DIRECTTRANSPORT
      * @bodyParam data[].spb_type integer required Tipe SPB. Example: 0
      * @bodyParam data[].bunch float required Jumlah bunch. Example: 127
-     * @bodyParam data[].bucket float optional Jumlah bucket. Example: 
+     * @bodyParam data[].bucket float optional Jumlah bucket. Example:
      * @bodyParam data[].pressemester_abw float required Press semester ABW. Example: 11.19
      * @bodyParam data[].bunch_estateweight float required Berat bunch estate. Example: 1421
      * @bodyParam data[].fcentry string required Dibuat oleh. Example: PTE_PRODUKSI
@@ -753,10 +839,10 @@ class UploadController extends Controller
      * @bodyParam data[].mill_weight_tarra float required Berat tarra pabrik (kg). Example: 4170
      * @bodyParam data[].mill_weight_potongan float required Berat potongan pabrik (kg). Example: 295.92
      * @bodyParam data[].mill_weight_netto float required Berat netto pabrik (kg). Example: 5624.08
-     * @bodyParam data[].mentah string optional Mentah. Example: 
-     * @bodyParam data[].tankos string optional Tankos. Example: 
-     * @bodyParam data[].hilang string optional Hilang. Example: 
-     * @bodyParam data[].keterangan string optional Keterangan. Example: 
+     * @bodyParam data[].mentah string optional Mentah. Example:
+     * @bodyParam data[].tankos string optional Tankos. Example:
+     * @bodyParam data[].hilang string optional Hilang. Example:
+     * @bodyParam data[].keterangan string optional Keterangan. Example:
      * @bodyParam data[].mill_weight_dtl float required Detail berat pabrik (kg). Example: 1173.27
      * @bodyParam data[].bjr_chit float required BJR per Chit. Example: 9.24
      *
@@ -779,17 +865,20 @@ class UploadController extends Controller
     {
         try {
             // Ambil data dari request (diasumsikan array of records)
-            $datas = $request->input('data');
+            $datas = $request->input("data");
             if (!$datas || !is_array($datas)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid atau kosong.'
-                ], 400);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
             }
 
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
-            $currentTime = $currentDateTime->format('H:i'); // Format HH:MM
+            $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
             foreach ($datas as $r_data) {
                 // Normalisasi keys dari snake_case ke UPPERCASE
@@ -803,55 +892,65 @@ class UploadController extends Controller
                 )";
 
                 $params = [
-                    'SPBNO' => $data['SPBNO'] ?? null,
-                    'FIELDCODE' => $data['FIELDCODE'] ?? null,
-                    'RECEPTIONDATE' => $data['RECEPTIONDATE'] ?? null,
-                    'HARVESTDATE' => $data['HARVESTDATE'] ?? null,
-                    'CROPCODE' => $data['CROPCODE'] ?? null,
-                    'PRODUCTCODE' => $data['PRODUCTCODE'] ?? 'TBS',
-                    'OWN' => $data['OWN'] ?? 'OWN',
-                    'VEHICLE' => $data['VEHICLE'] ?? null,
-                    'DRIVER' => $data['DRIVER'] ?? null,
-                    'MILL' => $data['MILL'] ?? null,
-                    'AGREEMENTCODE' => $data['AGREEMENTCODE'] ?? null,
-                    'TRANSPORTTYPE' => $data['TRANSPORTTYPE'] ?? 'DIRECTTRANSPORT',
-                    'SPB_TYPE' => $data['SPB_TYPE'] ?? 0,
-                    'BUNCH' => $data['BUNCH'] ?? null,
-                    'BUCKET' => $data['BUCKET'] ?? null,
-                    'PRESSEMESTER_ABW' => $data['PRESSEMESTER_ABW'] ?? null,
-                    'BUNCH_ESTATEWEIGHT' => $data['BUNCH_ESTATEWEIGHT'] ?? null,
-                    'FCENTRY' => $data['FCENTRY'] ?? null,
-                    'FCEDIT' => $data['FCEDIT'] ?? null,
-                    'FCIP' => $data['FCIP'] ?? null,
-                    'FCBA' => $data['FCBA'] ?? null,
-                    'LASTUPDATE' => $currentDateTime,
-                    'LASTTIME' => $currentTime,
-                    'CHITNO' => $data['CHITNO'] ?? null,
-                    'MILL_WEIGHT_BRUTO' => $data['MILL_WEIGHT_BRUTO'] ?? null,
-                    'MILL_WEIGHT_GROSS' => $data['MILL_WEIGHT_GROSS'] ?? null,
-                    'MILL_WEIGHT_TARRA' => $data['MILL_WEIGHT_TARRA'] ?? null,
-                    'MILL_WEIGHT_POTONGAN' => $data['MILL_WEIGHT_POTONGAN'] ?? null,
-                    'MILL_WEIGHT_NETTO' => $data['MILL_WEIGHT_NETTO'] ?? null,
-                    'MENTAH' => $data['MENTAH'] ?? null,
-                    'TANKOS' => $data['TANKOS'] ?? null,
-                    'HILANG' => $data['HILANG'] ?? null,
-                    'KETERANGAN' => $data['KETERANGAN'] ?? 'SIPSMOBILE',
-                    'MILL_WEIGHT_DTL' => $data['MILL_WEIGHT_DTL'] ?? null,
-                    'BJR_CHIT' => $data['BJR_CHIT'] ?? null,
-                    'LASTAPPROVAL' => Auth::user()->username ?? 'SIPSMOBILE',
+                    "SPBNO" => $data["SPBNO"] ?? null,
+                    "FIELDCODE" => $data["FIELDCODE"] ?? null,
+                    "RECEPTIONDATE" => $data["RECEPTIONDATE"] ?? null,
+                    "HARVESTDATE" => $data["HARVESTDATE"] ?? null,
+                    "CROPCODE" => $data["CROPCODE"] ?? null,
+                    "PRODUCTCODE" => $data["PRODUCTCODE"] ?? "TBS",
+                    "OWN" => $data["OWN"] ?? "OWN",
+                    "VEHICLE" => $data["VEHICLE"] ?? null,
+                    "DRIVER" => $data["DRIVER"] ?? null,
+                    "MILL" => $data["MILL"] ?? null,
+                    "AGREEMENTCODE" => $data["AGREEMENTCODE"] ?? null,
+                    "TRANSPORTTYPE" =>
+                        $data["TRANSPORTTYPE"] ?? "DIRECTTRANSPORT",
+                    "SPB_TYPE" => $data["SPB_TYPE"] ?? 0,
+                    "BUNCH" => $data["BUNCH"] ?? null,
+                    "BUCKET" => $data["BUCKET"] ?? null,
+                    "PRESSEMESTER_ABW" => $data["PRESSEMESTER_ABW"] ?? null,
+                    "BUNCH_ESTATEWEIGHT" => $data["BUNCH_ESTATEWEIGHT"] ?? null,
+                    "FCENTRY" => $data["FCENTRY"] ?? null,
+                    "FCEDIT" => $data["FCEDIT"] ?? null,
+                    "FCIP" => $data["FCIP"] ?? null,
+                    "FCBA" => $data["FCBA"] ?? null,
+                    "LASTUPDATE" => $currentDateTime,
+                    "LASTTIME" => $currentTime,
+                    "CHITNO" => $data["CHITNO"] ?? null,
+                    "MILL_WEIGHT_BRUTO" => $data["MILL_WEIGHT_BRUTO"] ?? null,
+                    "MILL_WEIGHT_GROSS" => $data["MILL_WEIGHT_GROSS"] ?? null,
+                    "MILL_WEIGHT_TARRA" => $data["MILL_WEIGHT_TARRA"] ?? null,
+                    "MILL_WEIGHT_POTONGAN" =>
+                        $data["MILL_WEIGHT_POTONGAN"] ?? null,
+                    "MILL_WEIGHT_NETTO" => $data["MILL_WEIGHT_NETTO"] ?? null,
+                    "MENTAH" => $data["MENTAH"] ?? null,
+                    "TANKOS" => $data["TANKOS"] ?? null,
+                    "HILANG" => $data["HILANG"] ?? null,
+                    "KETERANGAN" => $data["KETERANGAN"] ?? "SIPSMOBILE",
+                    "MILL_WEIGHT_DTL" => $data["MILL_WEIGHT_DTL"] ?? null,
+                    "BJR_CHIT" => $data["BJR_CHIT"] ?? null,
+                    "LASTAPPROVAL" => Auth::user()->username ?? "SIPSMOBILE",
                 ];
 
-                DB::connection('oracle')->insert($sql, $params);
-                $inserted[] = $data['SPBNO'] ?? null;
+                DB::connection("oracle")->insert($sql, $params);
+                $inserted[] = $data["SPBNO"] ?? null;
             }
 
-            return new AllResource(true, 'Data Harvesting SPB berhasil ditambahkan.', $inserted);
+            return new AllResource(
+                true,
+                "Data Harvesting SPB berhasil ditambahkan.",
+                $inserted,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -885,9 +984,9 @@ class UploadController extends Controller
      * @bodyParam data[].qe_8 integer required QE 8 - Buah dibelah. Example: 0
      * @bodyParam data[].qe_9 integer required QE 9. Example: 0
      * @bodyParam data[].qe_10 integer required QE 10. Example: 0
-     * @bodyParam data[].fcentry string optional Dibuat oleh. Example: 
-     * @bodyParam data[].fcedit string optional Diubah oleh. Example: 
-     * @bodyParam data[].fcip string optional IP address. Example: 
+     * @bodyParam data[].fcentry string optional Dibuat oleh. Example:
+     * @bodyParam data[].fcedit string optional Diubah oleh. Example:
+     * @bodyParam data[].fcip string optional IP address. Example:
      * @bodyParam data[].fcba string required Kode FCBA. Example: MTE
      * @bodyParam data[].qe_11 integer required QE 11 - Buah mentah A1. Example: 0
      * @bodyParam data[].qe_12 integer required QE 12 - Buah tinggal S. Example: 0
@@ -917,17 +1016,20 @@ class UploadController extends Controller
     {
         try {
             // Ambil data dari request (diasumsikan array of records)
-            $datas = $request->input('data');
+            $datas = $request->input("data");
             if (!$datas || !is_array($datas)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid atau kosong.'
-                ], 400);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
             }
 
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
-            $currentTime = $currentDateTime->format('H:i'); // Format HH:MM
+            $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
             foreach ($datas as $r_data) {
                 // Normalisasi keys dari snake_case ke UPPERCASE
@@ -941,103 +1043,78 @@ class UploadController extends Controller
                 )";
 
                 $params = [
-                    'EMPCODE' => $data['EMPCODE'] ?? null,
-                    'FDDATE' => $data['FDDATE'] ?? null,
-                    'FIELDCODE' => $data['FIELDCODE'] ?? null,
-                    'UNDER_RIPE' => $data['UNDER_RIPE'] ?? 0,
-                    'OVER_RIPE' => $data['OVER_RIPE'] ?? 0,
-                    'ABNORMAL' => $data['ABNORMAL'] ?? 0,
-                    'LONG_STALK' => $data['LONG_STALK'] ?? 0,
-                    'EATEN_BY_RAT' => $data['EATEN_BY_RAT'] ?? 0,
-                    'UNHARVEST_FFB' => $data['UNHARVEST_FFB'] ?? 0,
-                    'UNCOLLECT_LF_CIRCLE' => $data['UNCOLLECT_LF_CIRCLE'] ?? 0,
-                    'UNCOLLECT_LF_PIECE' => $data['UNCOLLECT_LF_PIECE'] ?? 0,
-                    'UNARRANGE_FFB' => $data['UNARRANGE_FFB'] ?? 0,
-                    'UNPRUNE_FROND' => $data['UNPRUNE_FROND'] ?? 0,
-                    'QE_1' => $data['QE_1'] ?? 0,
-                    'QE_2' => $data['QE_2'] ?? 0,
-                    'QE_3' => $data['QE_3'] ?? 0,
-                    'QE_4' => $data['QE_4'] ?? 0,
-                    'QE_5' => $data['QE_5'] ?? 0,
-                    'QE_6' => $data['QE_6'] ?? 0,
-                    'QE_7' => $data['QE_7'] ?? 0,
-                    'QE_8' => $data['QE_8'] ?? 0,
-                    'QE_9' => $data['QE_9'] ?? 0,
-                    'QE_10' => $data['QE_10'] ?? 0,
-                    'FCENTRY' => $data['FCENTRY'] ?? null,
-                    'FCEDIT' => $data['FCEDIT'] ?? null,
-                    'FCIP' => $data['FCIP'] ?? null,
-                    'FCBA' => $data['FCBA'] ?? null,
-                    'LASTUPDATE' => $currentDateTime,
-                    'LASTTIME' => $currentTime,
-                    'QE_11' => $data['QE_11'] ?? 0,
-                    'QE_12' => $data['QE_12'] ?? 0,
-                    'QE_13' => $data['QE_13'] ?? 0,
-                    'QE_14' => $data['QE_14'] ?? 0,
-                    'QE_15' => $data['QE_15'] ?? 0,
-                    'QE_16' => $data['QE_16'] ?? 0,
-                    'QE_17' => $data['QE_17'] ?? 0,
-                    'DOCUMENTNO' => $data['DOCUMENTNO'] ?? null,
-                    'LASTAPPROVAL' => Auth::user()->username ?? 'SIPSMOBILE',
+                    "EMPCODE" => $data["EMPCODE"] ?? null,
+                    "FDDATE" => $data["FDDATE"] ?? null,
+                    "FIELDCODE" => $data["FIELDCODE"] ?? null,
+                    "UNDER_RIPE" => $data["UNDER_RIPE"] ?? 0,
+                    "OVER_RIPE" => $data["OVER_RIPE"] ?? 0,
+                    "ABNORMAL" => $data["ABNORMAL"] ?? 0,
+                    "LONG_STALK" => $data["LONG_STALK"] ?? 0,
+                    "EATEN_BY_RAT" => $data["EATEN_BY_RAT"] ?? 0,
+                    "UNHARVEST_FFB" => $data["UNHARVEST_FFB"] ?? 0,
+                    "UNCOLLECT_LF_CIRCLE" => $data["UNCOLLECT_LF_CIRCLE"] ?? 0,
+                    "UNCOLLECT_LF_PIECE" => $data["UNCOLLECT_LF_PIECE"] ?? 0,
+                    "UNARRANGE_FFB" => $data["UNARRANGE_FFB"] ?? 0,
+                    "UNPRUNE_FROND" => $data["UNPRUNE_FROND"] ?? 0,
+                    "QE_1" => $data["QE_1"] ?? 0,
+                    "QE_2" => $data["QE_2"] ?? 0,
+                    "QE_3" => $data["QE_3"] ?? 0,
+                    "QE_4" => $data["QE_4"] ?? 0,
+                    "QE_5" => $data["QE_5"] ?? 0,
+                    "QE_6" => $data["QE_6"] ?? 0,
+                    "QE_7" => $data["QE_7"] ?? 0,
+                    "QE_8" => $data["QE_8"] ?? 0,
+                    "QE_9" => $data["QE_9"] ?? 0,
+                    "QE_10" => $data["QE_10"] ?? 0,
+                    "FCENTRY" => $data["FCENTRY"] ?? null,
+                    "FCEDIT" => $data["FCEDIT"] ?? null,
+                    "FCIP" => $data["FCIP"] ?? null,
+                    "FCBA" => $data["FCBA"] ?? null,
+                    "LASTUPDATE" => $currentDateTime,
+                    "LASTTIME" => $currentTime,
+                    "QE_11" => $data["QE_11"] ?? 0,
+                    "QE_12" => $data["QE_12"] ?? 0,
+                    "QE_13" => $data["QE_13"] ?? 0,
+                    "QE_14" => $data["QE_14"] ?? 0,
+                    "QE_15" => $data["QE_15"] ?? 0,
+                    "QE_16" => $data["QE_16"] ?? 0,
+                    "QE_17" => $data["QE_17"] ?? 0,
+                    "DOCUMENTNO" => $data["DOCUMENTNO"] ?? null,
+                    "LASTAPPROVAL" => Auth::user()->username ?? "SIPSMOBILE",
                 ];
 
-                DB::connection('oracle')->insert($sql, $params);
-                $inserted[] = $data['DOCUMENTNO'] ?? null;
+                DB::connection("oracle")->insert($sql, $params);
+                $inserted[] = $data["DOCUMENTNO"] ?? null;
             }
 
-            return new AllResource(true, 'Data Harvesting Quality berhasil ditambahkan.', $inserted);
+            return new AllResource(
+                true,
+                "Data Harvesting Quality berhasil ditambahkan.",
+                $inserted,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
     /**
-     * Upload ke SIPS Mobile - LHM Data.
+     * Approval LHM SIPSMobile.
      *
-     * Endpoint ini digunakan untuk mengirim data LHM (Laporan Harian Mandor) dari SIPS Mobile ke tabel SIPSMOBILE.LHM_DATA.
+     * Endpoint ini digunakan untuk melakukan kegiatan approval.
      * Data harus dikirim sebagai array dengan struktur untuk perhitungan upah harian karyawan.
      *
      * @bodyParam data array required Array data LHM yang akan diinsert ke tabel LHM_DATA.
-     * @bodyParam data[].fddate string required Tanggal panen (format: YYYY-MM-DD). Example: 2026-04-21
-     * @bodyParam data[].fcba string required Kode FCBA. Example: MTE
-     * @bodyParam data[].afdeling string required Kode Afdeling. Example: AFD-01
-     * @bodyParam data[].employeecode string required Kode karyawan. Example: 06-000223-230221-0323
-     * @bodyParam data[].nama string required Nama karyawan. Example: HENDRA
-     * @bodyParam data[].attendance string required Status kehadiran. Example: PRESENT
-     * @bodyParam data[].hk integer required Hari kerja. Example: 1
-     * @bodyParam data[].blok string required Kode blok/field. Example: M06
-     * @bodyParam data[].tahuntanam integer required Tahun tanam. Example: 2020
-     * @bodyParam data[].jjg integer required Jumlah janjang. Example: 150
-     * @bodyParam data[].ha integer required Hectare. Example: 5
-     * @bodyParam data[].mentahqty integer required Jumlah mentah. Example: 10
-     * @bodyParam data[].mentahrp integer required Rp mentah. Example: 50000
-     * @bodyParam data[].emptybunchqty integer required Jumlah empty bunch. Example: 5
-     * @bodyParam data[].emptybunchrp integer required Rp empty bunch. Example: 25000
-     * @bodyParam data[].jumlahdenda integer required Jumlah denda. Example: 0
-     * @bodyParam data[].totalalljjg integer required Total jumlah janjang. Example: 0
-     * @bodyParam data[].basis integer required Basis upah. Example: 100000
-     * @bodyParam data[].rpbasis integer required Rp basis. Example: 100000
-     * @bodyParam data[].premilv1 integer required Premi level 1. Example: 20000
-     * @bodyParam data[].rate1 integer required Rate 1. Example: 1
-     * @bodyParam data[].rplv1 integer required Rp level 1. Example: 20000
-     * @bodyParam data[].premilv2 integer required Premi level 2. Example: 15000
-     * @bodyParam data[].rate2 integer required Rate 2. Example: 1
-     * @bodyParam data[].rplv2 integer required Rp level 2. Example: 15000
-     * @bodyParam data[].premilv3 integer required Premi level 3. Example: 10000
-     * @bodyParam data[].rate3 integer required Rate 3. Example: 0
-     * @bodyParam data[].rplv3 integer required Rp level 3. Example: 0
-     * @bodyParam data[].totalrppremi integer required Total rp premi. Example: 35000
-     * @bodyParam data[].kurangbasis integer required Kurang basis. Example: 0
-     * @bodyParam data[].harilibur integer required Hari libur. Example: 0
-     * @bodyParam data[].rphk integer required Rp per hari kerja. Example: 135000
-     * @bodyParam data[].total integer required Total upah. Example: 135000
-     * @bodyParam data[].fcentry string required Dibuat oleh. Example: PTE_PRODUKSI
-     * @bodyParam data[].fcedit string required Diubah oleh. Example: PTE_PRODUKSI
-     * @bodyParam data[].fcip string required IP address. Example: 114.10.139.104
+     * @bodyParam data[].ID string required ID Data Absensi (format: YYYY-MM-DD). Example: 123311
+     * @bodyParam data[].ROWDATA string required baris data. Example: 1
+     * @bodyParam data[].HA string required baris data. Example: 2.7
      *
      * @response 200 scenario="success" {
      *  "success": true,
@@ -1058,23 +1135,25 @@ class UploadController extends Controller
     {
         try {
             // Ambil data dari request (diasumsikan array of records)
-            $datas = $request->input('data');
+            $datas = $request->input("data");
             if (!$datas || !is_array($datas)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak valid atau kosong.'
-                ], 400);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
             }
 
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
-            $currentTime = $currentDateTime->format('H:i'); // Format HH:MM
+            $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
             DB::beginTransaction();
 
-            if (Auth::user()->level === 'MDP') {
-
-                $conn = DB::connection('oracle');
+            if (Auth::user()->level === "MDP") {
+                $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
 
                 // 1. Prepare temp table data (ID, ROWDATA, HA)
@@ -1083,12 +1162,12 @@ class UploadController extends Controller
                 foreach ($datas as $r_data) {
                     $data = array_change_key_case($r_data, CASE_UPPER);
 
-                    $key = $data['ID'] . '|' . $data['ROWDATA'];
+                    $key = $data["ID"] . "|" . $data["ROWDATA"];
 
                     $tempRows[$key] = [
-                        'ID' => (int)$data['ID'],
-                        'ROWDATA' => (int)$data['ROWDATA'],
-                        'HA' => (float)($data['HA'] ?? 0),
+                        "ID" => (int) $data["ID"],
+                        "ROWDATA" => (int) $data["ROWDATA"],
+                        "HA" => (float) ($data["HA"] ?? 0),
                     ];
                 }
 
@@ -1096,18 +1175,18 @@ class UploadController extends Controller
 
                 // 2. Insert ke TEMP TABLE (buat TEMP_LHM_INPUT)
                 foreach (array_chunk($tempRows, 1000) as $chunk) {
-
                     $bindings = [];
                     $selects = [];
 
                     foreach ($chunk as $row) {
                         $selects[] = "SELECT ?, ?, ? FROM dual";
-                        $bindings[] = $row['ID'];
-                        $bindings[] = $row['ROWDATA'];
-                        $bindings[] = $row['HA'];
+                        $bindings[] = $row["ID"];
+                        $bindings[] = $row["ROWDATA"];
+                        $bindings[] = $row["HA"];
                     }
 
-                    $sql = "INSERT INTO SIPSMOBILE.TEMP_LHM_INPUT (ID, ROWDATA, HA)
+                    $sql =
+                        "INSERT INTO SIPSMOBILE.TEMP_LHM_INPUT (ID, ROWDATA, HA)
                             " . implode(" UNION ALL ", $selects);
 
                     $conn->statement($sql, $bindings);
@@ -1116,7 +1195,7 @@ class UploadController extends Controller
                 // 3. INSERT SELECT dari VIEW
                 $conn->statement(
                     "  INSERT INTO SIPSMOBILE.LHM_DATA (
-                                        ID, ROWDATA, KEMANDORAN, GANGCODE, FDDATE, FCBA, AFDELING, AFDELING_BLOK, EMPLOYEECODE, NAMA, ATTENDANCE, HK, 
+                                        ID, ROWDATA, KEMANDORAN, GANGCODE, FDDATE, FCBA, AFDELING, AFDELING_BLOK, EMPLOYEECODE, NAMA, ATTENDANCE, HK,
                                         HECTARAGEPLANTED, TOTALLUASAN, BLOK, TAHUNTANAM, JJG, BRD, HA, MENTAHQTY, MENTAHRP, EMPTYBUNCHQTY, EMPTYBUNCHRP, JUMLAHDENDA,
                                         TOTALALLJJG, BASIS, RPBASIS, PREMILV1, RATE1, RPLV1, PREMILV2, RATE2, RPLV2, PREMILV3, RATE3, RPLV3, TOTALRPPREMI,
                                         KURANGBASIS, HARILIBUR, TOTALBRD, RATE_BRONDOLAN, RPHK, BRD_RP, TOTAL, ATTENDANCE_UPLOAD,
@@ -1210,7 +1289,7 @@ class UploadController extends Controller
                                     JOIN SIPSMOBILE.TEMP_LHM_INPUT tmp
                                     ON v.ID = tmp.ID AND v.ROWDATA = tmp.ROWDATA
                                 ",
-                    [$user]
+                    [$user],
                 );
 
                 $conn->statement("
@@ -1240,9 +1319,8 @@ class UploadController extends Controller
                 ");
             }
 
-            if (Auth::user()->level !== 'MDP') {
-
-                $conn = DB::connection('oracle');
+            if (Auth::user()->level !== "MDP") {
+                $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
 
                 // 1. Prepare temp rows (DEDUP)
@@ -1251,11 +1329,11 @@ class UploadController extends Controller
                 foreach ($datas as $r_data) {
                     $data = array_change_key_case($r_data, CASE_UPPER);
 
-                    $key = $data['ID'] . '|' . $data['ROWDATA'];
+                    $key = $data["ID"] . "|" . $data["ROWDATA"];
 
                     $tempRows[$key] = [
-                        'ID' => (int)$data['ID'],
-                        'ROWDATA' => (int)$data['ROWDATA'],
+                        "ID" => (int) $data["ID"],
+                        "ROWDATA" => (int) $data["ROWDATA"],
                     ];
                 }
 
@@ -1263,41 +1341,44 @@ class UploadController extends Controller
 
                 // 2. Insert ke TEMP TABLE
                 foreach (array_chunk($tempRows, 1000) as $chunk) {
-
                     $bindings = [];
                     $selects = [];
 
                     foreach ($chunk as $row) {
                         $selects[] = "SELECT ?, ? FROM dual";
-                        $bindings[] = $row['ID'];
-                        $bindings[] = $row['ROWDATA'];
+                        $bindings[] = $row["ID"];
+                        $bindings[] = $row["ROWDATA"];
                     }
 
-                    $sql = "INSERT INTO SIPSMOBILE.TEMP_LHM_UPDATE (ID, ROWDATA)
+                    $sql =
+                        "INSERT INTO SIPSMOBILE.TEMP_LHM_UPDATE (ID, ROWDATA)
                 " . implode(" UNION ALL ", $selects);
 
                     $conn->statement($sql, $bindings);
                 }
 
                 // 3. MERGE
-                $conn->statement("
+                $conn->statement(
+                    "
                                     MERGE INTO SIPSMOBILE.LHM_DATA t
                                     USING SIPSMOBILE.TEMP_LHM_UPDATE tmp
                                     ON (t.ID = tmp.ID AND t.ROWDATA = tmp.ROWDATA)
                                     WHEN MATCHED THEN
-                                        UPDATE SET 
+                                        UPDATE SET
                                             t.LASTAPPROVAL = ?,
                                             t.FCEDIT = ?,
                                             t.LASTUPDATE = SYSDATE
-                                ", [$user, $user]);
+                                ",
+                    [$user, $user],
+                );
             }
 
-            $checkLastApproval = DB::table('T_LASTAPPROVAL')
-                ->where('FCBA', Auth::user()->fcba) // penting kalau ada banyak data
-                ->value('CODE'); // langsung ambil 1 kolom
+            $checkLastApproval = DB::table("T_LASTAPPROVAL")
+                ->where("FCBA", Auth::user()->fcba) // penting kalau ada banyak data
+                ->value("CODE"); // langsung ambil 1 kolom
 
             if (Auth::user()->level === $checkLastApproval) {
-                \Log::info('LUAR BIASA');
+                Log::info("LUAR BIASA");
                 DB::statement("
                         INSERT ALL
                         INTO IPLASPROD.ATTENDANCE_GAD (
@@ -1396,7 +1477,7 @@ class UploadController extends Controller
                             u.\"LEVEL\" USER_LEVEL
                         FROM
                             SIPSMOBILE.LHM_DATA ld
-                        JOIN SIPSMOBILE.USERS u 
+                        JOIN SIPSMOBILE.USERS u
                             ON ld.LASTAPPROVAL = u.USERNAME
                         CROSS JOIN
                             (
@@ -1404,14 +1485,14 @@ class UploadController extends Controller
                                 NVL(MAX(LINENOKEY), 0) AS base_max
                             FROM
                                 IPLASPROD.ATTENDANCE_GAD_TEMP
-                            ) bm 
+                            ) bm
                         WHERE
                             NOT EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = ld.ID)
-                            AND EXISTS 
+                            AND EXISTS
                                 (
-                                SELECT 
-                                * 
-                                FROM 
+                                SELECT
+                                *
+                                FROM
                                     (
                                         SELECT
                                             d.FCBA,
@@ -1436,30 +1517,223 @@ class UploadController extends Controller
                     ");
             }
 
-            \Log::info('TIDAK LUAR BIASA ' . $checkLastApproval);
+            Log::info("TIDAK LUAR BIASA " . $checkLastApproval);
 
             DB::commit();
 
-            return new AllResource(true, 'Data LHM berhasil ditambahkan.', $inserted);
+            return new AllResource(
+                true,
+                "Data LHM berhasil ditambahkan.",
+                $inserted,
+            );
         } catch (\Exception $e) {
-            \Log::error('LHM BULK ERROR', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            Log::error("LHM BULK ERROR", [
+                "message" => $e->getMessage(),
+                "trace" => $e->getTraceAsString(),
             ]);
 
             DB::rollBack();
 
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
+        }
+    }
+
+    /**
+     * Open LHM SIPSMobile.
+     *
+     * Endpoint ini digunakan untuk mengirim data LHM (Laporan Harian Mandor) dari SIPS Mobile ke tabel SIPSMOBILE.LHM_DATA.
+     * Data harus dikirim sebagai array dengan struktur untuk perhitungan upah harian karyawan.
+     *
+     * @bodyParam data array required Array data LHM yang akan diinsert ke tabel LHM_DATA.
+     * @bodyParam data[].ID string required ID Data Absensi (format: YYYY-MM-DD). Example: 123311
+     * @bodyParam data[].ROWDATA string required baris data. Example: 1
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "Data LHM berhasil dibuka.",
+     *  "data": [1, 2, 3]
+     * }
+     * @response 400 scenario="invalid data" {
+     *  "success": false,
+     *  "message": "Data tidak valid atau kosong."
+     * }
+     * @response 500 scenario="error" {
+     *  "success": false,
+     *  "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+     *  "error": "Deskripsi error dari database"
+     * }
+     */
+    public function open_lhm_data(Request $request)
+    {
+        try {
+            $datas = $request->input("data");
+
+            if (!$datas || !is_array($datas)) {
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
+            }
+
+            DB::beginTransaction();
+
+            $conn = DB::connection("oracle");
+
+            // =============================
+            // 1. PREPARE TEMP TABLE
+            // =============================
+            $tempRows = [];
+
+            foreach ($datas as $r_data) {
+                $data = array_change_key_case($r_data, CASE_UPPER);
+
+                $key = $data["ID"] . "|" . $data["ROWDATA"];
+
+                $tempRows[$key] = [
+                    "ID" => (int) $data["ID"],
+                    "ROWDATA" => (int) $data["ROWDATA"],
+                ];
+            }
+
+            $tempRows = array_values($tempRows);
+
+            // insert ke TEMP
+            foreach (array_chunk($tempRows, 1000) as $chunk) {
+                $bindings = [];
+                $selects = [];
+
+                foreach ($chunk as $row) {
+                    $selects[] = "SELECT ?, ? FROM dual";
+                    $bindings[] = $row["ID"];
+                    $bindings[] = $row["ROWDATA"];
+                }
+
+                $sql =
+                    "INSERT INTO SIPSMOBILE.TEMP_LHM_INPUT (ID, ROWDATA)
+                        " . implode(" UNION ALL ", $selects);
+
+                $conn->statement($sql, $bindings);
+            }
+
+            // =============================
+            // 2. BALIKKAN HARVESTING (WAJIB PERTAMA)
+            // =============================
+            $conn->statement("
+                UPDATE SIPSMOBILE.HARVESTING h
+                SET h.STATUS_HARVESTING = 'Planned'
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM SIPSMOBILE.LHM_DATA l
+                    JOIN SIPSMOBILE.TEMP_LHM_INPUT tmp
+                        ON l.ID = tmp.ID AND l.ROWDATA = tmp.ROWDATA
+                    WHERE TRUNC(l.FDDATE) = TRUNC(h.TANGGAL)
+                    AND l.EMPLOYEECODE = h.KODE_KARYAWAN
+                    AND l.FIELDCODE = h.FIELDCODE
+                )
+            ");
+
+            // =============================
+            // 3. BALIKKAN ATTENDANCE
+            // =============================
+            $conn->statement("
+                UPDATE SIPSMOBILE.ATTENDANCE a
+                SET a.STATUS_ATTENDANCE = 'Planned'
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM SIPSMOBILE.TEMP_LHM_INPUT tmp
+                    WHERE a.ID = tmp.ID
+                )
+            ");
+
+            // =============================
+            // 4. DELETE HARVESTING QUALITY
+            // =============================
+            $conn->statement("
+                DELETE FROM IPLASPROD.HARVESTINGQUALITY hq
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM SIPSMOBILE.TEMP_LHM_INPUT tmp
+                    WHERE hq.DOCUMENTNO = tmp.ID
+                )
+            ");
+
+            // =============================
+            // 5. DELETE GAD
+            // =============================
+            $conn->statement("
+                DELETE FROM IPLASPROD.ATTENDANCE_GAD ag
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM SIPSMOBILE.TEMP_LHM_INPUT tmp
+                    WHERE ag.DOCUMENTNO = tmp.ID
+                )
+            ");
+
+            // =============================
+            // 6. DELETE GAD TEMP
+            // =============================
+            $conn->statement("
+                DELETE FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM SIPSMOBILE.TEMP_LHM_INPUT tmp
+                    WHERE agt.DOCUMENTNO = tmp.ID
+                )
+            ");
+
+            // =============================
+            // 7. DELETE LHM_DATA (TERAKHIR!)
+            // =============================
+            $conn->statement("
+                DELETE FROM SIPSMOBILE.LHM_DATA l
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM SIPSMOBILE.TEMP_LHM_INPUT tmp
+                    WHERE l.ID = tmp.ID
+                    AND l.ROWDATA = tmp.ROWDATA
+                )
+            ");
+
+            DB::commit();
+
             return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage()
-            ], 500);
+                "success" => true,
+                "message" => "Reverse LHM berhasil.",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error("REVERSE LHM ERROR", [
+                "message" => $e->getMessage(),
+            ]);
+
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Gagal reverse data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
     private function formatNumber($value)
     {
-        if ($value === null) return null;
+        if ($value === null) {
+            return null;
+        }
 
         // Paksa ke float agar bisa dibulatkan
         $num = (float) $value;
@@ -1468,14 +1742,14 @@ class UploadController extends Controller
         $num = round($num, 3);
 
         // Konversi ke string tanpa notasi scientific
-        $v = number_format($num, 3, '.', '');
+        $v = number_format($num, 3, ".", "");
 
         // Hilangkan trailing zero: 1.500 → 1.5 , 10.000 → 10
-        $v = rtrim(rtrim($v, '0'), '.');
+        $v = rtrim(rtrim($v, "0"), ".");
 
         // Tambahkan 0 jika mulai dengan titik
-        if (str_starts_with($v, '.')) {
-            $v = '0' . $v;
+        if (str_starts_with($v, ".")) {
+            $v = "0" . $v;
         }
 
         return $v;

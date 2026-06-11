@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\AllResource;
-
+use Illuminate\Support\Facades\Log;
 
 /**
  * @group Report
- * 
- * 
+ *
+ *
  */
 class ReportController extends Controller
 {
@@ -19,7 +19,7 @@ class ReportController extends Controller
      * Memanggil data hasil panen.
      *
      * API ini digunakan untuk memperlihatkan hasil panen pada report di Android SIPS Mobile
-     * Namun, jika ingin melakukan filter pada data yang dipanggil, 
+     * Namun, jika ingin melakukan filter pada data yang dipanggil,
      * gunakan parameter pada URL berdasarkan _**Query Parameter**_.
      * Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afdeling, tph, blok
      *
@@ -55,14 +55,14 @@ class ReportController extends Controller
     {
         try {
             // Ambil parameter dari query string
-            $nodokumen = $request->query('nodokumen');
-            $tanggaldari = $request->query('tanggaldari');
-            $tanggalsampai = $request->query('tanggalsampai');
-            $tph = $request->query('tph');
-            $blok = $request->query('blok');
-            $afdeling = $request->query('afdeling');
-            $fcba = $request->query('fcba');
-            $status = $request->query('status');
+            $nodokumen = $request->query("nodokumen");
+            $tanggaldari = $request->query("tanggaldari");
+            $tanggalsampai = $request->query("tanggalsampai");
+            $tph = $request->query("tph");
+            $blok = $request->query("blok");
+            $afdeling = $request->query("afdeling");
+            $fcba = $request->query("fcba");
+            $status = $request->query("status");
 
             $query = "
                 SELECT
@@ -130,38 +130,39 @@ class ReportController extends Controller
             // Filter berdasarkan parameter
             if ($nodokumen) {
                 $query .= " AND NODOKUMEN = :nodokumen";
-                $bindings['nodokumen'] = $nodokumen;
+                $bindings["nodokumen"] = $nodokumen;
             }
 
             if ($tanggaldari && $tanggalsampai) {
-                $query .= " AND TANGGAL BETWEEN TO_DATE(:tanggaldari, 'YYYY-MM-DD') AND TO_DATE(:tanggalsampai, 'YYYY-MM-DD')";
-                $bindings['tanggaldari'] = $tanggaldari;
-                $bindings['tanggalsampai'] = $tanggalsampai;
+                $query .=
+                    " AND TANGGAL BETWEEN TO_DATE(:tanggaldari, 'YYYY-MM-DD') AND TO_DATE(:tanggalsampai, 'YYYY-MM-DD')";
+                $bindings["tanggaldari"] = $tanggaldari;
+                $bindings["tanggalsampai"] = $tanggalsampai;
             }
 
             if ($tph) {
                 $query .= " AND TPH = :tph";
-                $bindings['tph'] = $tph;
+                $bindings["tph"] = $tph;
             }
 
             if ($blok) {
                 $query .= " AND BLOK = :blok";
-                $bindings['blok'] = $blok;
+                $bindings["blok"] = $blok;
             }
 
             if ($afdeling) {
                 $query .= " AND AFDELING = :afdeling";
-                $bindings['afdeling'] = $afdeling;
+                $bindings["afdeling"] = $afdeling;
             }
 
             if ($fcba) {
                 $query .= " AND FCBA = :fcba";
-                $bindings['fcba'] = $fcba;
+                $bindings["fcba"] = $fcba;
             }
 
             if ($status) {
                 $query .= " AND STATUS = :status";
-                $bindings['status'] = $status;
+                $bindings["status"] = $status;
             }
 
             // Tambahkan bagian akhir query
@@ -169,41 +170,50 @@ class ReportController extends Controller
                 ORDER BY
                     NODOKUMEN,
                     TANGGAL,
-                    STATUS, 
-                    TPH, 
+                    STATUS,
+                    TPH,
                     BLOK
             ";
 
             // Jalankan query
-            $datas = DB::connection('oracle')->select($query, $bindings);
+            $datas = DB::connection("oracle")->select($query, $bindings);
 
             if (empty($datas)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'List Data Hasil Panen',
-                'data' => $datas
-            ], 200);
+            return response()->json(
+                [
+                    "success" => true,
+                    "message" => "List Data Hasil Panen",
+                    "data" => $datas,
+                ],
+                200,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
     /**
      * Memanggil data hasil pengangkutan.
      *
-     * API ini digunakan untuk memanggil data Pengangkutan secara keseluruhan yang dikelompokkan berdasarkan no pengangkutan. 
-     * Namun, jika ingin melakukan filter pada data yang dipanggil, 
+     * API ini digunakan untuk memanggil data Pengangkutan secara keseluruhan yang dikelompokkan berdasarkan no pengangkutan.
+     * Namun, jika ingin melakukan filter pada data yang dipanggil,
      * gunakan parameter pada URL berdasarkan _**Query Parameter**_.
      * Data diurutkan berdasarkan Tanggal terbaru, Afdeling, dan Kode Karyawan.
      *
@@ -221,7 +231,7 @@ class ReportController extends Controller
      * @queryParam type_pengangkutan integer Optional. Filter Pengangkutan berdasarkan type pengangkutan salah satu dari 1 (LANGSIR) atau 2 (DIRECT). Example: 1
      * @queryParam kode_kendaraan string Optional. Filter Pengangkutan berdasarkan Kode Kendaraan. Example: DT70
      * @queryParam fcba string Optional. Filter Pengangkutan berdasarkan FCBA. Example: MTE
-     * @queryParam pabrik_tujuan string Optional. Filter Pengangkutan berdasarkan tujuan tergantung type_pengangkutan jika Direct Maka akan diarahkan ke Business Unit dengan type M jika Langsir maka akan diarahkan ke TPH dengan tipe langsir kodenya (4). Example: DOM 
+     * @queryParam pabrik_tujuan string Optional. Filter Pengangkutan berdasarkan tujuan tergantung type_pengangkutan jika Direct Maka akan diarahkan ke Business Unit dengan type M jika Langsir maka akan diarahkan ke TPH dengan tipe langsir kodenya (4). Example: DOM
      * @queryParam afdeling string Optional. Filter Pengangkutan berdasarkan afdeling. Example: AFD-01
      *
      * @response 200 scenario="success" {
@@ -267,25 +277,25 @@ class ReportController extends Controller
     {
         try {
             // Ambil parameter dari query string
-            $nopengangkutan = $request->query('nopengangkutan');
-            $nospb = $request->query('nospb');
-            $tanggal = $request->query('tanggal');
-            $tanggalEnd     = $request->query('tanggal_end');
-            $kode_karyawan_kerani = $request->query('kode_karyawan_kerani');
-            $kode_karyawan_driver = $request->query('kode_karyawan_driver');
-            $tkbm1 = $request->query('tkbm1');
-            $tkbm2 = $request->query('tkbm2');
-            $tkbm3 = $request->query('tkbm3');
-            $tkbm4 = $request->query('tkbm4');
-            $tkbm5 = $request->query('tkbm5');
-            $kode_kendaraan = $request->query('kode_kendaraan');
-            $type_pengangkutan = $request->query('type_pengangkutan');
-            $fcba = $request->query('fcba');
-            $afdeling = $request->query('afdeling');
-            $pabrik_tujuan = $request->query('pabrik_tujuan');
+            $nopengangkutan = $request->query("nopengangkutan");
+            $nospb = $request->query("nospb");
+            $tanggal = $request->query("tanggal");
+            $tanggalEnd = $request->query("tanggal_end");
+            $kode_karyawan_kerani = $request->query("kode_karyawan_kerani");
+            $kode_karyawan_driver = $request->query("kode_karyawan_driver");
+            $tkbm1 = $request->query("tkbm1");
+            $tkbm2 = $request->query("tkbm2");
+            $tkbm3 = $request->query("tkbm3");
+            $tkbm4 = $request->query("tkbm4");
+            $tkbm5 = $request->query("tkbm5");
+            $kode_kendaraan = $request->query("kode_kendaraan");
+            $type_pengangkutan = $request->query("type_pengangkutan");
+            $fcba = $request->query("fcba");
+            $afdeling = $request->query("afdeling");
+            $pabrik_tujuan = $request->query("pabrik_tujuan");
 
             $query = "
-                SELECT 
+                SELECT
                     PENGANGKUTAN.NOPENGANGKUTAN,
                     PENGANGKUTAN.NOSPB,
                     PENGANGKUTAN.TANGGAL,
@@ -318,11 +328,11 @@ class ReportController extends Controller
                 LEFT JOIN
                     SIPSMOBILE.EMPLOYEE KERANI
                 ON
-                    PENGANGKUTAN.KODE_KARYAWAN_KERANI = KERANI.FCCODE 
+                    PENGANGKUTAN.KODE_KARYAWAN_KERANI = KERANI.FCCODE
                 LEFT JOIN
                     SIPSMOBILE.EMPLOYEE DRIVER
                 ON
-                    PENGANGKUTAN.KODE_KARYAWAN_DRIVER = DRIVER.FCCODE 
+                    PENGANGKUTAN.KODE_KARYAWAN_DRIVER = DRIVER.FCCODE
                 LEFT JOIN
                     SIPSMOBILE.EMPLOYEE TKBM1
                 ON
@@ -345,9 +355,9 @@ class ReportController extends Controller
                     PENGANGKUTAN.TKBM5 = TKBM5.FCCODE
                 LEFT JOIN
                     (SELECT DISTINCT FCCODE, FCNAME FROM IPLASPROD.VEHICLE) KENDARAAN
-                ON 
-                    PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE 
-                WHERE 
+                ON
+                    PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE
+                WHERE
                     PENGANGKUTAN.TANGGAL IS NOT NULL
             ";
 
@@ -356,11 +366,11 @@ class ReportController extends Controller
             // Filter berdasarkan parameter
             if ($nopengangkutan) {
                 $query .= " AND NOPENGANGKUTAN = :nopengangkutan";
-                $bindings['nopengangkutan'] = $nopengangkutan;
+                $bindings["nopengangkutan"] = $nopengangkutan;
             }
             if ($nospb) {
                 $query .= " AND NOSPB = :nospb";
-                $bindings['nospb'] = $nospb;
+                $bindings["nospb"] = $nospb;
             }
 
             /**
@@ -373,87 +383,90 @@ class ReportController extends Controller
             if ($tanggal && $tanggalEnd) {
                 // Optional: jaga-jaga kalau user kebalik isi (tanggal > tanggalEnd)
                 $startDate = $tanggal;
-                $endDate   = $tanggalEnd;
+                $endDate = $tanggalEnd;
 
                 if ($startDate > $endDate) {
                     $startDate = $tanggalEnd;
-                    $endDate   = $tanggal;
+                    $endDate = $tanggal;
                 }
 
-                $query .= " and PENGANGKUTAN.TANGGAL between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
-                $bindings['tanggal'] = $startDate;
-                $bindings['tanggal_end']   = $endDate;
+                $query .=
+                    " and PENGANGKUTAN.TANGGAL between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                $bindings["tanggal"] = $startDate;
+                $bindings["tanggal_end"] = $endDate;
             } elseif ($tanggal) {
-                $query .= " and PENGANGKUTAN.TANGGAL = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
-                $bindings['tanggal'] = $tanggal;
+                $query .=
+                    " and PENGANGKUTAN.TANGGAL = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
+                $bindings["tanggal"] = $tanggal;
             } elseif ($tanggalEnd) {
-                $query .= " and PENGANGKUTAN.TANGGAL = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
-                $bindings['tanggal_end'] = $tanggalEnd;
+                $query .=
+                    " and PENGANGKUTAN.TANGGAL = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                $bindings["tanggal_end"] = $tanggalEnd;
             }
 
             if ($kode_kendaraan) {
                 $query .= " AND KODE_KENDARAAN = :kode_kendaraan";
-                $bindings['kode_kendaraan'] = $kode_kendaraan;
+                $bindings["kode_kendaraan"] = $kode_kendaraan;
             }
 
             if ($kode_karyawan_kerani) {
                 $query .= " AND KODE_KARYAWAN_KERANI = :kode_karyawan_kerani";
-                $bindings['kode_karyawan_kerani'] = $kode_karyawan_kerani;
+                $bindings["kode_karyawan_kerani"] = $kode_karyawan_kerani;
             }
 
             if ($kode_karyawan_driver) {
                 $query .= " AND KODE_KARYAWAN_DRIVER = :kode_karyawan_driver";
-                $bindings['kode_karyawan_driver'] = $kode_karyawan_driver;
+                $bindings["kode_karyawan_driver"] = $kode_karyawan_driver;
             }
 
             if ($tkbm1) {
                 $query .= " AND TKBM1 = :tkbm1";
-                $bindings['tkbm1'] = $tkbm1;
+                $bindings["tkbm1"] = $tkbm1;
             }
 
             if ($tkbm2) {
                 $query .= " AND TKBM2 = :tkbm2";
-                $bindings['tkbm2'] = $tkbm2;
+                $bindings["tkbm2"] = $tkbm2;
             }
 
             if ($tkbm3) {
                 $query .= " AND TKBM3 = :tkbm3";
-                $bindings['tkbm3'] = $tkbm3;
+                $bindings["tkbm3"] = $tkbm3;
             }
 
             if ($tkbm4) {
                 $query .= " AND TKBM4 = :tkbm4";
-                $bindings['tkbm4'] = $tkbm4;
+                $bindings["tkbm4"] = $tkbm4;
             }
 
             if ($tkbm5) {
                 $query .= " AND TKBM5 = :tkbm5";
-                $bindings['tkbm5'] = $tkbm5;
+                $bindings["tkbm5"] = $tkbm5;
             }
 
             if ($type_pengangkutan) {
                 $query .= " AND TYPE_PENGANGKUTAN = :type_pengangkutan";
-                $bindings['type_pengangkutan'] = $type_pengangkutan;
+                $bindings["type_pengangkutan"] = $type_pengangkutan;
             }
 
             if ($fcba) {
                 $query .= " AND PENGANGKUTAN.FCBA = :fcba";
-                $bindings['fcba'] = $fcba;
+                $bindings["fcba"] = $fcba;
             }
 
             if ($pabrik_tujuan) {
                 $query .= " AND PENGANGKUTAN.PABRIK_TUJUAN = :pabrik_tujuan";
-                $bindings['pabrik_tujuan'] = $pabrik_tujuan;
+                $bindings["pabrik_tujuan"] = $pabrik_tujuan;
             }
 
             if ($afdeling) {
                 $query .= " AND PENGANGKUTAN.AFDELING = :afdeling";
-                $bindings['afdeling'] = $afdeling;
+                $bindings["afdeling"] = $afdeling;
             }
 
             // Tambahkan bagian akhir query
-            $query .= "   
-                GROUP BY 
+            $query .= "
+                GROUP BY
                     PENGANGKUTAN.NOPENGANGKUTAN,
                     PENGANGKUTAN.NOSPB,
                     PENGANGKUTAN.TANGGAL,
@@ -477,30 +490,36 @@ class ReportController extends Controller
                     PENGANGKUTAN.FCBA,
                     PENGANGKUTAN.AFDELING,
                     PENGANGKUTAN.PABRIK_TUJUAN
-                ORDER BY 
+                ORDER BY
                     PENGANGKUTAN.TANGGAL DESC,
                     PENGANGKUTAN.NOPENGANGKUTAN DESC,
                     PENGANGKUTAN.NOSPB DESC
             ";
 
             // Jalankan query
-            $datas = DB::connection('oracle')->select($query, $bindings);
+            $datas = DB::connection("oracle")->select($query, $bindings);
 
             if (empty($datas)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data Pengangkutan', $datas);
+            return new AllResource(true, "List Data Pengangkutan", $datas);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -508,7 +527,7 @@ class ReportController extends Controller
      * Memanggil data hasil langsir.
      *
      * API ini digunakan untuk memperlihatkan hasil langsir pada report di Android SIPS Mobile
-     * Namun, jika ingin melakukan filter pada data yang dipanggil, 
+     * Namun, jika ingin melakukan filter pada data yang dipanggil,
      * gunakan parameter pada URL berdasarkan _**Query Parameter**_.
      * Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afdeling, tph, blok
      *
@@ -550,22 +569,22 @@ class ReportController extends Controller
     {
         try {
             // Ambil parameter dari query string
-            $nodokumen = $request->query('nodokumen');
-            $nopengangkutan = $request->query('nopengangkutan');
-            $tanggaldari = $request->query('tanggaldari');
-            $tanggalsampai = $request->query('tanggalsampai');
-            $kode_kendaraan = $request->query('kode_kendaraan');
-            $afdeling = $request->query('afdeling');
-            $fcba = $request->query('fcba');
-            $tujuan = $request->query('tujuan');
-            $status = $request->query('status');
+            $nodokumen = $request->query("nodokumen");
+            $nopengangkutan = $request->query("nopengangkutan");
+            $tanggaldari = $request->query("tanggaldari");
+            $tanggalsampai = $request->query("tanggalsampai");
+            $kode_kendaraan = $request->query("kode_kendaraan");
+            $afdeling = $request->query("afdeling");
+            $fcba = $request->query("fcba");
+            $tujuan = $request->query("tujuan");
+            $status = $request->query("status");
 
             $query = "
                 SELECT
                     *
                 FROM
                     (
-                    SELECT 
+                    SELECT
                         PENGANGKUTAN.TANGGAL,
                         PENGANGKUTAN.NOPENGANGKUTAN,
                         PENGANGKUTAN.NODOKUMEN,
@@ -592,8 +611,8 @@ class ReportController extends Controller
                         SIPSMOBILE.PENGANGKUTAN
                     LEFT JOIN
                         (SELECT DISTINCT FCCODE, FCNAME FROM IPLASPROD.VEHICLE) KENDARAAN
-                    ON 
-                        PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE    
+                    ON
+                        PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE
                     LEFT JOIN (
                         SELECT
                             NODOKUMEN,
@@ -605,9 +624,9 @@ class ReportController extends Controller
                             NODOKUMEN
                         ) p ON
                         PENGANGKUTAN.NODOKUMEN = p.NODOKUMEN
-                    WHERE 
+                    WHERE
                         PENGANGKUTAN.TYPE_PENGANGKUTAN = 1
-                    GROUP BY 
+                    GROUP BY
                         PENGANGKUTAN.TANGGAL,
                         PENGANGKUTAN.NOPENGANGKUTAN,
                         PENGANGKUTAN.NODOKUMEN,
@@ -618,7 +637,7 @@ class ReportController extends Controller
                         PENGANGKUTAN.AFDELING,
                         PENGANGKUTAN.PABRIK_TUJUAN,
                         OUTPUT_PENGANGKUTAN
-                    ORDER BY 
+                    ORDER BY
                         PENGANGKUTAN.TANGGAL DESC,
                         PENGANGKUTAN.NOPENGANGKUTAN DESC,
                         PENGANGKUTAN.NODOKUMEN DESC
@@ -633,97 +652,108 @@ class ReportController extends Controller
             if ($tanggaldari && $tanggalsampai) {
                 // Optional: jaga-jaga kalau user kebalik isi (tanggaldari > tanggalsampai)
                 $startDate = $tanggaldari;
-                $endDate   = $tanggalsampai;
+                $endDate = $tanggalsampai;
 
                 if ($startDate > $endDate) {
                     $startDate = $tanggalsampai;
-                    $endDate   = $tanggaldari;
+                    $endDate = $tanggaldari;
                 }
 
-                $query .= " and TANGGAL between TO_DATE(:tanggaldari, 'YYYY-MM-DD') and TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
-                $bindings['tanggaldari'] = $startDate;
-                $bindings['tanggalsampai']   = $endDate;
+                $query .=
+                    " and TANGGAL between TO_DATE(:tanggaldari, 'YYYY-MM-DD') and TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
+                $bindings["tanggaldari"] = $startDate;
+                $bindings["tanggalsampai"] = $endDate;
             } elseif ($tanggaldari) {
                 $query .= " and TANGGAL = TO_DATE(:tanggaldari, 'YYYY-MM-DD') ";
-                $bindings['tanggaldari'] = $tanggaldari;
+                $bindings["tanggaldari"] = $tanggaldari;
             } elseif ($tanggalsampai) {
-                $query .= " and TANGGAL = TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
-                $bindings['tanggalsampai'] = $tanggalsampai;
+                $query .=
+                    " and TANGGAL = TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
+                $bindings["tanggalsampai"] = $tanggalsampai;
             }
 
             if ($nopengangkutan) {
                 $query .= " AND NOPENGANGKUTAN = :nopengangkutan";
-                $bindings['nopengangkutan'] = $nopengangkutan;
+                $bindings["nopengangkutan"] = $nopengangkutan;
             }
 
             if ($nodokumen) {
                 $query .= " AND NODOKUMEN = :nodokumen";
-                $bindings['nodokumen'] = $nodokumen;
+                $bindings["nodokumen"] = $nodokumen;
             }
 
             if ($kode_kendaraan) {
                 $query .= " AND KODE_KENDARAAN = :kode_kendaraan";
-                $bindings['kode_kendaraan'] = $kode_kendaraan;
+                $bindings["kode_kendaraan"] = $kode_kendaraan;
             }
 
             if ($fcba) {
                 $query .= " AND FCBA = :fcba";
-                $bindings['fcba'] = $fcba;
+                $bindings["fcba"] = $fcba;
             }
 
             if ($afdeling) {
                 $query .= " AND AFDELING = :afdeling";
-                $bindings['afdeling'] = $afdeling;
+                $bindings["afdeling"] = $afdeling;
             }
 
             if ($tujuan) {
                 $query .= " AND TUJUAN = :tujuan";
-                $bindings['tujuan'] = $tujuan;
+                $bindings["tujuan"] = $tujuan;
             }
 
             if ($status) {
                 $query .= " AND STATUS = :status";
-                $bindings['status'] = $status;
+                $bindings["status"] = $status;
             }
 
             // Tambahkan bagian akhir query
             $query .= "
-                ORDER BY 
+                ORDER BY
                     TANGGAL DESC,
                     NOPENGANGKUTAN DESC,
                     NODOKUMEN DESC
             ";
 
             // Jalankan query
-            $datas = DB::connection('oracle')->select($query, $bindings);
+            $datas = DB::connection("oracle")->select($query, $bindings);
 
             if (empty($datas)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'List Data Hasil Panen',
-                'data' => $datas
-            ], 200);
+            return response()->json(
+                [
+                    "success" => true,
+                    "message" => "List Data Hasil Panen",
+                    "data" => $datas,
+                ],
+                200,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
     /**
      * Memanggil data Attendance GAD / Attendance GAD Temp dari SIPS Mobile.
      *
-     * API ini digunakan untuk memanggil SIPS Mobile untuk dimasukkan ke Attendance GAD / Attendance GAD Temp. 
-     * Namun, jika ingin melakukan filter pada data yang dipanggil, 
+     * API ini digunakan untuk memanggil SIPS Mobile untuk dimasukkan ke Attendance GAD / Attendance GAD Temp.
+     * Namun, jika ingin melakukan filter pada data yang dipanggil,
      * gunakan parameter pada URL berdasarkan _**Query Parameter**_.
      * Data diurutkan berdasarkan Tanggal terbaru, FCBA, Afdeling, Gang, dan Kode Karyawan.
      *
@@ -791,64 +821,71 @@ class ReportController extends Controller
     public function upload_attendance(Request $request)
     {
         try {
-            $totalcount = $request->query('totalcount');
-            $tanggal = $request->query('tanggal');
-            $tanggalEnd = $request->query('tanggal_end');
-            $fcba = $request->query('fcba');
-            $afdeling = $request->query('afdeling');
-            $gangcode = $request->query('gangcode');
+            $totalcount = $request->query("totalcount");
+            $tanggal = $request->query("tanggal");
+            $tanggalEnd = $request->query("tanggal_end");
+            $fcba = $request->query("fcba");
+            $afdeling = $request->query("afdeling");
+            $gangcode = $request->query("gangcode");
 
-            $datas = DB::connection('oracle')
-                ->table('V_UPLOAD_ATTD');
+            $datas = DB::connection("oracle")->table("V_UPLOAD_ATTD");
 
             // 🔹 FILTER BASIC
             if ($totalcount) {
-                $datas->where('TOTALCOUNT', '>', $totalcount);
+                $datas->where("TOTALCOUNT", ">", $totalcount);
             }
 
             if ($fcba) {
-                $datas->where('FCBA', $fcba);
+                $datas->where("FCBA", $fcba);
             }
 
             if ($afdeling) {
-                $datas->where('AFDELING', $afdeling);
+                $datas->where("AFDELING", $afdeling);
             }
 
             if ($gangcode) {
-                $datas->where('GANGCODE', $gangcode);
+                $datas->where("GANGCODE", $gangcode);
             }
 
             // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA TRUNC)
             if ($tanggal && $tanggalEnd) {
-
                 // Handle jika user kebalik input
                 $startDate = min($tanggal, $tanggalEnd);
-                $endDate   = max($tanggal, $tanggalEnd);
+                $endDate = max($tanggal, $tanggalEnd);
 
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$startDate, $endDate]);
+                ",
+                    [$startDate, $endDate],
+                );
             } elseif ($tanggal) {
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$tanggal, $tanggal]);
+                ",
+                    [$tanggal, $tanggal],
+                );
             } elseif ($tanggalEnd) {
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$tanggalEnd, $tanggalEnd]);
+                ",
+                    [$tanggalEnd, $tanggalEnd],
+                );
             }
 
             // 🔹 ORDERING
             $datas = $datas
-                ->orderBy('FDDATE')
-                ->orderBy('FCBA')
-                ->orderBy('AFDELING')
-                ->orderBy('GANGCODE')
-                ->orderBy('EMPLOYEECODE')
-                ->orderBy('LOCATIONCODE')
+                ->orderBy("FDDATE")
+                ->orderBy("FCBA")
+                ->orderBy("AFDELING")
+                ->orderBy("GANGCODE")
+                ->orderBy("EMPLOYEECODE")
+                ->orderBy("LOCATIONCODE")
                 ->get();
 
             // 🔥 NORMALISASI ANGKA
@@ -861,20 +898,30 @@ class ReportController extends Controller
             }
 
             if ($datas->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data Attendance GAD / Attendance GAD Temp', $datas);
+            return new AllResource(
+                true,
+                "List Data Attendance GAD / Attendance GAD Temp",
+                $datas,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -942,71 +989,74 @@ class ReportController extends Controller
     public function upload_harvesting(Request $request)
     {
         try {
-            $nospb = $request->query('nospb');
-            $tanggal = $request->query('tanggal');
-            $tanggalEnd = $request->query('tanggal_end');
-            $kode_kendaraan = $request->query('kode_kendaraan');
-            $kode_karyawan_driver = $request->query('kode_karyawan_driver');
-            $mill = $request->query('mill');
-            $fcba = $request->query('fcba');
-            $chitno = $request->query('chitno');
+            $nospb = $request->query("nospb");
+            $tanggal = $request->query("tanggal");
+            $tanggalEnd = $request->query("tanggal_end");
+            $kode_kendaraan = $request->query("kode_kendaraan");
+            $kode_karyawan_driver = $request->query("kode_karyawan_driver");
+            $mill = $request->query("mill");
+            $fcba = $request->query("fcba");
+            $chitno = $request->query("chitno");
 
-            $datas = DB::connection('oracle')
-                ->table('V_UPLOAD_HVTG');
+            $datas = DB::connection("oracle")->table("V_UPLOAD_HVTG");
 
             // 🔹 FILTER BASIC
             if ($nospb) {
-                $datas->where('NOSPB', $nospb);
+                $datas->where("NOSPB", $nospb);
             }
 
             if ($kode_kendaraan) {
-                $datas->where('KODE_KENDARAAN', $kode_kendaraan);
+                $datas->where("KODE_KENDARAAN", $kode_kendaraan);
             }
 
             if ($kode_karyawan_driver) {
-                $datas->where('KODE_KARYAWAN_DRIVER', $kode_karyawan_driver);
+                $datas->where("KODE_KARYAWAN_DRIVER", $kode_karyawan_driver);
             }
 
             if ($mill) {
-                $datas->where('MILL', $mill);
+                $datas->where("MILL", $mill);
             }
 
             if ($fcba) {
-                $datas->where('FCBA', $fcba);
+                $datas->where("FCBA", $fcba);
             }
 
             if ($chitno) {
-                $datas->where('CHITNO', $chitno);
+                $datas->where("CHITNO", $chitno);
             }
 
             // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
             if ($tanggal && $tanggalEnd) {
-
                 $startDate = min($tanggal, $tanggalEnd);
-                $endDate   = max($tanggal, $tanggalEnd);
+                $endDate = max($tanggal, $tanggalEnd);
 
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     RECEPTIONDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND RECEPTIONDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$startDate, $endDate]);
+                ",
+                    [$startDate, $endDate],
+                );
             } elseif ($tanggal) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     RECEPTIONDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND RECEPTIONDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$tanggal, $tanggal]);
+                ",
+                    [$tanggal, $tanggal],
+                );
             } elseif ($tanggalEnd) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     RECEPTIONDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND RECEPTIONDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$tanggalEnd, $tanggalEnd]);
+                ",
+                    [$tanggalEnd, $tanggalEnd],
+                );
             }
 
             // 🔹 ORDERING
-            $datas = $datas
-                ->orderByDesc('NOSPB')
-                ->get();
+            $datas = $datas->orderByDesc("NOSPB")->get();
 
             // 🔥 NORMALISASI ANGKA
             foreach ($datas as &$row) {
@@ -1018,20 +1068,26 @@ class ReportController extends Controller
             }
 
             if ($datas->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data Harvesting SPB', $datas);
+            return new AllResource(true, "List Data Harvesting SPB", $datas);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -1097,57 +1153,59 @@ class ReportController extends Controller
     public function upload_harvesting_quality(Request $request)
     {
         try {
-            $empcode = $request->query('empcode');
-            $fddate = $request->query('fddate');
-            $fddateEnd = $request->query('fddate_end');
-            $fieldcode = $request->query('fieldcode');
-            $fcba = $request->query('fcba');
+            $empcode = $request->query("empcode");
+            $fddate = $request->query("fddate");
+            $fddateEnd = $request->query("fddate_end");
+            $fieldcode = $request->query("fieldcode");
+            $fcba = $request->query("fcba");
 
-            $datas = DB::connection('oracle')
-                ->table('V_UPLOAD_HVTG_QLTY');
+            $datas = DB::connection("oracle")->table("V_UPLOAD_HVTG_QLTY");
 
             // 🔹 FILTER BASIC
             if ($empcode) {
-                $datas->where('EMPCODE', $empcode);
+                $datas->where("EMPCODE", $empcode);
             }
 
             if ($fieldcode) {
-                $datas->where('FIELDCODE', $fieldcode);
+                $datas->where("FIELDCODE", $fieldcode);
             }
 
             if ($fcba) {
-                $datas->where('FCBA', $fcba);
+                $datas->where("FCBA", $fcba);
             }
 
             // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
             if ($fddate && $fddateEnd) {
-
                 $startDate = min($fddate, $fddateEnd);
-                $endDate   = max($fddate, $fddateEnd);
+                $endDate = max($fddate, $fddateEnd);
 
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$startDate, $endDate]);
+                ",
+                    [$startDate, $endDate],
+                );
             } elseif ($fddate) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$fddate, $fddate]);
+                ",
+                    [$fddate, $fddate],
+                );
             } elseif ($fddateEnd) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$fddateEnd, $fddateEnd]);
+                ",
+                    [$fddateEnd, $fddateEnd],
+                );
             }
 
             // 🔹 ORDERING
-            $datas = $datas
-                ->orderBy('FDDATE')
-                ->orderBy('FIELDCODE')
-                ->get();
+            $datas = $datas->orderBy("FDDATE")->orderBy("FIELDCODE")->get();
 
             // 🔥 NORMALISASI ANGKA
             foreach ($datas as &$row) {
@@ -1159,20 +1217,30 @@ class ReportController extends Controller
             }
 
             if ($datas->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data Harvesting Quality', $datas);
+            return new AllResource(
+                true,
+                "List Data Harvesting Quality",
+                $datas,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -1243,96 +1311,105 @@ class ReportController extends Controller
     {
         try {
             // 🔹 Ambil parameter
-            $fddate = $request->query('fddate');
-            $fddateEnd = $request->query('fddate_end');
-            $kemandoran = $request->query('kemandoran');
-            $fcba = $request->query('fcba');
-            $afdeling = $request->query('afdeling');
-            $tahuntanam = $request->query('tahuntanam');
-            $blok = $request->query('blok');
-            $employeecode = $request->query('employeecode');
-            $attendance = $request->query('attendance');
-            $level_user = $request->query('level_user');
-            $upload = $request->query('upload');
+            $fddate = $request->query("fddate");
+            $fddateEnd = $request->query("fddate_end");
+            $kemandoran = $request->query("kemandoran");
+            $fcba = $request->query("fcba");
+            $afdeling = $request->query("afdeling");
+            $tahuntanam = $request->query("tahuntanam");
+            $blok = $request->query("blok");
+            $employeecode = $request->query("employeecode");
+            $attendance = $request->query("attendance");
+            $level_user = $request->query("level_user");
+            $upload = $request->query("upload");
 
             // 🔹 Base Query
-            $datas = DB::connection('oracle')
-                ->table('V_LHM_DATA');
+            $datas = DB::connection("oracle")->table("V_LHM_DATA");
 
             // 🔹 FILTER BASIC
             if ($upload) {
-                if ($upload === 'Y') {
-                    $datas->whereRaw('EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = ID)');
+                if ($upload === "Y") {
+                    $datas->whereRaw(
+                        "EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = ID)",
+                    );
                 }
-                if ($upload === 'N') {
-                    $datas->whereRaw('NOT EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = ID)');
+                if ($upload === "N") {
+                    $datas->whereRaw(
+                        "NOT EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = ID)",
+                    );
                 }
             }
 
             if ($fcba) {
-                $datas->where('FCBA', $fcba);
+                $datas->where("FCBA", $fcba);
             }
 
             if ($afdeling) {
-                $datas->where('AFDELING', $afdeling);
+                $datas->where("AFDELING", $afdeling);
             }
 
             if ($kemandoran) {
-                $datas->where('KEMANDORAN', $kemandoran);
+                $datas->where("KEMANDORAN", $kemandoran);
             }
 
             if ($tahuntanam) {
-                $datas->where('TAHUNTANAM', $tahuntanam);
+                $datas->where("TAHUNTANAM", $tahuntanam);
             }
 
             if ($blok) {
-                $datas->where('BLOK', $blok);
+                $datas->where("BLOK", $blok);
             }
 
             if ($employeecode) {
-                $datas->where('EMPLOYEECODE', $employeecode);
+                $datas->where("EMPLOYEECODE", $employeecode);
             }
 
             if ($attendance) {
-                $datas->where('ATTENDANCE', $attendance);
+                $datas->where("ATTENDANCE", $attendance);
             }
 
             if ($level_user) {
-                $datas->where('LEVEL_USER', $level_user);
+                $datas->where("LEVEL_USER", $level_user);
             }
 
             // 🔥 FILTER TANGGAL (OPTIMIZED)
             if ($fddate && $fddateEnd) {
-
                 $startDate = min($fddate, $fddateEnd);
-                $endDate   = max($fddate, $fddateEnd);
+                $endDate = max($fddate, $fddateEnd);
 
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$startDate, $endDate]);
+                ",
+                    [$startDate, $endDate],
+                );
             } elseif ($fddate) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$fddate, $fddate]);
+                ",
+                    [$fddate, $fddate],
+                );
             } elseif ($fddateEnd) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$fddateEnd, $fddateEnd]);
+                ",
+                    [$fddateEnd, $fddateEnd],
+                );
             }
 
             // 🔹 ORDERING
             $datas = $datas
-                ->orderBy('FDDATE')
-                ->orderBy('FCBA')
-                ->orderBy('AFDELING')
-                ->orderBy('KEMANDORAN')
-                ->orderBy('EMPLOYEECODE')
-                ->orderBy('ROWDATA')
+                ->orderBy("FDDATE")
+                ->orderBy("FCBA")
+                ->orderBy("AFDELING")
+                ->orderBy("KEMANDORAN")
+                ->orderBy("EMPLOYEECODE")
+                ->orderBy("ROWDATA")
                 ->get();
 
             // 🔥 NORMALISASI ANGKA
@@ -1346,20 +1423,26 @@ class ReportController extends Controller
 
             // 🔹 RESPONSE
             if ($datas->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data LHM', $datas);
+            return new AllResource(true, "List Data LHM", $datas);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -1428,81 +1511,86 @@ class ReportController extends Controller
     {
         try {
             // 🔹 Ambil parameter
-            $fddate = $request->query('fddate');
-            $fddateEnd = $request->query('fddate_end');
-            $kemandoran = $request->query('kemandoran');
-            $fcba = $request->query('fcba');
-            $afdeling = $request->query('afdeling');
-            $tahuntanam = $request->query('tahuntanam');
-            $blok = $request->query('blok');
-            $employeecode = $request->query('employeecode');
-            $attendance = $request->query('attendance');
+            $fddate = $request->query("fddate");
+            $fddateEnd = $request->query("fddate_end");
+            $kemandoran = $request->query("kemandoran");
+            $fcba = $request->query("fcba");
+            $afdeling = $request->query("afdeling");
+            $tahuntanam = $request->query("tahuntanam");
+            $blok = $request->query("blok");
+            $employeecode = $request->query("employeecode");
+            $attendance = $request->query("attendance");
 
             // 🔹 Base Query
-            $datas = DB::connection('oracle')
-                ->table('LHM_DATA');
+            $datas = DB::connection("oracle")->table("LHM_DATA");
 
             // 🔹 FILTER BASIC
             if ($fcba) {
-                $datas->where('FCBA', $fcba);
+                $datas->where("FCBA", $fcba);
             }
 
             if ($afdeling) {
-                $datas->where('AFDELING', $afdeling);
+                $datas->where("AFDELING", $afdeling);
             }
 
             if ($kemandoran) {
-                $datas->where('KEMANDORAN', $kemandoran);
+                $datas->where("KEMANDORAN", $kemandoran);
             }
 
             if ($tahuntanam) {
-                $datas->where('TAHUNTANAM', $tahuntanam);
+                $datas->where("TAHUNTANAM", $tahuntanam);
             }
 
             if ($blok) {
-                $datas->where('BLOK', $blok);
+                $datas->where("BLOK", $blok);
             }
 
             if ($employeecode) {
-                $datas->where('EMPLOYEECODE', $employeecode);
+                $datas->where("EMPLOYEECODE", $employeecode);
             }
 
             if ($attendance) {
-                $datas->where('ATTENDANCE', $attendance);
+                $datas->where("ATTENDANCE", $attendance);
             }
 
             // 🔥 FILTER TANGGAL (OPTIMIZED)
             if ($fddate && $fddateEnd) {
-
                 $startDate = min($fddate, $fddateEnd);
-                $endDate   = max($fddate, $fddateEnd);
+                $endDate = max($fddate, $fddateEnd);
 
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$startDate, $endDate]);
+                ",
+                    [$startDate, $endDate],
+                );
             } elseif ($fddate) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$fddate, $fddate]);
+                ",
+                    [$fddate, $fddate],
+                );
             } elseif ($fddateEnd) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     FDDATE >= TO_DATE(?, 'YYYY-MM-DD')
                     AND FDDATE < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$fddateEnd, $fddateEnd]);
+                ",
+                    [$fddateEnd, $fddateEnd],
+                );
             }
 
             // 🔹 ORDERING
             $datas = $datas
-                ->orderBy('FDDATE')
-                ->orderBy('FCBA')
-                ->orderBy('AFDELING')
-                ->orderBy('KEMANDORAN')
-                ->orderBy('EMPLOYEECODE')
-                ->orderBy('ROWDATA')
+                ->orderBy("FDDATE")
+                ->orderBy("FCBA")
+                ->orderBy("AFDELING")
+                ->orderBy("KEMANDORAN")
+                ->orderBy("EMPLOYEECODE")
+                ->orderBy("ROWDATA")
                 ->get();
 
             // 🔥 NORMALISASI ANGKA
@@ -1516,20 +1604,26 @@ class ReportController extends Controller
 
             // 🔹 RESPONSE
             if ($datas->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data LHM', $datas);
+            return new AllResource(true, "List Data LHM", $datas);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -1574,64 +1668,69 @@ class ReportController extends Controller
     public function get_lha(Request $request)
     {
         try {
-            $fcba = $request->query('fcba');
-            $afdeling = $request->query('afdeling');
-            $kemandoran = $request->query('kemandoran');
-            $tanggal = $request->query('tanggal');
-            $tanggalEnd = $request->query('tanggal_end');
+            $fcba = $request->query("fcba");
+            $afdeling = $request->query("afdeling");
+            $kemandoran = $request->query("kemandoran");
+            $tanggal = $request->query("tanggal");
+            $tanggalEnd = $request->query("tanggal_end");
 
-            $datas = DB::connection('oracle')
-                ->table('V_LHA');
+            $datas = DB::connection("oracle")->table("V_LHA");
 
             if ($fcba) {
-                $datas->where('FCBA', $fcba);
+                $datas->where("FCBA", $fcba);
             }
 
             if ($afdeling) {
-                $datas->where('AFDELING', $afdeling);
+                $datas->where("AFDELING", $afdeling);
             }
 
             if ($kemandoran) {
-                $datas->where('KEMANDORAN', $kemandoran);
+                $datas->where("KEMANDORAN", $kemandoran);
             }
 
             // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
             if ($tanggal && $tanggalEnd) {
-
                 $startDate = min($tanggal, $tanggalEnd);
-                $endDate   = max($tanggal, $tanggalEnd);
+                $endDate = max($tanggal, $tanggalEnd);
 
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
                     AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$startDate, $endDate]);
+                ",
+                    [$startDate, $endDate],
+                );
             } elseif ($tanggal) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
                     AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$tanggal, $tanggal]);
+                ",
+                    [$tanggal, $tanggal],
+                );
             } elseif ($tanggalEnd) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
                     AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$tanggalEnd, $tanggalEnd]);
+                ",
+                    [$tanggalEnd, $tanggalEnd],
+                );
             }
 
             // 🔥 LOG DI SINI (SEBELUM GET)
-            // \Log::info('SQL:', [
+            // Log::info('SQL:', [
             //     'query' => $datas->toSql(),
             //     'bindings' => $datas->getBindings()
             // ]);
 
             // 🔹 ORDERING
             $datas = $datas
-                ->orderByDesc('TANGGAL')
-                ->orderByDesc('KEMANDORAN')
-                ->orderByDesc('FCBA')
-                ->orderByDesc('AFDELING')
-                ->orderByDesc('FCCODE')
+                ->orderByDesc("TANGGAL")
+                ->orderByDesc("KEMANDORAN")
+                ->orderByDesc("FCBA")
+                ->orderByDesc("AFDELING")
+                ->orderByDesc("FCCODE")
                 ->get();
 
             // 🔥 NORMALISASI ANGKA
@@ -1644,20 +1743,26 @@ class ReportController extends Controller
             }
 
             if ($datas->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data LHA', $datas);
+            return new AllResource(true, "List Data LHA", $datas);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -1713,50 +1818,53 @@ class ReportController extends Controller
     public function get_harvesting(Request $request)
     {
         try {
-            $fcba = $request->query('fcba');
-            $afdeling = $request->query('afdeling');
-            $tanggal = $request->query('tanggal');
-            $tanggalEnd = $request->query('tanggal_end');
+            $fcba = $request->query("fcba");
+            $afdeling = $request->query("afdeling");
+            $tanggal = $request->query("tanggal");
+            $tanggalEnd = $request->query("tanggal_end");
 
-            $datas = DB::connection('oracle')
-                ->table('V_PANEN');
+            $datas = DB::connection("oracle")->table("V_PANEN");
 
             if ($fcba) {
-                $datas->where('FCBA', $fcba);
+                $datas->where("FCBA", $fcba);
             }
 
             if ($afdeling) {
-                $datas->where('AFDELING', $afdeling);
+                $datas->where("AFDELING", $afdeling);
             }
 
             // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
             if ($tanggal && $tanggalEnd) {
-
                 $startDate = min($tanggal, $tanggalEnd);
-                $endDate   = max($tanggal, $tanggalEnd);
+                $endDate = max($tanggal, $tanggalEnd);
 
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
                     AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$startDate, $endDate]);
+                ",
+                    [$startDate, $endDate],
+                );
             } elseif ($tanggal) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
                     AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$tanggal, $tanggal]);
+                ",
+                    [$tanggal, $tanggal],
+                );
             } elseif ($tanggalEnd) {
-
-                $datas->whereRaw("
+                $datas->whereRaw(
+                    "
                     TANGGAL >= TO_DATE(?, 'YYYY-MM-DD')
                     AND TANGGAL < TO_DATE(?, 'YYYY-MM-DD') + 1
-                ", [$tanggalEnd, $tanggalEnd]);
+                ",
+                    [$tanggalEnd, $tanggalEnd],
+                );
             }
 
             // 🔹 ORDERING
-            $datas = $datas
-                ->orderByDesc('TANGGAL')
-                ->get();
+            $datas = $datas->orderByDesc("TANGGAL")->get();
 
             // 🔥 NORMALISASI ANGKA
             foreach ($datas as &$row) {
@@ -1768,26 +1876,34 @@ class ReportController extends Controller
             }
 
             if ($datas->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data Panen', $datas);
+            return new AllResource(true, "List Data Panen", $datas);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
     private function formatNumber($value)
     {
-        if ($value === null) return null;
+        if ($value === null) {
+            return null;
+        }
 
         // Paksa ke float agar bisa dibulatkan
         $num = (float) $value;
@@ -1796,14 +1912,14 @@ class ReportController extends Controller
         $num = round($num, 3);
 
         // Konversi ke string tanpa notasi scientific
-        $v = number_format($num, 3, '.', '');
+        $v = number_format($num, 3, ".", "");
 
         // Hilangkan trailing zero: 1.500 → 1.5 , 10.000 → 10
-        $v = rtrim(rtrim($v, '0'), '.');
+        $v = rtrim(rtrim($v, "0"), ".");
 
         // Tambahkan 0 jika mulai dengan titik
-        if (str_starts_with($v, '.')) {
-            $v = '0' . $v;
+        if (str_starts_with($v, ".")) {
+            $v = "0" . $v;
         }
 
         return $v;
