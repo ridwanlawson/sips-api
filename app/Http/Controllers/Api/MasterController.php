@@ -26,13 +26,36 @@ class MasterController extends Controller
      * Data Blok dari SIPS Production
      *
      * Digunakan untuk inisialisasi data TPH dan mendata hasil panen
+     *
+     * @group Field
+     *
+     * @queryParam fcba string optional Filter berdasarkan FCBA. Contoh: 01
+     * @queryParam afdeling string optional Filter berdasarkan afdeling/division. Contoh: AFD-01
+     *
+     * @response 200 {
+     *   "success": true,
+     *   "message": "List Data Field",
+     *   "data": [
+     *     {
+     *       "fccode": "G47",
+     *       "fcname": "Blok G47",
+     *       "planting_year": 2020,
+     *       "bjr": 12.5,
+     *       "ha_planted": 25,
+     *       "ownership": "INTI",
+     *       "status": "TM",
+     *       "afdeling": "AFD-01",
+     *       "fcba": "01"
+     *     }
+     *   ]
+     * }
      */
-    public function field()
+    public function field(Request $request)
     {
-        $datas = Field::select(
+        $query = Field::select(
             "FCCODE",
             "FCNAME",
-            DB::raw("EXTRACT(YEAR FROM PLANTINGDATE) AS planting_year"), // Ambil hanya tahun
+            DB::raw("EXTRACT(YEAR FROM PLANTINGDATE) AS PLANTING_YEAR"),
             DB::raw("NVL(HARVESTINGBASED_ABW,0) AS BJR"),
             DB::raw("HECTARAGEPLANTED AS HA_PLANTED"),
             "OWNERSHIP",
@@ -40,12 +63,25 @@ class MasterController extends Controller
             "DIVISION AS AFDELING",
             "FCBA",
         )
-            ->where("ACTIVATION", "Y") // Hanya data dengan ACTIVATION = 'Y'
+            ->where("ACTIVATION", "Y");
+
+        // Filter FCBA
+        if ($request->filled('fcba')) {
+            $query->where("FCBA", $request->fcba);
+        }
+
+        // Filter AFDELING
+        if ($request->filled('afdeling')) {
+            $query->where("DIVISION", $request->afdeling);
+        }
+
+        $datas = $query
             ->orderBy("FCBA", "asc")
             ->orderBy("DIVISION", "asc")
             ->orderBy("PLANTINGDATE", "asc")
             ->orderBy("FCCODE", "asc")
             ->get();
+
         return new AllResource(true, "List Data Field", $datas);
     }
 
