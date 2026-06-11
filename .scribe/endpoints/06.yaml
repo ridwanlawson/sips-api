@@ -1,19 +1,19 @@
-name: Settings
+name: Uploads
 description: ''
 endpoints:
   -
     httpMethods:
-      - GET
-    uri: api/settings/devices
+      - POST
+    uri: api/uploads/attendance
     metadata:
-      groupName: Settings
+      groupName: Uploads
       groupDescription: ''
-      subgroup: Devices
-      subgroupDescription: 'Sub Group untuk Device Management'
-      title: 'Memanggil data device dari SIPS Mobile.'
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Upload Attendance ke database SIPS.'
       description: |-
-        API ini digunakan untuk memanggil data device secara keseluruhan.
-        Tetapi jika ingin melakukan filter pada data yang dipanggil, buatlah parameter pada Url berdasarkan _**Query Parameter**_
+        Endpoint ini digunakan untuk mengirim data attendance dari SIPS Mobile ke tabel IPLASPROD.ATTENDANCE_GAD dan IPLASPROD.ATTENDANCE_GAD_TEMP.
+        Data harus dikirim sebagai array dengan struktur sesuai format GET /report/upload-attendance.
       authenticated: true
       custom: []
     headers:
@@ -22,32 +22,473 @@ endpoints:
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
-    queryParameters:
-      q:
-        name: q
-        description: 'Optional. Search device berdasarkan device_id, device_name, mac_address, atau imei.'
-        required: false
-        example: DEV-00001
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      data:
+        name: data
+        description: 'Array data attendance yang akan diinsert ke tabel ATTENDANCE_GAD dan ATTENDANCE_GAD_TEMP.'
+        required: true
+        example:
+          - quasi
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].gangcode':
+        name: 'data[].gangcode'
+        description: 'Kode gang.'
+        required: true
+        example: PN011
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         custom: []
-      per_page:
-        name: per_page
-        description: 'Optional. Jumlah data per halaman. Default: 15.'
+      'data[].fddate':
+        name: 'data[].fddate'
+        description: 'Tanggal attendance (format: YYYY-MM-DD HH:MM:SS).'
+        required: true
+        example: '2025-11-08 00:00:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_1':
+        name: 'data[].supervision_1'
+        description: 'optional Kode mandor panen 1.'
         required: false
-        example: 10
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_2':
+        name: 'data[].supervision_2'
+        description: 'optional Kode mandor panen 2.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_3':
+        name: 'data[].supervision_3'
+        description: 'optional Kode kerani.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_4':
+        name: 'data[].supervision_4'
+        description: 'optional Supervisi 4.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_5':
+        name: 'data[].supervision_5'
+        description: 'optional Supervisi 5.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].employeecode':
+        name: 'data[].employeecode'
+        description: 'Kode karyawan.'
+        required: true
+        example: 06-770323-130910-0047
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].attendance':
+        name: 'data[].attendance'
+        description: 'Status attendance.'
+        required: true
+        example: KJ
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].jobcode':
+        name: 'data[].jobcode'
+        description: 'optional Kode pekerjaan.'
+        required: false
+        example: '505030101'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].locationtype':
+        name: 'data[].locationtype'
+        description: 'optional Tipe lokasi.'
+        required: false
+        example: FF
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].locationcode':
+        name: 'data[].locationcode'
+        description: 'optional Kode lokasi.'
+        required: false
+        example: I45P
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mandays':
+        name: 'data[].mandays'
+        description: 'optional Mandays.'
+        required: false
+        example: 0.16666666666667
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].othrs':
+        name: 'data[].othrs'
+        description: 'optional Jam lembur.'
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].rate':
+        name: 'data[].rate'
+        description: 'optional Tarif.'
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].unit':
+        name: 'data[].unit'
+        description: 'optional Unit kerja.'
+        required: false
+        example: 25.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].output':
+        name: 'data[].output'
+        description: 'optional Output.'
+        required: false
+        example: 0.425
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].reference':
+        name: 'data[].reference'
+        description: 'optional Referensi.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].remarks':
+        name: 'data[].remarks'
+        description: 'optional Keterangan.'
+        required: false
+        example: 'SIPS MOBILE'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcentry':
+        name: 'data[].fcentry'
+        description: 'optional Dibuat oleh.'
+        required: false
+        example: andrew
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcedit':
+        name: 'data[].fcedit'
+        description: 'optional Diubah oleh.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcip':
+        name: 'data[].fcip'
+        description: 'optional IP address.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcba':
+        name: 'data[].fcba'
+        description: 'Kode FCBA.'
+        required: true
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].lastupdate':
+        name: 'data[].lastupdate'
+        description: 'optional Waktu update terakhir.'
+        required: false
+        example: '2026-01-09 14:20:27'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].lasttime':
+        name: 'data[].lasttime'
+        description: 'optional Jam update terakhir.'
+        required: false
+        example: '14:20'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].linenokey':
+        name: 'data[].linenokey'
+        description: 'Key unik baris.'
+        required: true
+        example: 1442813
         type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         custom: []
-    cleanQueryParameters:
-      q: DEV-00001
-      per_page: 10
-    bodyParameters: []
-    cleanBodyParameters: []
+      'data[].overtime_hours':
+        name: 'data[].overtime_hours'
+        description: 'optional Jam lembur.'
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].type_overtime':
+        name: 'data[].type_overtime'
+        description: 'optional Tipe lembur.'
+        required: false
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].chargejob':
+        name: 'data[].chargejob'
+        description: 'optional Job yang dibebankan.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].chargetype':
+        name: 'data[].chargetype'
+        description: 'optional Tipe yang dibebankan.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].chargecode':
+        name: 'data[].chargecode'
+        description: 'optional Kode yang dibebankan.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bucket':
+        name: 'data[].bucket'
+        description: 'optional Bucket.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].spbno':
+        name: 'data[].spbno'
+        description: 'optional No SPB.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].kg_janjang':
+        name: 'data[].kg_janjang'
+        description: 'optional Berat janjang (kg).'
+        required: false
+        example: 384.75
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].kg_brondolan':
+        name: 'data[].kg_brondolan'
+        description: 'optional Berat brondolan (kg).'
+        required: false
+        example: 1.75
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].rowstate':
+        name: 'data[].rowstate'
+        description: 'optional Status baris.'
+        required: false
+        example: Approved
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].document_classification':
+        name: 'data[].document_classification'
+        description: 'optional Klasifikasi dokumen.'
+        required: false
+        example: 501
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].basis_bm':
+        name: 'data[].basis_bm'
+        description: 'optional Basis BM.'
+        required: false
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bjr':
+        name: 'data[].bjr'
+        description: 'optional BJR.'
+        required: false
+        example: 15.39
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].documentno':
+        name: 'data[].documentno'
+        description: 'Nomor dokumen.'
+        required: true
+        example: 368
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].sourcetime':
+        name: 'data[].sourcetime'
+        description: 'optional Waktu sumber data.'
+        required: false
+        example: '2025-11-09 00:24:37'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].janjang':
+        name: 'data[].janjang'
+        description: 'optional Janjang (untuk ATTENDANCE_GAD_TEMP).'
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].generate':
+        name: 'data[].generate'
+        description: 'optional Informasi generate (untuk ATTENDANCE_GAD_TEMP).'
+        required: false
+        example: 'SIPS MOBILE GENERATE'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].generatetime':
+        name: 'data[].generatetime'
+        description: 'optional Waktu generate (untuk ATTENDANCE_GAD_TEMP).'
+        required: false
+        example: '2026-01-09 14:20:27'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fieldcode':
+        name: 'data[].fieldcode'
+        description: 'optional Kode field.'
+        required: false
+        example: I45
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      data:
+        - quasi
     fileParameters: []
     responses:
       -
@@ -55,46 +496,38 @@ endpoints:
         content: |-
           {
            "success": true,
-           "message": "List Data Device",
-           "data": [
-               {
-                   "id": 1,
-                   "device_id": "DEV-00001",
-                   "mac_address": "00:11:22:33:44:55",
-                   "imei": "123456789012345",
-                   "device_name": "Operator Phone",
-                   "platform": "android",
-                   "os_version": "13",
-                   "app_version": "1.0.0",
-                   "assigned_to": "John Doe",
-                   "status": "active",
-                   "registered_at": "2025-12-12T10:00:00.000000Z",
-                   "registered_by": 1,
-                   "last_login_at": "2025-12-12T10:05:00.000000Z",
-                   "last_latitude": -6.2,
-                   "last_longitude": 106.816666,
-                   "notes": "Device assigned to new operator",
-                   "created_at": "2025-12-12T10:00:00.000000Z",
-                   "updated_at": "2025-12-12T10:00:00.000000Z"
-               }
-           ],
-           "meta": {
-               "current_page": 1,
-               "from": 1,
-               "last_page": 1,
-               "per_page": 15,
-               "to": 1,
-               "total": 1
-           }
+           "message": "Data Karyawan berhasil ditambahkan.",
+           "data": [368, 368, 368, 368]
           }
         headers: []
         description: success
+        custom: []
+      -
+        status: 400
+        content: |-
+          {
+           "success": false,
+           "message": "Data tidak valid atau kosong."
+          }
+        headers: []
+        description: 'invalid data'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+           "success": false,
+           "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+           "error": "Deskripsi error dari database"
+          }
+        headers: []
+        description: error
         custom: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer he6f1d8vaVbgPc6E4kZ35Da'
+      - 'Bearer eVba4Zfch163dva8k6E5DgP'
     controller: null
     method: null
     route: null
@@ -102,14 +535,16 @@ endpoints:
   -
     httpMethods:
       - POST
-    uri: api/settings/devices
+    uri: api/uploads/harvesting
     metadata:
-      groupName: Settings
+      groupName: Uploads
       groupDescription: ''
-      subgroup: Devices
-      subgroupDescription: 'Sub Group untuk Device Management'
-      title: 'Menyimpan data device ke dalam database SIPS Mobile.'
-      description: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Upload Harvesting SPB ke database SIPS.'
+      description: |-
+        Endpoint ini digunakan untuk mengirim data harvesting SPB dari SIPS Mobile ke tabel IPLASPROD.HARVESTINGSPB.
+        Data harus dikirim sebagai array dengan struktur sesuai format GET /report/upload-harvesting.
       authenticated: true
       custom: []
     headers:
@@ -121,247 +556,350 @@ endpoints:
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      device_id:
-        name: device_id
-        description: 'ID device yang unik.'
+      data:
+        name: data
+        description: 'Array data harvesting SPB yang akan diinsert ke tabel HARVESTINGSPB.'
         required: true
-        example: DEV-00001
+        example:
+          - unde
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].spbno':
+        name: 'data[].spbno'
+        description: 'No SPB.'
+        required: true
+        example: SPB2026004804
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         custom: []
-      mac_address:
-        name: mac_address
-        description: 'optional MAC address device.'
-        required: false
-        example: '00:11:22:33:44:55'
+      'data[].fieldcode':
+        name: 'data[].fieldcode'
+        description: 'Kode field.'
+        required: true
+        example: M06
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      imei:
-        name: imei
-        description: 'optional IMEI number device.'
-        required: false
-        example: '123456789012345'
+      'data[].receptiondate':
+        name: 'data[].receptiondate'
+        description: 'Tanggal penerimaan (format: YYYY-MM-DD HH:MM:SS).'
+        required: true
+        example: '2026-02-08 00:00:00'
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      device_name:
-        name: device_name
-        description: 'optional Nama device.'
-        required: false
-        example: 'Operator Phone'
+      'data[].harvestdate':
+        name: 'data[].harvestdate'
+        description: 'Tanggal panen (format: YYYY-MM-DD HH:MM:SS).'
+        required: true
+        example: '2026-02-08 00:00:00'
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      platform:
-        name: platform
-        description: 'optional Platform device (android/ios/windows/linux/other).'
-        required: false
-        example: android
+      'data[].cropcode':
+        name: 'data[].cropcode'
+        description: 'Kode tanaman.'
+        required: true
+        example: OP
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      os_version:
-        name: os_version
-        description: 'optional Versi OS.'
-        required: false
-        example: '13'
+      'data[].productcode':
+        name: 'data[].productcode'
+        description: 'Kode produk.'
+        required: true
+        example: TBS
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      app_version:
-        name: app_version
-        description: 'optional Versi aplikasi.'
-        required: false
-        example: 1.0.0
+      'data[].own':
+        name: 'data[].own'
+        description: 'Tipe kepemilikan.'
+        required: true
+        example: OWN
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      assigned_to:
-        name: assigned_to
-        description: 'optional Nama penerima device.'
-        required: false
-        example: 'John Doe'
+      'data[].vehicle':
+        name: 'data[].vehicle'
+        description: 'Kode kendaraan.'
+        required: true
+        example: L9770CL
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      status:
-        name: status
-        description: 'optional Status device.'
-        required: false
-        example: active
+      'data[].driver':
+        name: 'data[].driver'
+        description: 'Nama driver.'
+        required: true
+        example: HENDRA
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      registered_at:
-        name: registered_at
-        description: 'optional Tanggal registrasi (format: YYYY-MM-DD HH:MM:SS).'
-        required: false
-        example: '2025-12-12 10:00:00'
+      'data[].mill':
+        name: 'data[].mill'
+        description: 'Pabrik tujuan.'
+        required: true
+        example: DOM
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      registered_by:
-        name: registered_by
-        description: 'optional ID user yang mendaftarkan.'
+      'data[].agreementcode':
+        name: 'data[].agreementcode'
+        description: 'optional Kode agreement. Example:'
         required: false
-        example: 1
+        example: qui
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].transporttype':
+        name: 'data[].transporttype'
+        description: 'Tipe transportasi.'
+        required: true
+        example: DIRECTTRANSPORT
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].spb_type':
+        name: 'data[].spb_type'
+        description: 'Tipe SPB.'
+        required: true
+        example: 0
         type: integer
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      last_login_at:
-        name: last_login_at
-        description: 'optional Tanggal login terakhir.'
-        required: false
-        example: '2025-12-12 10:05:00'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      last_latitude:
-        name: last_latitude
-        description: 'optional Latitude lokasi terakhir.'
-        required: false
-        example: -6.2
+      'data[].bunch':
+        name: 'data[].bunch'
+        description: 'Jumlah bunch.'
+        required: true
+        example: 127.0
         type: number
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      last_longitude:
-        name: last_longitude
-        description: 'optional Longitude lokasi terakhir.'
+      'data[].bucket':
+        name: 'data[].bucket'
+        description: 'optional Jumlah bucket. Example:'
         required: false
-        example: 106.816666
+        example: 605148.51582675
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].pressemester_abw':
+        name: 'data[].pressemester_abw'
+        description: 'Press semester ABW.'
+        required: true
+        example: 11.19
         type: number
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      notes:
-        name: notes
-        description: 'optional Catatan tambahan.'
-        required: false
-        example: 'Device assigned to new operator'
+      'data[].bunch_estateweight':
+        name: 'data[].bunch_estateweight'
+        description: 'Berat bunch estate.'
+        required: true
+        example: 1421.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcentry':
+        name: 'data[].fcentry'
+        description: 'Dibuat oleh.'
+        required: true
+        example: PTE_PRODUKSI
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
+        custom: []
+      'data[].fcedit':
+        name: 'data[].fcedit'
+        description: 'Diubah oleh.'
+        required: true
+        example: PTE_PRODUKSI
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcip':
+        name: 'data[].fcip'
+        description: 'IP address.'
+        required: true
+        example: 114.10.139.104
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcba':
+        name: 'data[].fcba'
+        description: 'Kode FCBA.'
+        required: true
+        example: PTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].chitno':
+        name: 'data[].chitno'
+        description: 'Weighbridge Chit Number.'
+        required: true
+        example: TBS2026004804
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_bruto':
+        name: 'data[].mill_weight_bruto'
+        description: 'Berat bruto pabrik (kg).'
+        required: true
+        example: 10090.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_gross':
+        name: 'data[].mill_weight_gross'
+        description: 'Berat gross pabrik (kg).'
+        required: true
+        example: 5920.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_tarra':
+        name: 'data[].mill_weight_tarra'
+        description: 'Berat tarra pabrik (kg).'
+        required: true
+        example: 4170.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_potongan':
+        name: 'data[].mill_weight_potongan'
+        description: 'Berat potongan pabrik (kg).'
+        required: true
+        example: 295.92
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_netto':
+        name: 'data[].mill_weight_netto'
+        description: 'Berat netto pabrik (kg).'
+        required: true
+        example: 5624.08
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mentah':
+        name: 'data[].mentah'
+        description: 'optional Mentah. Example:'
+        required: false
+        example: amet
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].tankos':
+        name: 'data[].tankos'
+        description: 'optional Tankos. Example:'
+        required: false
+        example: omnis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].hilang':
+        name: 'data[].hilang'
+        description: 'optional Hilang. Example:'
+        required: false
+        example: autem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].keterangan':
+        name: 'data[].keterangan'
+        description: 'optional Keterangan. Example:'
+        required: false
+        example: at
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].mill_weight_dtl':
+        name: 'data[].mill_weight_dtl'
+        description: 'Detail berat pabrik (kg).'
+        required: true
+        example: 1173.27
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bjr_chit':
+        name: 'data[].bjr_chit'
+        description: 'BJR per Chit.'
+        required: true
+        example: 9.24
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
         custom: []
     cleanBodyParameters:
-      device_id: DEV-00001
-      mac_address: '00:11:22:33:44:55'
-      imei: '123456789012345'
-      device_name: 'Operator Phone'
-      platform: android
-      os_version: '13'
-      app_version: 1.0.0
-      assigned_to: 'John Doe'
-      status: active
-      registered_at: '2025-12-12 10:00:00'
-      registered_by: 1
-      last_login_at: '2025-12-12 10:05:00'
-      last_latitude: -6.2
-      last_longitude: 106.816666
-      notes: 'Device assigned to new operator'
-    fileParameters: []
-    responses:
-      -
-        status: 201
-        content: |-
-          {
-           "success": true,
-           "message": "Data Device berhasil ditambahkan.",
-           "data": {
-               "id": 1,
-               "device_id": "DEV-00001",
-               "mac_address": "00:11:22:33:44:55",
-               "imei": "123456789012345",
-               "device_name": "Operator Phone",
-               "platform": "android",
-               "os_version": "13",
-               "app_version": "1.0.0",
-               "assigned_to": "John Doe",
-               "status": "active",
-               "registered_at": "2025-12-12T10:00:00.000000Z",
-               "registered_by": 1,
-               "last_login_at": "2025-12-12T10:05:00.000000Z",
-               "last_latitude": -6.2,
-               "last_longitude": 106.816666,
-               "notes": "Device assigned to new operator",
-               "created_at": "2025-12-12T10:00:00.000000Z",
-               "updated_at": "2025-12-12T10:00:00.000000Z"
-           }
-          }
-        headers: []
-        description: success
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer a4haP6dekb3856DZcgEvfV1'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: 'api/settings/devices/{id}'
-    metadata:
-      groupName: Settings
-      groupDescription: ''
-      subgroup: Devices
-      subgroupDescription: 'Sub Group untuk Device Management'
-      title: 'Menampilkan data device berdasarkan id device.'
-      description: ''
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      id:
-        name: id
-        description: 'ID Device.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
+      data:
+        - unde
     fileParameters: []
     responses:
       -
@@ -369,302 +907,110 @@ endpoints:
         content: |-
           {
            "success": true,
-           "message": "Detail Data Device",
-           "data": {
-               "id": 1,
-               "device_id": "DEV-00001",
-               "mac_address": "00:11:22:33:44:55",
-               "imei": "123456789012345",
-               "device_name": "Operator Phone",
-               "platform": "android",
-               "os_version": "13",
-               "app_version": "1.0.0",
-               "assigned_to": "John Doe",
-               "status": "active",
-               "registered_at": "2025-12-12T10:00:00.000000Z",
-               "registered_by": 1,
-               "last_login_at": "2025-12-12T10:05:00.000000Z",
-               "last_latitude": -6.2,
-               "last_longitude": 106.816666,
-               "notes": "Device assigned to new operator",
-               "created_at": "2025-12-12T10:00:00.000000Z",
-               "updated_at": "2025-12-12T10:00:00.000000Z"
-           }
+           "message": "Data Harvesting SPB berhasil ditambahkan.",
+           "data": ["SPB2026004804", "SPB2026004769", "SPB2026004781"]
           }
         headers: []
         description: success
+        custom: []
+      -
+        status: 400
+        content: |-
+          {
+           "success": false,
+           "message": "Data tidak valid atau kosong."
+          }
+        headers: []
+        description: 'invalid data'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+           "success": false,
+           "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+           "error": "Deskripsi error dari database"
+          }
+        headers: []
+        description: error
         custom: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer fED85bV3kPgc6e1v6aadhZ4'
+      - 'Bearer 3fbvVE1g6P4cahea865dkDZ'
     controller: null
     method: null
     route: null
     custom: []
   -
     httpMethods:
-      - PUT
-      - PATCH
-    uri: 'api/settings/devices/{id}'
+      - POST
+    uri: api/uploads/harvestingquality
     metadata:
-      groupName: Settings
+      groupName: Uploads
       groupDescription: ''
-      subgroup: Devices
-      subgroupDescription: 'Sub Group untuk Device Management'
-      title: 'Mengubah data device berdasarkan id device.'
-      description: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Upload Harvesting Quality ke database SIPS.'
+      description: |-
+        Endpoint ini digunakan untuk mengirim data harvesting quality dari SIPS Mobile ke tabel IPLASPROD.HARVESTINGQUALITY.
+        Data harus dikirim sebagai array dengan struktur sesuai format GET /report/upload-harvesting-quality.
       authenticated: true
       custom: []
     headers:
       Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
-    urlParameters:
-      id:
-        name: id
-        description: 'ID Device.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanUrlParameters:
-      id: 1
+    urlParameters: []
+    cleanUrlParameters: []
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      device_id:
-        name: device_id
-        description: 'optional ID device yang unik.'
-        required: false
-        example: DEV-00001
+      data:
+        name: data
+        description: 'Array data harvesting quality yang akan diinsert ke tabel HARVESTINGQUALITY.'
+        required: true
+        example:
+          - similique
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].empcode':
+        name: 'data[].empcode'
+        description: 'Kode karyawan panen.'
+        required: true
+        example: 06-000223-230221-0323
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         custom: []
-      mac_address:
-        name: mac_address
-        description: 'optional MAC address device.'
-        required: false
-        example: '00:11:22:33:44:55'
+      'data[].fddate':
+        name: 'data[].fddate'
+        description: 'Tanggal panen (format: YYYY-MM-DD).'
+        required: true
+        example: '2025-11-05'
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      imei:
-        name: imei
-        description: 'optional IMEI number device.'
-        required: false
-        example: '123456789012345'
+      'data[].fieldcode':
+        name: 'data[].fieldcode'
+        description: 'Kode blok/field.'
+        required: true
+        example: I43
         type: string
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         custom: []
-      device_name:
-        name: device_name
-        description: 'optional Nama device.'
-        required: false
-        example: 'Operator Phone'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      platform:
-        name: platform
-        description: 'optional Platform device.'
-        required: false
-        example: android
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      os_version:
-        name: os_version
-        description: 'optional Versi OS.'
-        required: false
-        example: '13'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      app_version:
-        name: app_version
-        description: 'optional Versi aplikasi.'
-        required: false
-        example: 1.0.0
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      assigned_to:
-        name: assigned_to
-        description: 'optional Nama penerima device.'
-        required: false
-        example: 'John Doe'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      status:
-        name: status
-        description: 'optional Status device.'
-        required: false
-        example: active
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      registered_at:
-        name: registered_at
-        description: 'optional Tanggal registrasi.'
-        required: false
-        example: '2025-12-12 10:00:00'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      registered_by:
-        name: registered_by
-        description: 'optional ID user yang mendaftarkan.'
-        required: false
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      last_login_at:
-        name: last_login_at
-        description: 'optional Tanggal login terakhir.'
-        required: false
-        example: '2025-12-12 10:05:00'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      last_latitude:
-        name: last_latitude
-        description: 'optional Latitude lokasi terakhir.'
-        required: false
-        example: -6.2
-        type: number
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      last_longitude:
-        name: last_longitude
-        description: 'optional Longitude lokasi terakhir.'
-        required: false
-        example: 106.816666
-        type: number
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-      notes:
-        name: notes
-        description: 'optional Catatan tambahan.'
-        required: false
-        example: 'Device updated'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: true
-        custom: []
-    cleanBodyParameters:
-      device_id: DEV-00001
-      mac_address: '00:11:22:33:44:55'
-      imei: '123456789012345'
-      device_name: 'Operator Phone'
-      platform: android
-      os_version: '13'
-      app_version: 1.0.0
-      assigned_to: 'John Doe'
-      status: active
-      registered_at: '2025-12-12 10:00:00'
-      registered_by: 1
-      last_login_at: '2025-12-12 10:05:00'
-      last_latitude: -6.2
-      last_longitude: 106.816666
-      notes: 'Device updated'
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "Data Device berhasil diperbarui.",
-           "data": {
-               "id": 1,
-               "device_id": "DEV-00001",
-               "mac_address": "00:11:22:33:44:55",
-               "imei": "123456789012345",
-               "device_name": "Operator Phone",
-               "platform": "android",
-               "os_version": "13",
-               "app_version": "1.0.0",
-               "assigned_to": "John Doe",
-               "status": "active",
-               "registered_at": "2025-12-12T10:00:00.000000Z",
-               "registered_by": 1,
-               "last_login_at": "2025-12-12T10:05:00.000000Z",
-               "last_latitude": -6.2,
-               "last_longitude": 106.816666,
-               "notes": "Device updated",
-               "created_at": "2025-12-12T10:00:00.000000Z",
-               "updated_at": "2025-12-12T10:00:00.000000Z"
-           }
-          }
-        headers: []
-        description: success
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer d6vfPE41D8Vbgkch56aaZ3e'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - DELETE
-    uri: 'api/settings/devices/{id}'
-    metadata:
-      groupName: Settings
-      groupDescription: ''
-      subgroup: Devices
-      subgroupDescription: 'Sub Group untuk Device Management'
-      title: 'Menghapus data device berdasarkan id device.'
-      description: ''
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      id:
-        name: id
-        description: 'ID Device.'
+      'data[].under_ripe':
+        name: 'data[].under_ripe'
+        description: 'Buah mentah.'
         required: true
         example: 1
         type: integer
@@ -672,12 +1018,319 @@ endpoints:
         exampleWasSpecified: true
         nullable: false
         custom: []
-    cleanUrlParameters:
-      id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
+      'data[].over_ripe':
+        name: 'data[].over_ripe'
+        description: 'Buah overripe.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].abnormal':
+        name: 'data[].abnormal'
+        description: 'Buah abnormal.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].long_stalk':
+        name: 'data[].long_stalk'
+        description: 'Tangkai panjang.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].eaten_by_rat':
+        name: 'data[].eaten_by_rat'
+        description: 'Dimakan tikus.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].unharvest_ffb':
+        name: 'data[].unharvest_ffb'
+        description: 'FFB tidak dipanen.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].uncollect_lf_circle':
+        name: 'data[].uncollect_lf_circle'
+        description: 'Pelepah lingkaran tidak dikumpulkan.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].uncollect_lf_piece':
+        name: 'data[].uncollect_lf_piece'
+        description: 'Pelepah potong tidak dikumpulkan.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].unarrange_ffb':
+        name: 'data[].unarrange_ffb'
+        description: 'FFB tidak tersusun.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].unprune_frond':
+        name: 'data[].unprune_frond'
+        description: 'Pelepah tidak dipangkas.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_1':
+        name: 'data[].qe_1'
+        description: 'QE 1 - Pelepah tidak disusun.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_2':
+        name: 'data[].qe_2'
+        description: 'QE 2 - Buah matahari.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_3':
+        name: 'data[].qe_3'
+        description: 'QE 3 - Buah busuk.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_4':
+        name: 'data[].qe_4'
+        description: 'QE 4 - Buah mentah diperam.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_5':
+        name: 'data[].qe_5'
+        description: 'QE 5 - Over pruning.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_6':
+        name: 'data[].qe_6'
+        description: 'QE 6 - Brondolan tidak dialas.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_7':
+        name: 'data[].qe_7'
+        description: 'QE 7 - Brondolan kotor sampah.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_8':
+        name: 'data[].qe_8'
+        description: 'QE 8 - Buah dibelah.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_9':
+        name: 'data[].qe_9'
+        description: 'QE 9.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_10':
+        name: 'data[].qe_10'
+        description: 'QE 10.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcentry':
+        name: 'data[].fcentry'
+        description: 'optional Dibuat oleh. Example:'
+        required: false
+        example: earum
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].fcedit':
+        name: 'data[].fcedit'
+        description: 'optional Diubah oleh. Example:'
+        required: false
+        example: neque
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].fcip':
+        name: 'data[].fcip'
+        description: 'optional IP address. Example:'
+        required: false
+        example: ut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].fcba':
+        name: 'data[].fcba'
+        description: 'Kode FCBA.'
+        required: true
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_11':
+        name: 'data[].qe_11'
+        description: 'QE 11 - Buah mentah A1.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_12':
+        name: 'data[].qe_12'
+        description: 'QE 12 - Buah tinggal S.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_13':
+        name: 'data[].qe_13'
+        description: 'QE 13 - Benggol panjang tidak dipotong.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_14':
+        name: 'data[].qe_14'
+        description: 'QE 14.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_15':
+        name: 'data[].qe_15'
+        description: 'QE 15.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_16':
+        name: 'data[].qe_16'
+        description: 'QE 16 - Buah mentah kerani.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_17':
+        name: 'data[].qe_17'
+        description: 'QE 17 - Buah mentah mandor.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].documentno':
+        name: 'data[].documentno'
+        description: 'Nomor dokumen.'
+        required: true
+        example: 42
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      data:
+        - similique
     fileParameters: []
     responses:
       -
@@ -685,36 +1338,1623 @@ endpoints:
         content: |-
           {
            "success": true,
-           "message": "Data Device berhasil dihapus.",
-           "data": {
-               "id": 1,
-               "device_id": "DEV-00001",
-               "mac_address": "00:11:22:33:44:55",
-               "imei": "123456789012345",
-               "device_name": "Operator Phone",
-               "platform": "android",
-               "os_version": "13",
-               "app_version": "1.0.0",
-               "assigned_to": "John Doe",
-               "status": "active",
-               "registered_at": "2025-12-12T10:00:00.000000Z",
-               "registered_by": 1,
-               "last_login_at": "2025-12-12T10:05:00.000000Z",
-               "last_latitude": -6.2,
-               "last_longitude": 106.816666,
-               "notes": "Device assigned to new operator",
-               "created_at": "2025-12-12T10:00:00.000000Z",
-               "updated_at": "2025-12-12T10:00:00.000000Z"
-           }
+           "message": "Data Harvesting Quality berhasil ditambahkan.",
+           "data": ["42", "43", "44"]
           }
         headers: []
         description: success
+        custom: []
+      -
+        status: 400
+        content: |-
+          {
+           "success": false,
+           "message": "Data tidak valid atau kosong."
+          }
+        headers: []
+        description: 'invalid data'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+           "success": false,
+           "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+           "error": "Deskripsi error dari database"
+          }
+        headers: []
+        description: error
         custom: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer Z648f6k3b5VEdPg1caavDhe'
+      - 'Bearer fZaEbDhdek358g4616vVcPa'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/uploads/attendance/mobile
+    metadata:
+      groupName: Uploads
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Upload ke SIPS Mobile dari Attendance .'
+      description: |-
+        Endpoint ini digunakan untuk mengirim data attendance dari SIPS Mobile ke tabel SIPSMOBILE.ATTENDANCE_GAD.
+        Data harus dikirim sebagai array dengan struktur sesuai format GET /report/upload-attendance.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      data:
+        name: data
+        description: 'Array data attendance yang akan diinsert ke tabel ATTENDANCE_GAD.'
+        required: true
+        example:
+          - numquam
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].gangcode':
+        name: 'data[].gangcode'
+        description: 'Kode gang.'
+        required: true
+        example: PN011
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fddate':
+        name: 'data[].fddate'
+        description: 'Tanggal attendance (format: YYYY-MM-DD HH:MM:SS).'
+        required: true
+        example: '2025-11-08 00:00:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_1':
+        name: 'data[].supervision_1'
+        description: 'optional Kode mandor panen 1.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_2':
+        name: 'data[].supervision_2'
+        description: 'optional Kode mandor panen 2.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_3':
+        name: 'data[].supervision_3'
+        description: 'optional Kode kerani.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_4':
+        name: 'data[].supervision_4'
+        description: 'optional Supervisi 4.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].supervision_5':
+        name: 'data[].supervision_5'
+        description: 'optional Supervisi 5.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].employeecode':
+        name: 'data[].employeecode'
+        description: 'Kode karyawan.'
+        required: true
+        example: 06-770323-130910-0047
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].attendance':
+        name: 'data[].attendance'
+        description: 'Status attendance.'
+        required: true
+        example: KJ
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].jobcode':
+        name: 'data[].jobcode'
+        description: 'optional Kode pekerjaan.'
+        required: false
+        example: '505030101'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].locationtype':
+        name: 'data[].locationtype'
+        description: 'optional Tipe lokasi.'
+        required: false
+        example: FF
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].locationcode':
+        name: 'data[].locationcode'
+        description: 'optional Kode lokasi.'
+        required: false
+        example: I45P
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mandays':
+        name: 'data[].mandays'
+        description: 'optional Mandays.'
+        required: false
+        example: 0.16666666666667
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].othrs':
+        name: 'data[].othrs'
+        description: 'optional Jam lembur.'
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].rate':
+        name: 'data[].rate'
+        description: 'optional Tarif.'
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].unit':
+        name: 'data[].unit'
+        description: 'optional Unit kerja.'
+        required: false
+        example: 25.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].output':
+        name: 'data[].output'
+        description: 'optional Output.'
+        required: false
+        example: 0.425
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].reference':
+        name: 'data[].reference'
+        description: 'optional Referensi.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].remarks':
+        name: 'data[].remarks'
+        description: 'optional Keterangan.'
+        required: false
+        example: 'SIPS MOBILE'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcentry':
+        name: 'data[].fcentry'
+        description: 'optional Dibuat oleh.'
+        required: false
+        example: andrew
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcedit':
+        name: 'data[].fcedit'
+        description: 'optional Diubah oleh.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcip':
+        name: 'data[].fcip'
+        description: 'optional IP address.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcba':
+        name: 'data[].fcba'
+        description: 'Kode FCBA.'
+        required: true
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].lastupdate':
+        name: 'data[].lastupdate'
+        description: 'optional Waktu update terakhir.'
+        required: false
+        example: '2026-01-09 14:20:27'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].lasttime':
+        name: 'data[].lasttime'
+        description: 'optional Jam update terakhir.'
+        required: false
+        example: '14:20'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].linenokey':
+        name: 'data[].linenokey'
+        description: 'Key unik baris.'
+        required: true
+        example: 1442813
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].overtime_hours':
+        name: 'data[].overtime_hours'
+        description: 'optional Jam lembur.'
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].type_overtime':
+        name: 'data[].type_overtime'
+        description: 'optional Tipe lembur.'
+        required: false
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].chargejob':
+        name: 'data[].chargejob'
+        description: 'optional Job yang dibebankan.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].chargetype':
+        name: 'data[].chargetype'
+        description: 'optional Tipe yang dibebankan.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].chargecode':
+        name: 'data[].chargecode'
+        description: 'optional Kode yang dibebankan.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bucket':
+        name: 'data[].bucket'
+        description: 'optional Bucket.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].spbno':
+        name: 'data[].spbno'
+        description: 'optional No SPB.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].kg_janjang':
+        name: 'data[].kg_janjang'
+        description: 'optional Berat janjang (kg).'
+        required: false
+        example: 384.75
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].kg_brondolan':
+        name: 'data[].kg_brondolan'
+        description: 'optional Berat brondolan (kg).'
+        required: false
+        example: 1.75
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].rowstate':
+        name: 'data[].rowstate'
+        description: 'optional Status baris.'
+        required: false
+        example: Approved
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].document_classification':
+        name: 'data[].document_classification'
+        description: 'optional Klasifikasi dokumen.'
+        required: false
+        example: 501
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].basis_bm':
+        name: 'data[].basis_bm'
+        description: 'optional Basis BM.'
+        required: false
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bjr':
+        name: 'data[].bjr'
+        description: 'optional BJR.'
+        required: false
+        example: 15.39
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].documentno':
+        name: 'data[].documentno'
+        description: 'Nomor dokumen.'
+        required: true
+        example: 368
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].sourcetime':
+        name: 'data[].sourcetime'
+        description: 'optional Waktu sumber data.'
+        required: false
+        example: '2025-11-09 00:24:37'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].janjang':
+        name: 'data[].janjang'
+        description: 'optional Janjang (untuk ATTENDANCE_GAD_TEMP).'
+        required: false
+        example: 0.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].generate':
+        name: 'data[].generate'
+        description: 'optional Informasi generate (untuk ATTENDANCE_GAD_TEMP).'
+        required: false
+        example: 'SIPS MOBILE GENERATE'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].generatetime':
+        name: 'data[].generatetime'
+        description: 'optional Waktu generate (untuk ATTENDANCE_GAD_TEMP).'
+        required: false
+        example: '2026-01-09 14:20:27'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fieldcode':
+        name: 'data[].fieldcode'
+        description: 'optional Kode field.'
+        required: false
+        example: I45
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      data:
+        - numquam
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "Data Karyawan berhasil ditambahkan.",
+           "data": [368, 368, 368, 368]
+          }
+        headers: []
+        description: success
+        custom: []
+      -
+        status: 400
+        content: |-
+          {
+           "success": false,
+           "message": "Data tidak valid atau kosong."
+          }
+        headers: []
+        description: 'invalid data'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+           "success": false,
+           "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+           "error": "Deskripsi error dari database"
+          }
+        headers: []
+        description: error
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer afZ5kPe3va6D8d1b64gchVE'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/uploads/harvesting/mobile
+    metadata:
+      groupName: Uploads
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Upload ke SIPS Mobile dari Harvesting SPB .'
+      description: |-
+        Endpoint ini digunakan untuk mengirim data harvesting SPB dari SIPS Mobile ke tabel SIPSMOBILE.HARVESTINGSPB.
+        Data harus dikirim sebagai array dengan struktur sesuai format GET /report/upload-harvesting.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      data:
+        name: data
+        description: 'Array data harvesting SPB yang akan diinsert ke tabel HARVESTINGSPB.'
+        required: true
+        example:
+          - deleniti
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].spbno':
+        name: 'data[].spbno'
+        description: 'No SPB.'
+        required: true
+        example: SPB2026004804
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fieldcode':
+        name: 'data[].fieldcode'
+        description: 'Kode field.'
+        required: true
+        example: M06
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].receptiondate':
+        name: 'data[].receptiondate'
+        description: 'Tanggal penerimaan (format: YYYY-MM-DD HH:MM:SS).'
+        required: true
+        example: '2026-02-08 00:00:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].harvestdate':
+        name: 'data[].harvestdate'
+        description: 'Tanggal panen (format: YYYY-MM-DD HH:MM:SS).'
+        required: true
+        example: '2026-02-08 00:00:00'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].cropcode':
+        name: 'data[].cropcode'
+        description: 'Kode tanaman.'
+        required: true
+        example: OP
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].productcode':
+        name: 'data[].productcode'
+        description: 'Kode produk.'
+        required: true
+        example: TBS
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].own':
+        name: 'data[].own'
+        description: 'Tipe kepemilikan.'
+        required: true
+        example: OWN
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].vehicle':
+        name: 'data[].vehicle'
+        description: 'Kode kendaraan.'
+        required: true
+        example: L9770CL
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].driver':
+        name: 'data[].driver'
+        description: 'Nama driver.'
+        required: true
+        example: HENDRA
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill':
+        name: 'data[].mill'
+        description: 'Pabrik tujuan.'
+        required: true
+        example: DOM
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].agreementcode':
+        name: 'data[].agreementcode'
+        description: 'optional Kode agreement. Example:'
+        required: false
+        example: tenetur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].transporttype':
+        name: 'data[].transporttype'
+        description: 'Tipe transportasi.'
+        required: true
+        example: DIRECTTRANSPORT
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].spb_type':
+        name: 'data[].spb_type'
+        description: 'Tipe SPB.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bunch':
+        name: 'data[].bunch'
+        description: 'Jumlah bunch.'
+        required: true
+        example: 127.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bucket':
+        name: 'data[].bucket'
+        description: 'optional Jumlah bucket. Example:'
+        required: false
+        example: 75687.1
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].pressemester_abw':
+        name: 'data[].pressemester_abw'
+        description: 'Press semester ABW.'
+        required: true
+        example: 11.19
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bunch_estateweight':
+        name: 'data[].bunch_estateweight'
+        description: 'Berat bunch estate.'
+        required: true
+        example: 1421.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcentry':
+        name: 'data[].fcentry'
+        description: 'Dibuat oleh.'
+        required: true
+        example: PTE_PRODUKSI
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcedit':
+        name: 'data[].fcedit'
+        description: 'Diubah oleh.'
+        required: true
+        example: PTE_PRODUKSI
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcip':
+        name: 'data[].fcip'
+        description: 'IP address.'
+        required: true
+        example: 114.10.139.104
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcba':
+        name: 'data[].fcba'
+        description: 'Kode FCBA.'
+        required: true
+        example: PTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].chitno':
+        name: 'data[].chitno'
+        description: 'Weighbridge Chit Number.'
+        required: true
+        example: TBS2026004804
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_bruto':
+        name: 'data[].mill_weight_bruto'
+        description: 'Berat bruto pabrik (kg).'
+        required: true
+        example: 10090.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_gross':
+        name: 'data[].mill_weight_gross'
+        description: 'Berat gross pabrik (kg).'
+        required: true
+        example: 5920.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_tarra':
+        name: 'data[].mill_weight_tarra'
+        description: 'Berat tarra pabrik (kg).'
+        required: true
+        example: 4170.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_potongan':
+        name: 'data[].mill_weight_potongan'
+        description: 'Berat potongan pabrik (kg).'
+        required: true
+        example: 295.92
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mill_weight_netto':
+        name: 'data[].mill_weight_netto'
+        description: 'Berat netto pabrik (kg).'
+        required: true
+        example: 5624.08
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].mentah':
+        name: 'data[].mentah'
+        description: 'optional Mentah. Example:'
+        required: false
+        example: quam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].tankos':
+        name: 'data[].tankos'
+        description: 'optional Tankos. Example:'
+        required: false
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].hilang':
+        name: 'data[].hilang'
+        description: 'optional Hilang. Example:'
+        required: false
+        example: incidunt
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].keterangan':
+        name: 'data[].keterangan'
+        description: 'optional Keterangan. Example:'
+        required: false
+        example: sit
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].mill_weight_dtl':
+        name: 'data[].mill_weight_dtl'
+        description: 'Detail berat pabrik (kg).'
+        required: true
+        example: 1173.27
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].bjr_chit':
+        name: 'data[].bjr_chit'
+        description: 'BJR per Chit.'
+        required: true
+        example: 9.24
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      data:
+        - deleniti
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "Data Harvesting SPB berhasil ditambahkan.",
+           "data": ["SPB2026004804", "SPB2026004769", "SPB2026004781"]
+          }
+        headers: []
+        description: success
+        custom: []
+      -
+        status: 400
+        content: |-
+          {
+           "success": false,
+           "message": "Data tidak valid atau kosong."
+          }
+        headers: []
+        description: 'invalid data'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+           "success": false,
+           "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+           "error": "Deskripsi error dari database"
+          }
+        headers: []
+        description: error
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer v6aEV54hDgZ3Pke8acd1bf6'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/uploads/harvestingquality/mobile
+    metadata:
+      groupName: Uploads
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Upload ke SIPS Mobile dari Harvesting Quality.'
+      description: |-
+        Endpoint ini digunakan untuk mengirim data harvesting quality dari SIPS Mobile ke tabel SIPSMOBILE.HARVESTINGQUALITY.
+        Data harus dikirim sebagai array dengan struktur sesuai format GET /report/upload-harvesting-quality.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      data:
+        name: data
+        description: 'Array data harvesting quality yang akan diinsert ke tabel HARVESTINGQUALITY.'
+        required: true
+        example:
+          - ut
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].empcode':
+        name: 'data[].empcode'
+        description: 'Kode karyawan panen.'
+        required: true
+        example: 06-000223-230221-0323
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fddate':
+        name: 'data[].fddate'
+        description: 'Tanggal panen (format: YYYY-MM-DD).'
+        required: true
+        example: '2025-11-05'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fieldcode':
+        name: 'data[].fieldcode'
+        description: 'Kode blok/field.'
+        required: true
+        example: I43
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].under_ripe':
+        name: 'data[].under_ripe'
+        description: 'Buah mentah.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].over_ripe':
+        name: 'data[].over_ripe'
+        description: 'Buah overripe.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].abnormal':
+        name: 'data[].abnormal'
+        description: 'Buah abnormal.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].long_stalk':
+        name: 'data[].long_stalk'
+        description: 'Tangkai panjang.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].eaten_by_rat':
+        name: 'data[].eaten_by_rat'
+        description: 'Dimakan tikus.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].unharvest_ffb':
+        name: 'data[].unharvest_ffb'
+        description: 'FFB tidak dipanen.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].uncollect_lf_circle':
+        name: 'data[].uncollect_lf_circle'
+        description: 'Pelepah lingkaran tidak dikumpulkan.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].uncollect_lf_piece':
+        name: 'data[].uncollect_lf_piece'
+        description: 'Pelepah potong tidak dikumpulkan.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].unarrange_ffb':
+        name: 'data[].unarrange_ffb'
+        description: 'FFB tidak tersusun.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].unprune_frond':
+        name: 'data[].unprune_frond'
+        description: 'Pelepah tidak dipangkas.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_1':
+        name: 'data[].qe_1'
+        description: 'QE 1 - Pelepah tidak disusun.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_2':
+        name: 'data[].qe_2'
+        description: 'QE 2 - Buah matahari.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_3':
+        name: 'data[].qe_3'
+        description: 'QE 3 - Buah busuk.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_4':
+        name: 'data[].qe_4'
+        description: 'QE 4 - Buah mentah diperam.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_5':
+        name: 'data[].qe_5'
+        description: 'QE 5 - Over pruning.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_6':
+        name: 'data[].qe_6'
+        description: 'QE 6 - Brondolan tidak dialas.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_7':
+        name: 'data[].qe_7'
+        description: 'QE 7 - Brondolan kotor sampah.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_8':
+        name: 'data[].qe_8'
+        description: 'QE 8 - Buah dibelah.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_9':
+        name: 'data[].qe_9'
+        description: 'QE 9.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_10':
+        name: 'data[].qe_10'
+        description: 'QE 10.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].fcentry':
+        name: 'data[].fcentry'
+        description: 'optional Dibuat oleh. Example:'
+        required: false
+        example: accusamus
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].fcedit':
+        name: 'data[].fcedit'
+        description: 'optional Diubah oleh. Example:'
+        required: false
+        example: dolorem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].fcip':
+        name: 'data[].fcip'
+        description: 'optional IP address. Example:'
+        required: false
+        example: aliquid
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].fcba':
+        name: 'data[].fcba'
+        description: 'Kode FCBA.'
+        required: true
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_11':
+        name: 'data[].qe_11'
+        description: 'QE 11 - Buah mentah A1.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_12':
+        name: 'data[].qe_12'
+        description: 'QE 12 - Buah tinggal S.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_13':
+        name: 'data[].qe_13'
+        description: 'QE 13 - Benggol panjang tidak dipotong.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_14':
+        name: 'data[].qe_14'
+        description: 'QE 14.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_15':
+        name: 'data[].qe_15'
+        description: 'QE 15.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_16':
+        name: 'data[].qe_16'
+        description: 'QE 16 - Buah mentah kerani.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].qe_17':
+        name: 'data[].qe_17'
+        description: 'QE 17 - Buah mentah mandor.'
+        required: true
+        example: 0
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].documentno':
+        name: 'data[].documentno'
+        description: 'Nomor dokumen.'
+        required: true
+        example: 42
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      data:
+        - ut
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "Data Harvesting Quality berhasil ditambahkan.",
+           "data": ["42", "43", "44"]
+          }
+        headers: []
+        description: success
+        custom: []
+      -
+        status: 400
+        content: |-
+          {
+           "success": false,
+           "message": "Data tidak valid atau kosong."
+          }
+        headers: []
+        description: 'invalid data'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+           "success": false,
+           "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+           "error": "Deskripsi error dari database"
+          }
+        headers: []
+        description: error
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer a31a66VD4bEdPgZckeh58fv'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/uploads/lhm_data/mobile
+    metadata:
+      groupName: Uploads
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Approval LHM SIPSMobile.'
+      description: |-
+        Endpoint ini digunakan untuk melakukan kegiatan approval.
+        Data harus dikirim sebagai array dengan struktur untuk perhitungan upah harian karyawan.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      data:
+        name: data
+        description: 'Array data LHM yang akan diinsert ke tabel LHM_DATA.'
+        required: true
+        example:
+          - perspiciatis
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].ID':
+        name: 'data[].ID'
+        description: 'ID Data Absensi (format: YYYY-MM-DD).'
+        required: true
+        example: '123311'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].ROWDATA':
+        name: 'data[].ROWDATA'
+        description: 'baris data.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].HA':
+        name: 'data[].HA'
+        description: 'baris data.'
+        required: true
+        example: '2.7'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      data:
+        - perspiciatis
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "Data LHM berhasil ditambahkan.",
+           "data": [1, 2, 3]
+          }
+        headers: []
+        description: success
+        custom: []
+      -
+        status: 400
+        content: |-
+          {
+           "success": false,
+           "message": "Data tidak valid atau kosong."
+          }
+        headers: []
+        description: 'invalid data'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+           "success": false,
+           "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+           "error": "Deskripsi error dari database"
+          }
+        headers: []
+        description: error
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer adhkbP1ve6E5g4VafZD63c8'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/uploads/open_lhm_data/mobile
+    metadata:
+      groupName: Uploads
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Open LHM SIPSMobile.'
+      description: |-
+        Endpoint ini digunakan untuk mengirim data LHM (Laporan Harian Mandor) dari SIPS Mobile ke tabel SIPSMOBILE.LHM_DATA.
+        Data harus dikirim sebagai array dengan struktur untuk perhitungan upah harian karyawan.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      data:
+        name: data
+        description: 'Array data LHM yang akan diopen.'
+        required: true
+        example:
+          - nemo
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      'data[].ID':
+        name: 'data[].ID'
+        description: 'ID Data Absensi (format: YYYY-MM-DD).'
+        required: true
+        example: '123311'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'data[].ROWDATA':
+        name: 'data[].ROWDATA'
+        description: 'baris data.'
+        required: true
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      data:
+        - nemo
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "Data LHM berhasil dibuka.",
+           "data": [1, 2, 3]
+          }
+        headers: []
+        description: success
+        custom: []
+      -
+        status: 400
+        content: |-
+          {
+           "success": false,
+           "message": "Data tidak valid atau kosong."
+          }
+        headers: []
+        description: 'invalid data'
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+           "success": false,
+           "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+           "error": "Deskripsi error dari database"
+          }
+        headers: []
+        description: error
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer e51bV348Evk6gPZcfdaaDh6'
     controller: null
     method: null
     route: null

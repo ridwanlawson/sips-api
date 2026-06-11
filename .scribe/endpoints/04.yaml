@@ -1,21 +1,2769 @@
-name: Report
+name: Apps
 description: ''
 endpoints:
   -
     httpMethods:
       - GET
-    uri: api/report/hasil-panen
+    uri: api/apps/tphs
     metadata:
-      groupName: Report
+      groupName: Apps
       groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data hasil panen.'
+      subgroup: TPH
+      subgroupDescription: 'Sub Group untuk TPH'
+      title: 'Memanggil data TPH dari SIPS Mobile.'
+      description: 'API ini digunakan untuk memanggil data TPH secara keseluruhan. Tetapi jika ingin melakukan filter pada data yang dipanggil, buatlah parameter pada Url berdasarkan _**Query Parameter**_'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      notph:
+        name: notph
+        description: 'Optional. Filter TPH berdasarkan notph.'
+        required: false
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: 'Optional. Filter TPH berdasarkan fieldcode.'
+        required: false
+        example: A01A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      ancakno:
+        name: ancakno
+        description: 'Optional. Filter TPH berdasarkan ancakno.'
+        required: false
+        example: 1A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      typetph:
+        name: typetph
+        description: 'Optional. Filter TPH berdasarkan typetph 1. Normal TPH; 2. Sharing TPH; 3. Temporary TPH (didalam blok); 4. Pooling TPH (tempat kumpul TBS Double Handling).'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: 'Optional. Filter TPH berdasarkan status.'
+        required: false
+        example: 'TRUE'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'Optional. Filter TPH berdasarkan fcba.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'Optional. Filter TPH berdasarkan afdeling.'
+        required: false
+        example: AFD-04
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      ha:
+        name: ha
+        description: 'Optional. Filter TPH berdasarkan ha.'
+        required: false
+        example: '2'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tahuntanam:
+        name: tahuntanam
+        description: 'Optional. Filter TPH berdasarkan tahuntanam.'
+        required: false
+        example: '2009'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      bjr:
+        name: bjr
+        description: 'Optional. Filter TPH berdasarkan bjr.'
+        required: false
+        example: '3.8'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      notph: '1'
+      fieldcode: A01A
+      ancakno: 1A
+      typetph: 1
+      status: 'TRUE'
+      fcba: MTE
+      afdeling: AFD-04
+      ha: '2'
+      tahuntanam: '2009'
+      bjr: '3.8'
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "List Data TPH",
+           "data": [
+               {
+                   "id": "1",
+                   "notph": "1",
+                   "fieldcode": "A01A",
+                   "ancakno": "1A",
+                   "typetph": "1",
+                   "status": "TRUE",
+                   "location": "2.334993396214831, 117.95918991166465",
+                   "fcba": "MTE",
+                   "division": "AFD-04",
+                   "ha": "2",
+                   "tahuntanam": "2009",
+                   "bjr": "3.8"
+               }
+           ]
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer v5d4Z6Vk6cgeb1hDfaaE3P8'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/apps/tphs
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: TPH
+      subgroupDescription: 'Sub Group untuk TPH'
+      title: 'Menyimpan data TPH.'
       description: |-
-        API ini digunakan untuk memperlihatkan hasil panen pada report di Android SIPS Mobile
+        Jika kombinasi notph + blok + afdeling + fcba sudah ada,
+        maka hanya update: location, ancakno, tahuntanam, bjr.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      notph:
+        name: notph
+        description: ''
+        required: true
+        example: necessitatibus
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: 'The <code>fccode</code> of an existing record in the sips_production.field table.'
+        required: true
+        example: inventore
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      ancakno:
+        name: ancakno
+        description: ''
+        required: true
+        example: dolorem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
+        required: true
+        example: voluptates
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'The <code>division</code> of an existing record in the sips_production.field table.'
+        required: true
+        example: ut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      typetph:
+        name: typetph
+        description: ''
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: true
+        example: ratione
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      location:
+        name: location
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      ha:
+        name: ha
+        description: ''
+        required: true
+        example: 217720.971367
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tahuntanam:
+        name: tahuntanam
+        description: ''
+        required: false
+        example: 2
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      bjr:
+        name: bjr
+        description: ''
+        required: false
+        example: 759349.92
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      created_by:
+        name: created_by
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      notph: necessitatibus
+      fieldcode: inventore
+      ancakno: dolorem
+      fcba: voluptates
+      afdeling: ut
+      typetph: 16
+      status: ratione
+      ha: 217720.971367
+      tahuntanam: 2
+      bjr: 759349.92
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer hak5Pc1fVb6v3aE486DgdZe'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/apps/tphs/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: TPH
+      subgroupDescription: 'Sub Group untuk TPH'
+      title: 'Menampilkan data TPH berdasarkan id TPH dari SIPS Mobile.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID TPH.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 17
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"success":false,"message":"Unauthenticated"}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer dv8bcZk6gP4V6eaha5f1D3E'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/apps/tphs/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: TPH
+      subgroupDescription: 'Sub Group untuk TPH'
+      title: 'Mengubah data TPH berdasarkan id TPH.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID TPH.'
+        required: true
+        example: 14
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 14
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      notph:
+        name: notph
+        description: ''
+        required: true
+        example: ducimus
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: 'The <code>fccode</code> of an existing record in the sips_production.field table.'
+        required: true
+        example: excepturi
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      ancakno:
+        name: ancakno
+        description: ''
+        required: true
+        example: ut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
+        required: true
+        example: sunt
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'The <code>division</code> of an existing record in the sips_production.field table.'
+        required: true
+        example: nobis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      typetph:
+        name: typetph
+        description: ''
+        required: true
+        example: sed
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      location:
+        name: location
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      ha:
+        name: ha
+        description: ''
+        required: true
+        example: 412.54206679
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tahuntanam:
+        name: tahuntanam
+        description: ''
+        required: false
+        example: 15
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      bjr:
+        name: bjr
+        description: ''
+        required: false
+        example: 351.2
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      updated_by:
+        name: updated_by
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      notph: ducimus
+      fieldcode: excepturi
+      ancakno: ut
+      fcba: sunt
+      afdeling: nobis
+      typetph: sed
+      status: consequatur
+      ha: 412.54206679
+      tahuntanam: 15
+      bjr: 351.2
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 1a6v3g4ZfDkha8Edc5VP6eb'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/apps/tphs/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: TPH
+      subgroupDescription: 'Sub Group untuk TPH'
+      title: 'Menghapus data TPH berdasarkan id TPH.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID TPH.'
+        required: true
+        example: 13
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 13
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer DhdP4a5a81ZE6eVbv3g6cfk'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/apps/ancaks
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Ancak
+      subgroupDescription: 'Sub Group untuk Ancak Management (Sub dari TPH)'
+      title: 'Memanggil data ancak dari SIPS Mobile.'
+      description: |-
+        API ini digunakan untuk memanggil data ancak secara keseluruhan dengan dukungan filter dan pencarian.
+        Setiap ancak merupakan sub-unit dari TPH dan memiliki informasi luas tanah.
+        Data diurutkan berdasarkan FCBA, Afdeling, dan Nomor Ancak.
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      q:
+        name: q
+        description: 'Optional. Search ancak berdasarkan noancak, fieldcode, atau afdeling.'
+        required: false
+        example: 1A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'Optional. Filter ancak berdasarkan fcba.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'Optional. Filter ancak berdasarkan afdeling.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: 'Optional. Filter ancak berdasarkan fieldcode.'
+        required: false
+        example: A01A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      noancak:
+        name: noancak
+        description: 'Optional. Filter ancak berdasarkan nomor ancak.'
+        required: false
+        example: 1A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: 'Optional. Filter ancak berdasarkan status (active/inactive/suspended).'
+        required: false
+        example: active
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tph_id:
+        name: tph_id
+        description: 'Optional. Filter ancak berdasarkan TPH ID.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      per_page:
+        name: per_page
+        description: 'Optional. Jumlah data per halaman. Default: 15.'
+        required: false
+        example: 10
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      q: 1A
+      fcba: MTE
+      afdeling: AFD-01
+      fieldcode: A01A
+      noancak: 1A
+      status: active
+      tph_id: 1
+      per_page: 10
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "List Data Ancak",
+           "data": [
+               {
+                   "id": 1,
+                   "fcba": "MTE",
+                   "afdeling": "AFD-01",
+                   "fieldcode": "A01A",
+                   "noancak": "1A",
+                   "luas": "25.50",
+                   "tph_id": 5,
+                   "tph": null,
+                   "status": "active",
+                   "notes": "Ancak untuk panen reguler",
+                   "created_by": "admin",
+                   "updated_by": "admin",
+                   "created_at": "2025-12-12T10:00:00+08:00",
+                   "updated_at": "2025-12-12T10:00:00+08:00"
+               }
+           ],
+           "meta": {
+               "current_page": 1,
+               "from": 1,
+               "last_page": 1,
+               "per_page": 15,
+               "to": 1,
+               "total": 1
+           }
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer h6b3Vfvg58E1caZekDadP46'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/apps/ancaks
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Ancak
+      subgroupDescription: 'Sub Group untuk Ancak Management (Sub dari TPH)'
+      title: 'Menyimpan data ancak ke dalam database SIPS Mobile.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      fcba:
+        name: fcba
+        description: 'optional Kode FCBA.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'optional Kode afdeling/divisi.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: 'optional Kode lapangan.'
+        required: false
+        example: A01A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      noancak:
+        name: noancak
+        description: 'Nomor ancak (unik).'
+        required: true
+        example: 1A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      luas:
+        name: luas
+        description: 'optional Luas ancak dalam hektar.'
+        required: false
+        example: 25.5
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      tph_id:
+        name: tph_id
+        description: 'optional ID TPH yang terkait.'
+        required: false
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      status:
+        name: status
+        description: 'optional Status ancak (active/inactive/suspended). Default: active.'
+        required: false
+        example: active
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      notes:
+        name: notes
+        description: 'optional Catatan tambahan.'
+        required: false
+        example: 'Ancak untuk panen reguler'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      created_by:
+        name: created_by
+        description: 'optional Nama user yang membuat.'
+        required: false
+        example: admin
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      fcba: MTE
+      afdeling: AFD-01
+      fieldcode: A01A
+      noancak: 1A
+      luas: 25.5
+      tph_id: 5
+      status: active
+      notes: 'Ancak untuk panen reguler'
+      created_by: admin
+    fileParameters: []
+    responses:
+      -
+        status: 201
+        content: |-
+          {
+           "success": true,
+           "message": "Data Ancak berhasil ditambahkan.",
+           "data": {
+               "id": 1,
+               "fcba": "MTE",
+               "afdeling": "AFD-01",
+               "fieldcode": "A01A",
+               "noancak": "1A",
+               "luas": "25.50",
+               "tph_id": 5,
+               "tph": null,
+               "status": "active",
+               "notes": "Ancak untuk panen reguler",
+               "created_by": "admin",
+               "updated_by": null,
+               "created_at": "2025-12-12T10:00:00+08:00",
+               "updated_at": "2025-12-12T10:00:00+08:00"
+           }
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 8P1cDhZVda6f6g3be4vEk5a'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/apps/ancaks/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Ancak
+      subgroupDescription: 'Sub Group untuk Ancak Management (Sub dari TPH)'
+      title: 'Menampilkan data ancak berdasarkan id ancak.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Ancak.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "Detail Data Ancak",
+           "data": {
+               "id": 1,
+               "fcba": "MTE",
+               "afdeling": "AFD-01",
+               "fieldcode": "A01A",
+               "noancak": "1A",
+               "luas": "25.50",
+               "tph_id": 5,
+               "tph": null,
+               "status": "active",
+               "notes": "Ancak untuk panen reguler",
+               "created_by": "admin",
+               "updated_by": "admin",
+               "created_at": "2025-12-12T10:00:00+08:00",
+               "updated_at": "2025-12-12T10:00:00+08:00"
+           }
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer PdZ6g4ahV3cbE8Dv5k16aef'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/apps/ancaks/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Ancak
+      subgroupDescription: 'Sub Group untuk Ancak Management (Sub dari TPH)'
+      title: 'Mengubah data ancak berdasarkan id ancak.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Ancak.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      fcba:
+        name: fcba
+        description: 'optional Kode FCBA.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'optional Kode afdeling/divisi.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: 'optional Kode lapangan.'
+        required: false
+        example: A01A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      noancak:
+        name: noancak
+        description: 'optional Nomor ancak (unik).'
+        required: false
+        example: 1A
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      luas:
+        name: luas
+        description: 'optional Luas ancak dalam hektar.'
+        required: false
+        example: 25.5
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tph_id:
+        name: tph_id
+        description: 'optional ID TPH yang terkait.'
+        required: false
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: 'optional Status ancak.'
+        required: false
+        example: active
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: 'optional Catatan tambahan.'
+        required: false
+        example: Updated
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      updated_by:
+        name: updated_by
+        description: 'optional Nama user yang mengupdate.'
+        required: false
+        example: admin
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      fcba: MTE
+      afdeling: AFD-01
+      fieldcode: A01A
+      noancak: 1A
+      luas: 25.5
+      tph_id: 5
+      status: active
+      notes: Updated
+      updated_by: admin
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "Data Ancak berhasil diperbarui.",
+           "data": {
+               "id": 1,
+               "fcba": "MTE",
+               "afdeling": "AFD-01",
+               "fieldcode": "A01A",
+               "noancak": "1A",
+               "luas": "25.50",
+               "tph_id": 5,
+               "tph": null,
+               "status": "active",
+               "notes": "Updated",
+               "created_by": "admin",
+               "updated_by": "admin",
+               "created_at": "2025-12-12T10:00:00+08:00",
+               "updated_at": "2025-12-12T11:00:00+08:00"
+           }
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Df6Pa5hd1cZEea6kg4vbV83'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/apps/ancaks/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Ancak
+      subgroupDescription: 'Sub Group untuk Ancak Management (Sub dari TPH)'
+      title: 'Menghapus data ancak berdasarkan id ancak.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Ancak.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "Data Ancak berhasil dihapus.",
+           "data": {
+               "id": 1,
+               "fcba": "MTE",
+               "afdeling": "AFD-01",
+               "fieldcode": "A01A",
+               "noancak": "1A",
+               "luas": "25.50",
+               "tph_id": 5,
+               "tph": null,
+               "status": "active",
+               "notes": "Ancak untuk panen reguler",
+               "created_by": "admin",
+               "updated_by": "admin",
+               "created_at": "2025-12-12T10:00:00+08:00",
+               "updated_at": "2025-12-12T10:00:00+08:00"
+           }
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 58a6dVZ4a163gPcheEbfvDk'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/apps/karyawans
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Karyawan
+      subgroupDescription: 'Sub Group untuk Karyawan'
+      title: 'Memanggil data karyawan dari SIPS Mobile.'
+      description: 'API ini digunakan untuk memanggil data karyawan secara keseluruhan. Tetapi jika ingin melakukan filter pada data yang dipanggil, buatlah parameter pada Url berdasarkan _**Query Parameter**_'
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      fcba:
+        name: fcba
+        description: 'Optional. Filter karyawan berdasarkan fcba.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      sectionname:
+        name: sectionname
+        description: 'Optional. Filter karyawan berdasarkan sectionname.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      gangcode:
+        name: gangcode
+        description: 'Optional. Filter karyawan berdasarkan gangcode.'
+        required: false
+        example: PN011
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      noancak:
+        name: noancak
+        description: 'Optional. Filter karyawan berdasarkan noancak.'
+        required: false
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fctype:
+        name: fctype
+        description: 'Optional. Filter karyawan berdasarkan fctype.'
+        required: false
+        example: W
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fccompanycode:
+        name: fccompanycode
+        description: 'Optional. Filter karyawan berdasarkan fccompanycode.'
+        required: false
+        example: PT.SKJ
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      fcba: MTE
+      sectionname: AFD-01
+      gangcode: PN011
+      noancak: '1'
+      fctype: W
+      fccompanycode: PT.SKJ
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "List Data Karyawan",
+           "data": [
+               {
+                   "id": 2447,
+                   "fccode": "06-011128-240520-0642",
+                   "fcname": "RANDIANUS SERAN",
+                   "sectionname": "AFD-01",
+                   "gangcode": "PN011",
+                   "fcba": "MTE",
+                   "noancak": "1",
+                   "created_by": null,
+                   "updated_by": null,
+                   "created_at": null,
+                   "updated_at": null,
+                   "fctype": "W",
+                   "fccompanycode": "PT.SKJ"
+               }
+           ]
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer k5dZVcva3egEP668Dhbf4a1'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/apps/karyawans
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Karyawan
+      subgroupDescription: 'Sub Group untuk Karyawan'
+      title: 'Menyimpan data karyawan ke dalam database SIPS Mobile.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      fccode:
+        name: fccode
+        description: 'The <code>fccode</code> of an existing record in the sips_production.Employee table.'
+        required: true
+        example: ipsam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcname:
+        name: fcname
+        description: 'The <code>fcname</code> of an existing record in the sips_production.Employee table.'
+        required: true
+        example: sint
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      sectionname:
+        name: sectionname
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: yzfibahpbvmts
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      gangcode:
+        name: gangcode
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: ejkonedb
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'The <code>fcba</code> of an existing record in the sips_production.Employee table.'
+        required: true
+        example: dignissimos
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      noancak:
+        name: noancak
+        description: ''
+        required: false
+        example: fugit
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      photo:
+        name: photo
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      created_by:
+        name: created_by
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      updated_by:
+        name: updated_by
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      face_recognition:
+        name: face_recognition
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      fr_registered_at:
+        name: fr_registered_at
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-06-11T11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      fccode: ipsam
+      fcname: sint
+      sectionname: yzfibahpbvmts
+      gangcode: ejkonedb
+      fcba: dignissimos
+      noancak: fugit
+      fr_registered_at: '2026-06-11T11:26:42'
+    fileParameters:
+      photo: null
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer ZDbPga6cevhk5E6d1f3a84V'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/apps/karyawans/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Karyawan
+      subgroupDescription: 'Sub Group untuk Karyawan'
+      title: 'Menampilkan data karyawan berdasarkan id karyawan dari SIPS Mobile.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Karyawan.'
+        required: true
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 17
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"success":false,"message":"Unauthenticated"}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer bEgkPc3V54efZ61Dd68hvaa'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/apps/karyawans/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Karyawan
+      subgroupDescription: 'Sub Group untuk Karyawan'
+      title: 'Mengubah data karyawan berdasarkan id karyawan.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Karyawan.'
+        required: true
+        example: 4
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 4
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      fccode:
+        name: fccode
+        description: 'The <code>fccode</code> of an existing record in the sips_production.Employee table.'
+        required: true
+        example: ab
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcname:
+        name: fcname
+        description: 'The <code>fcname</code> of an existing record in the sips_production.Employee table.'
+        required: true
+        example: aut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      sectionname:
+        name: sectionname
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: jlpekjxzkmetaoipvqofrmd
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      gangcode:
+        name: gangcode
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: kgwkuyuiogzxgtrazr
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'The <code>fcba</code> of an existing record in the sips_production.Employee table.'
+        required: true
+        example: ut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      noancak:
+        name: noancak
+        description: ''
+        required: true
+        example: aut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      face_recognition:
+        name: face_recognition
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      fr_registered_at:
+        name: fr_registered_at
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-06-11T11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      aktif:
+        name: aktif
+        description: ''
+        required: false
+        example: itaque
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      photo:
+        name: photo
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      updated_by:
+        name: updated_by
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      fccode: ab
+      fcname: aut
+      sectionname: jlpekjxzkmetaoipvqofrmd
+      gangcode: kgwkuyuiogzxgtrazr
+      fcba: ut
+      noancak: aut
+      fr_registered_at: '2026-06-11T11:26:42'
+      aktif: itaque
+    fileParameters:
+      photo: null
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 8b6fhDaE1d6V3eavgkc5ZP4'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/apps/karyawans/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Karyawan
+      subgroupDescription: 'Sub Group untuk Karyawan'
+      title: 'Menghapus data karyawan berdasarkan id karyawan.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Karyawan.'
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 3
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer P483bhevcZgdaV6fk6Da5E1'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/apps/absensis
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Absensi
+      subgroupDescription: 'Sub Group untuk Absensi'
+      title: 'Memanggil data Absensi dari SIPS Mobile.'
+      description: |-
+        API ini digunakan untuk memanggil data ABSENSI secara keseluruhan.
+        Tetapi jika ingin melakukan filter pada data yang dipanggil,
+        buatlah parameter pada Url berdasarkan _**Query Parameter**_. data ini diurutkan berdasarkan Bisnis Unit, Tanggal terbaru, Afdeling dan Kode Karyawan
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      tanggal:
+        name: tanggal
+        description: 'Optional. Filter Absensi berdasarkan tanggal. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2025-08-17'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tanggal_end:
+        name: tanggal_end
+        description: 'Optional. Filter Absensi berdasarkan rentang tanggal. Harus dalam format YYYY-MM-DD.'
+        required: false
+        example: '2025-08-20'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      kode_karyawan_mandor:
+        name: kode_karyawan_mandor
+        description: 'Optional. Filter Absensi berdasarkan kode_karyawan_mandor.'
+        required: false
+        example: 06-851012-151218-0079
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      kode_karyawan:
+        name: kode_karyawan
+        description: 'Optional. Filter Absensi berdasarkan kode_karyawan.'
+        required: false
+        example: 06-031014-231025-0438
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'Optional. Filter Absensi berdasarkan fcba.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'Optional. Filter Absensi berdasarkan afdeling.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      gang:
+        name: gang
+        description: 'Optional. Filter Absensi berdasarkan gang.'
+        required: false
+        example: PN011
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      attendance:
+        name: attendance
+        description: 'Optional. Filter Absensi berdasarkan attendance.'
+        required: false
+        example: KJ
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status_attendance:
+        name: status_attendance
+        description: 'Optional. Filter Absensi berdasarkan status kehadiran salah satu dari Planned, AuthorizedOnProgress, Approved, Reject.'
+        required: false
+        example: Planned
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      attendance_type:
+        name: attendance_type
+        description: 'Optional. Filter Absensi berdasarkan type kehadiran salah satu dari REGULAR, ASSISTENSI.'
+        required: false
+        example: REGULAR
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba_destination:
+        name: fcba_destination
+        description: 'Optional. Filter Absensi berdasarkan fcba_destination.'
+        required: false
+        example: MRE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      section_destination:
+        name: section_destination
+        description: 'Optional. Filter Absensi berdasarkan section_destination.'
+        required: false
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      kemandoran:
+        name: kemandoran
+        description: 'Optional. Filter Absensi berdasarkan kemandoran.'
+        required: false
+        example: MD011
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      tanggal: '2025-08-17'
+      tanggal_end: '2025-08-20'
+      kode_karyawan_mandor: 06-851012-151218-0079
+      kode_karyawan: 06-031014-231025-0438
+      fcba: MTE
+      afdeling: AFD-01
+      gang: PN011
+      attendance: KJ
+      status_attendance: Planned
+      attendance_type: REGULAR
+      fcba_destination: MRE
+      section_destination: AFD-01
+      kemandoran: MD011
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+           "success": true,
+           "message": "List Data Absensi",
+           "data": [
+               {
+                   "id": "25",
+                   "tanggal": "2024-12-19 00:00:00",
+                   "time_in": "2024-12-19 06:00:31",
+                   "location_in": "2024-12-19 06:00:31",
+                   "time_out": "2024-12-19 17:44:31",
+                   "location_out": "2024-12-19 17:44:31",
+                   "kode_karyawan_mandor": "06-851012-151218-0079",
+                   "namamandor": "SAMSUL",
+                   "kode_karyawan": "06-031014-231025-0438",
+                   "namakaryawan": "HENDRIKUS KLAU SERAN",
+                   "pengancakan": "MTE",
+                   "total_late_time": "01:11",
+                   "go_home_early": "00:10",
+                   "attendance_type": "REGULAR",
+                   "exception_case": "",
+                   "no_ba_exca": "",
+                   "fcba": "MTE",
+                   "section": "AFD-01",
+                   "gang": "PN011",
+                   "attendance": "KJ",
+                   "mandays": 0.82,
+                   "status_attendance": "Planned",
+                   "fcba_destination": "MRE",
+                   "section_destination": "AFD-01",
+                   "kemandoran": "MD011",
+                   "image": "",
+                   "id_device": "",
+                   "mac_address": ""
+               }
+           ]
+          }
+        headers: []
+        description: success
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer fva63ack5h6EVde18bZP4Dg'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/apps/absensis
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Absensi
+      subgroupDescription: 'Sub Group untuk Absensi'
+      title: 'Menyimpan data Absensi ke dalam database SIPS Mobile.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      tanggal:
+        name: tanggal
+        description: 'Must be a valid date in the format <code>Y-m-d</code>.'
+        required: true
+        example: '2026-06-11'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      kode_karyawan_mandor:
+        name: kode_karyawan_mandor
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kode_karyawan:
+        name: kode_karyawan
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: explicabo
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      time_in:
+        name: time_in
+        description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
+        required: true
+        example: '2026-06-11 11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      time_out:
+        name: time_out
+        description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
+        required: false
+        example: '2026-06-11 11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      location_in:
+        name: location_in
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      location_out:
+        name: location_out
+        description: "'location_in' => 'required',."
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      pengancakan:
+        name: pengancakan
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      total_late_time:
+        name: total_late_time
+        description: 'Must be a valid date in the format <code>H:i</code>.'
+        required: false
+        example: '11:26'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      go_home_early:
+        name: go_home_early
+        description: 'Must be a valid date in the format <code>H:i</code>.'
+        required: false
+        example: '11:26'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      attendance_type:
+        name: attendance_type
+        description: ''
+        required: false
+        example: REGULAR
+        type: string
+        enumValues:
+          - REGULAR
+          - ASSISTENSI
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      exception_case:
+        name: exception_case
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      no_ba_exca:
+        name: no_ba_exca
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      fcba:
+        name: fcba
+        description: 'The <code>fcba</code> of an existing record in the employee table.'
+        required: true
+        example: deserunt
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      section:
+        name: section
+        description: 'The <code>sectionname</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      gang:
+        name: gang
+        description: 'The <code>gangcode</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      mandays:
+        name: mandays
+        description: 'Must not be greater than 1.'
+        required: false
+        example: 1
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      attendance:
+        name: attendance
+        description: ''
+        required: true
+        example: WS
+        type: string
+        enumValues:
+          - KJ
+          - WH
+          - WS
+          - MK
+          - ML
+          - P1
+          - KB
+          - OT
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcba_destination:
+        name: fcba_destination
+        description: 'The <code>fcba</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      section_destination:
+        name: section_destination
+        description: 'The <code>sectionname</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kemandoran:
+        name: kemandoran
+        description: 'The <code>gangcode</code> of an existing record in the users table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      id_device:
+        name: id_device
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      mac_address:
+        name: mac_address
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      images:
+        name: images
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      created_by:
+        name: created_by
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      tanggal: '2026-06-11'
+      kode_karyawan: explicabo
+      time_in: '2026-06-11 11:26:42'
+      time_out: '2026-06-11 11:26:42'
+      total_late_time: '11:26'
+      go_home_early: '11:26'
+      attendance_type: REGULAR
+      fcba: deserunt
+      mandays: 1
+      attendance: WS
+    fileParameters:
+      no_ba_exca: null
+      images: null
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer aD4fZV8g5bkdPv6h6cEea31'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/apps/absensis/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Absensi
+      subgroupDescription: 'Sub Group untuk Absensi'
+      title: 'Menampilkan data Absensi berdasarkan id Absensi dari SIPS Mobile.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Absensi.'
+        required: true
+        example: 14
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 14
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"success":false,"message":"Unauthenticated"}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer kvVdeh66gD4aP3c1Z8f5Eba'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/apps/absensis/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Absensi
+      subgroupDescription: 'Sub Group untuk Absensi'
+      title: 'Mengubah data Absensi berdasarkan id Absensi.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Absensi.'
+        required: true
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 12
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      kode_karyawan_mandor:
+        name: kode_karyawan_mandor
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kode_karyawan:
+        name: kode_karyawan
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: dolor
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      attendance_type:
+        name: attendance_type
+        description: ''
+        required: false
+        example: REGULAR
+        type: string
+        enumValues:
+          - REGULAR
+          - ASSISTENSI
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      time_out:
+        name: time_out
+        description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
+        required: false
+        example: '2026-06-11 11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      location_out:
+        name: location_out
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      pengancakan:
+        name: pengancakan
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      total_late_time:
+        name: total_late_time
+        description: 'Must be a valid date in the format <code>H:i</code>.'
+        required: false
+        example: '11:26'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      go_home_early:
+        name: go_home_early
+        description: 'Must be a valid date in the format <code>H:i</code>.'
+        required: false
+        example: '11:26'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      exception_case:
+        name: exception_case
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      no_ba_exca:
+        name: no_ba_exca
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      fcba:
+        name: fcba
+        description: 'The <code>fcba</code> of an existing record in the employee table.'
+        required: true
+        example: quas
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      section:
+        name: section
+        description: 'The <code>sectionname</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      gang:
+        name: gang
+        description: 'The <code>gangcode</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      mandays:
+        name: mandays
+        description: 'Must not be greater than 1.'
+        required: false
+        example: 1
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      attendance:
+        name: attendance
+        description: ''
+        required: true
+        example: OT
+        type: string
+        enumValues:
+          - KJ
+          - WH
+          - WS
+          - MK
+          - ML
+          - P1
+          - KB
+          - OT
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcba_destination:
+        name: fcba_destination
+        description: 'The <code>fcba</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      section_destination:
+        name: section_destination
+        description: 'The <code>sectionname</code> of an existing record in the employee table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kemandoran:
+        name: kemandoran
+        description: 'The <code>gangcode</code> of an existing record in the users table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      id_device:
+        name: id_device
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      mac_address:
+        name: mac_address
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      images:
+        name: images
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      kode_karyawan: dolor
+      attendance_type: REGULAR
+      time_out: '2026-06-11 11:26:42'
+      total_late_time: '11:26'
+      go_home_early: '11:26'
+      fcba: quas
+      mandays: 1
+      attendance: OT
+    fileParameters:
+      images: null
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 8hafE6kd41ZV5cgbavDP36e'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/apps/absensis/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Absensi
+      subgroupDescription: 'Sub Group untuk Absensi'
+      title: 'Menghapus data Absensi berdasarkan id Absensi.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Absensi.'
+        required: true
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 18
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 46vfdZc16bPg35aeakV8hDE'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PATCH
+    uri: 'api/apps/absensis/{id}/status'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Absensi
+      subgroupDescription: 'Sub Group untuk Absensi'
+      title: 'Approved atau Reject status_absensi (STATUS_ATTENDANCE) berdasarkan id Absensi.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Absensi.'
+        required: true
+        example: 10
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 10
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      status_attendance:
+        name: status_attendance
+        description: ''
+        required: true
+        example: Reject
+        type: string
+        enumValues:
+          - Planned
+          - Reject
+          - Approved
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      status_attendance: Reject
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer acPEZedkb6af4Dv1hV3g658'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/apps/panens
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Panen
+      subgroupDescription: 'Sub Group untuk Panen'
+      title: 'Memanggil data Panen dari SIPS Mobile.'
+      description: |-
+        API ini digunakan untuk memanggil data Panen secara keseluruhan.
         Namun, jika ingin melakukan filter pada data yang dipanggil,
         gunakan parameter pada URL berdasarkan _**Query Parameter**_.
-        Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afdeling, tph, blok
+        Data diurutkan berdasarkan Tanggal terbaru, Bisnit Unit, Afdeling, dan Kode Karyawan.
       authenticated: true
       custom: []
     headers:
@@ -27,59 +2775,39 @@ endpoints:
     queryParameters:
       nodokumen:
         name: nodokumen
-        description: 'Optional. Filter Hasil Panen berdasarkan No Dokumen.'
+        description: 'Optional. Filter Panen berdasarkan No Dokumen.'
         required: false
-        example: SKJ-PNN/MTE/07/25/001
+        example: SKJ-HOF/MTE/25/01/0001
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         custom: []
-      tanggaldari:
-        name: tanggaldari
-        description: 'Optional. Filter Hasil Panen berdasarkan rentang tanggal, parameter ini diisi tanggal dari. Harus dalam format YYYY-MM-DD.'
+      tanggal:
+        name: tanggal
+        description: 'Optional. Filter Panen berdasarkan tanggal. Harus dalam format YYYY-MM-DD.'
         required: false
-        example: '2024-12-19'
+        example: '2025-11-01'
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         custom: []
-      tanggalsampai:
-        name: tanggalsampai
-        description: 'Optional. Filter Hasil Panen berdasarkan rentang tanggal, parameter ini diisi tanggal sampai. Harus dalam format YYYY-MM-DD.'
+      tanggal_end:
+        name: tanggal_end
+        description: 'Optional. Filter Panen berdasarkan rentang tanggal. Harus dalam format YYYY-MM-DD.'
         required: false
-        example: '2024-12-20'
+        example: '2025-11-20'
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         custom: []
-      tph:
-        name: tph
-        description: 'Optional. Filter Hasil Panen berdasarkan Kode TPH.'
+      kode_karyawan:
+        name: kode_karyawan
+        description: 'Optional. Filter Panen berdasarkan kode karyawan.'
         required: false
-        example: 1A02
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      blok:
-        name: blok
-        description: 'Optional. Filter Hasil Panen berdasarkan Blok.'
-        required: false
-        example: A02
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      afdeling:
-        name: afdeling
-        description: 'Optional. Filter Hasil Panen berdasarkan afdeling.'
-        required: false
-        example: AFD-01
+        example: 06-031014-231025-0438
         type: string
         enumValues: []
         exampleWasSpecified: true
@@ -87,7 +2815,7 @@ endpoints:
         custom: []
       fcba:
         name: fcba
-        description: 'Optional. Filter Hasil Panen berdasarkan Bisnis Unit (FCBA).'
+        description: 'Optional. Filter Panen berdasarkan bisnis unit.'
         required: false
         example: MTE
         type: string
@@ -95,25 +2823,45 @@ endpoints:
         exampleWasSpecified: true
         nullable: false
         custom: []
-      status:
-        name: status
-        description: 'Optional. Filter Hasil Panen berdasarkan Status Hasil Panen salah satu dari SELISIH,BELUM,SELESAI.'
+      afdeling:
+        name: afdeling
+        description: 'Optional. Filter Panen berdasarkan afdeling.'
         required: false
-        example: SELISIH
+        example: AFD-01
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      tph:
+        name: tph
+        description: 'Optional. Filter Panen berdasarkan TPH.'
+        required: false
+        example: TPH-101
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      kemandoran:
+        name: kemandoran
+        description: 'Optional. Filter Panen berdasarkan kemandoran.'
+        required: false
+        example: MD011
         type: string
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         custom: []
     cleanQueryParameters:
-      nodokumen: SKJ-PNN/MTE/07/25/001
-      tanggaldari: '2024-12-19'
-      tanggalsampai: '2024-12-20'
-      tph: 1A02
-      blok: A02
-      afdeling: AFD-01
+      nodokumen: SKJ-HOF/MTE/25/01/0001
+      tanggal: '2025-11-01'
+      tanggal_end: '2025-11-20'
+      kode_karyawan: 06-031014-231025-0438
       fcba: MTE
-      status: SELISIH
+      afdeling: AFD-01
+      tph: TPH-101
+      kemandoran: MD011
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -123,19 +2871,34 @@ endpoints:
         content: |-
           {
            "success": true,
-           "message": "List Data Hasil Panen",
+           "message": "List Data Panen",
            "data": [
                {
                    "id": "1",
-                   "nodokumen": "SPB2024001259",
-                   "tanggal": "2024-12-31 00:00:00",
-                   "tph": "1A02",
-                   "blok": "A02",
-                   "afdeling": "AFD-01",
+                   "nodokumen": "SKJ-HOF/MTE/25/01/0001",
+                   "tanggal": "2024-12-19",
+                   "kode_karyawan": "06-031014-231025-0438",
+                   "nama_karyawan": "HENDRIKUS KLAU SERAN",
                    "fcba": "MTE",
-                   "janjang": "180",
-                   "status": "SELISIH",
-                   "informasi": "SELISIH : -195 JJG"
+                   "afdeling": "AFD-01",
+                   "tph": "TPH-101",
+                   "fieldcode": "A12",
+                   "output": "150",
+                   "mentah": "5",
+                   "overripe": "3",
+                   "busuk": "2",
+                   "busuk2": "0",
+                   "buahkecil": "1",
+                   "brondol": "8",
+                   "alasbrondol": "0",
+                   "tangkai_panjang": "0",
+                   "kemandoran": "MD011",
+                   "images": "",
+                   "exception_case": "",
+                   "no_ba_exca": "",
+                   "id_device": "Xiaomi",
+                   "status_harvesting": "Planned",
+                   "card_id": "NFC 1234567890"
                }
            ]
           }
@@ -146,7 +2909,375 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 5k8b46vDg6fEhc1daVe3aZP'
+      - 'Bearer hVP8Z5bkga4ED3d1e66afvc'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/apps/panens
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Panen
+      subgroupDescription: 'Sub Group untuk Panen'
+      title: 'Menyimpan data Panen ke dalam database SIPS Mobile.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      nodokumen:
+        name: nodokumen
+        description: ''
+        required: true
+        example: distinctio
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tanggal:
+        name: tanggal
+        description: 'Must be a valid date in the format <code>Y-m-d</code>.'
+        required: true
+        example: '2026-06-11'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      kode_karyawan_mandor1:
+        name: kode_karyawan_mandor1
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: corrupti
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kode_karyawan_mandor_panen:
+        name: kode_karyawan_mandor_panen
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: ullam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kode_karyawan_kerani:
+        name: kode_karyawan_kerani
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: libero
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kode_karyawan:
+        name: kode_karyawan
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: ducimus
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      noancak:
+        name: noancak
+        description: ''
+        required: true
+        example: fugit
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tph:
+        name: tph
+        description: "'noancak' => 'required|string|exists:tph,ancakno',."
+        required: true
+        example: voluptas
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: "'tph' => 'required|string|exists:tph,notph',."
+        required: true
+        example: blanditiis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: "'fieldcode' => 'required|string|exists:tph,fieldcode',."
+        required: true
+        example: quod
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: "'afdeling' => 'required|string|exists:tph,afdeling',."
+        required: true
+        example: ea
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      output:
+        name: output
+        description: "'fcba' => 'required|string|exists:tph,fcba',. Must be at least 0."
+        required: true
+        example: 75
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      mentah:
+        name: mentah
+        description: 'Must be at least 0.'
+        required: false
+        example: 77
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      overripe:
+        name: overripe
+        description: 'Must be at least 0.'
+        required: false
+        example: 70
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      busuk:
+        name: busuk
+        description: 'Must be at least 0.'
+        required: false
+        example: 72
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      busuk2:
+        name: busuk2
+        description: 'Must be at least 0.'
+        required: false
+        example: 6
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      buahkecil:
+        name: buahkecil
+        description: 'Must be at least 0.'
+        required: false
+        example: 73
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      parteno:
+        name: parteno
+        description: 'Must be at least 0.'
+        required: false
+        example: 34
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      parteno50plus:
+        name: parteno50plus
+        description: 'Must be at least 0.'
+        required: false
+        example: 82
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      brondol:
+        name: brondol
+        description: 'Must be at least 0.'
+        required: false
+        example: 33
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tangkaipanjang:
+        name: tangkaipanjang
+        description: 'Must be at least 0.'
+        required: false
+        example: 39
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      alasbrondol:
+        name: alasbrondol
+        description: ''
+        required: false
+        example: perferendis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      status_assistensi:
+        name: status_assistensi
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kemandoran:
+        name: kemandoran
+        description: 'The <code>gangcode</code> of an existing record in the users table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      location:
+        name: location
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      images:
+        name: images
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      exception_case:
+        name: exception_case
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      no_ba_exca:
+        name: no_ba_exca
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      id_device:
+        name: id_device
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      card_id:
+        name: card_id
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      created_by:
+        name: created_by
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      nodokumen: distinctio
+      tanggal: '2026-06-11'
+      kode_karyawan_mandor1: corrupti
+      kode_karyawan_mandor_panen: ullam
+      kode_karyawan_kerani: libero
+      kode_karyawan: ducimus
+      noancak: fugit
+      tph: voluptas
+      fieldcode: blanditiis
+      afdeling: quod
+      fcba: ea
+      output: 75
+      mentah: 77
+      overripe: 70
+      busuk: 72
+      busuk2: 6
+      buahkecil: 73
+      parteno: 34
+      parteno50plus: 82
+      brondol: 33
+      tangkaipanjang: 39
+      alasbrondol: perferendis
+    fileParameters:
+      images: null
+      no_ba_exca: null
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer eE3f4dk8chZ5DavVPbg66a1'
     controller: null
     method: null
     route: null
@@ -154,15 +3285,484 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: api/report/hasil-pengangkutan
+    uri: 'api/apps/panens/{id}'
     metadata:
-      groupName: Report
+      groupName: Apps
       groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data hasil pengangkutan.'
+      subgroup: Panen
+      subgroupDescription: 'Sub Group untuk Panen'
+      title: 'Menampilkan data Panen berdasarkan id Panen dari SIPS Mobile.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Panen.'
+        required: true
+        example: 13
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 13
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"success":false,"message":"Unauthenticated"}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer g1kab835PEfdDZve4V66hac'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/apps/panens/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Panen
+      subgroupDescription: 'Sub Group untuk Panen'
+      title: 'Mengubah data Panen berdasarkan id Panen.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Panen.'
+        required: true
+        example: 15
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 15
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      kode_karyawan_mandor1:
+        name: kode_karyawan_mandor1
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: ab
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kode_karyawan_mandor_panen:
+        name: kode_karyawan_mandor_panen
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: fugiat
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kode_karyawan_kerani:
+        name: kode_karyawan_kerani
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: dicta
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      kode_karyawan:
+        name: kode_karyawan
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: minima
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      noancak:
+        name: noancak
+        description: |-
+          'noancak' => 'required|string|exists:tph,ancakno',
+          'fieldcode' => 'required|string|exists:tph,fieldcode',
+          'tph' => 'required|string|exists:tph,notph',.
+        required: true
+        example: perferendis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tph:
+        name: tph
+        description: ''
+        required: false
+        example: cum
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: ''
+        required: true
+        example: qui
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      afdeling:
+        name: afdeling
+        description: 'The <code>afdeling</code> of an existing record in the tph table.'
+        required: true
+        example: est
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      fcba:
+        name: fcba
+        description: 'The <code>fcba</code> of an existing record in the tph table.'
+        required: true
+        example: ratione
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      exception_case:
+        name: exception_case
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      no_ba_exca:
+        name: no_ba_exca
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      output:
+        name: output
+        description: 'Must be at least 0.'
+        required: true
+        example: 48
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      mentah:
+        name: mentah
+        description: 'Must be at least 0.'
+        required: false
+        example: 82
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      overripe:
+        name: overripe
+        description: 'Must be at least 0.'
+        required: false
+        example: 57
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      busuk:
+        name: busuk
+        description: 'Must be at least 0.'
+        required: false
+        example: 15
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      busuk2:
+        name: busuk2
+        description: 'Must be at least 0.'
+        required: false
+        example: 16
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      buahkecil:
+        name: buahkecil
+        description: 'Must be at least 0.'
+        required: false
+        example: 45
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      parteno:
+        name: parteno
+        description: 'Must be at least 0.'
+        required: false
+        example: 44
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      parteno50plus:
+        name: parteno50plus
+        description: 'Must be at least 0.'
+        required: false
+        example: 42
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      brondol:
+        name: brondol
+        description: 'Must be at least 0.'
+        required: false
+        example: 45
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tangkaipanjang:
+        name: tangkaipanjang
+        description: 'Must be at least 0.'
+        required: false
+        example: 71
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      alasbrondol:
+        name: alasbrondol
+        description: ''
+        required: false
+        example: quo
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      status_assistensi:
+        name: status_assistensi
+        description: "'kemandoran' => 'nullable|exists:users,gangcode',."
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      images:
+        name: images
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      kode_karyawan_mandor1: ab
+      kode_karyawan_mandor_panen: fugiat
+      kode_karyawan_kerani: dicta
+      kode_karyawan: minima
+      noancak: perferendis
+      tph: cum
+      fieldcode: qui
+      afdeling: est
+      fcba: ratione
+      output: 48
+      mentah: 82
+      overripe: 57
+      busuk: 15
+      busuk2: 16
+      buahkecil: 45
+      parteno: 44
+      parteno50plus: 42
+      brondol: 45
+      tangkaipanjang: 71
+      alasbrondol: quo
+    fileParameters:
+      no_ba_exca: null
+      images: null
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Z5a634gkbPEvVdah68Dc1fe'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/apps/panens/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Panen
+      subgroupDescription: 'Sub Group untuk Panen'
+      title: 'Menghapus data Panen berdasarkan id Panen.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Panen.'
+        required: true
+        example: 11
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 11
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer v1h4e66fEd8caV5Z3DbgaPk'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PATCH
+    uri: 'api/apps/panens/{id}/status'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Panen
+      subgroupDescription: 'Sub Group untuk Panen'
+      title: 'Approved atau Reject status_harvesting (STATUS_HARVESTING) berdasarkan id Harvesting.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Harvesting.'
+        required: true
+        example: 13
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: 13
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      status_harvesting:
+        name: status_harvesting
+        description: ''
+        required: true
+        example: Reject
+        type: string
+        enumValues:
+          - Planned
+          - Reject
+          - Approved
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      status_harvesting: Reject
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer EfZkV1c8hPv6aa3d5e4bD6g'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/apps/pengangkutans
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Pengangkutan
+      subgroupDescription: 'Sub Group untuk Pengangkutan'
+      title: 'Memanggil data Pengangkutan dari SIPS Mobile.'
       description: |-
-        API ini digunakan untuk memanggil data Pengangkutan secara keseluruhan yang dikelompokkan berdasarkan no pengangkutan.
+        API ini digunakan untuk memanggil data Pengangkutan secara keseluruhan.
         Namun, jika ingin melakukan filter pada data yang dipanggil,
         gunakan parameter pada URL berdasarkan _**Query Parameter**_.
         Data diurutkan berdasarkan Tanggal terbaru, Afdeling, dan Kode Karyawan.
@@ -190,6 +3790,16 @@ endpoints:
         description: 'Optional. Filter Pengangkutan berdasarkan No SPB.'
         required: false
         example: SPB2024001259
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      nodokumen:
+        name: nodokumen
+        description: 'Optional. Filter Pengangkutan berdasarkan No Dokumen.'
+        required: false
+        example: SKJ-HOF/MTE/25/11/0001
         type: string
         enumValues: []
         exampleWasSpecified: true
@@ -335,9 +3945,70 @@ endpoints:
         exampleWasSpecified: true
         nullable: false
         custom: []
+      tph:
+        name: tph
+        description: 'Optional. Filter Pengangkutan berdasarkan TPH.'
+        required: false
+        example: '1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: 'Optional. Filter Pengangkutan berdasarkan FIELDCODE.'
+        required: false
+        example: A02
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status_pengangkutan:
+        name: status_pengangkutan
+        description: 'Optional. Filter Pengangkutan berdasarkan Status Pengangkutan salah satu dari Planned, AuthorizedOnProgress, Approved.'
+        required: false
+        example: Planned
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      flag:
+        name: flag
+        description: 'Optional. Filter Pengangkutan berdasarkan Status Upload Pengangkutan yang sudah diangkut akan berstatus Y jika belum maka N.'
+        required: false
+        example: 'Y'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      fcba_destination:
+        name: fcba_destination
+        description: 'Optional. Filter Pengangkutan berdasarkan FCBA tujuan.'
+        required: false
+        example: MTE
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      afdeling_destination:
+        name: afdeling_destination
+        description: 'Optional. Filter Pengangkutan berdasarkan afdeling tujuan.'
+        required: false
+        example: AFD-02
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
     cleanQueryParameters:
       nopengangkutan: DRC2010101101
       nospb: SPB2024001259
+      nodokumen: SKJ-HOF/MTE/25/11/0001
       tanggal: '2025-11-01'
       tanggal_end: '2025-11-20'
       kode_karyawan_kerani: 06-030922-240201-0531
@@ -352,6 +4023,12 @@ endpoints:
       fcba: MTE
       pabrik_tujuan: DOM
       afdeling: AFD-01
+      tph: '1'
+      fieldcode: A02
+      status_pengangkutan: Planned
+      flag: 'Y'
+      fcba_destination: MTE
+      afdeling_destination: AFD-02
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -367,6 +4044,7 @@ endpoints:
                    "id": "5",
                    "nopengangkutan": "DRC2010101101",
                    "nospb": "SPB2024001259",
+                   "nodokumen": "002",
                    "tanggal": "2024-12-31 00:00:00",
                    "kode_karyawan_kerani": "06-030922-240201-0531",
                    "nama_karyawan_kerani": "LEONARDUS DIFAN ALFANTO",
@@ -393,7 +4071,17 @@ endpoints:
                    "totaljanjang": "190",
                    "output": "155",
                    "janjangnormal": "160",
-                   "brondolan": "2"
+                   "brondolan": "2",
+                   "mentah": "5",
+                   "abnormal": "3",
+                   "status_pengangkutan": "Planned",
+                   "card_id": "NFC 1234567890",
+                   "flag": "Y",
+                   "images": "http://172.16.5.199:82/file/pengangkutan_images/1735532659_Screenshot 2024-12-27 104602.png",
+                   "exception_case": "",
+                   "no_ba_exca": "",
+                   "afdeling_destination": "AFD-02",
+                   "fcba_destination": "MTE"
                }
            ]
           }
@@ -404,511 +4092,381 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 5e3Va6k8Zg4vEhcf6PbDa1d'
+      - 'Bearer fc8Z1kb6E5d3VD6P4agaveh'
     controller: null
     method: null
     route: null
     custom: []
   -
     httpMethods:
-      - GET
-    uri: api/report/hasil-langsir
+      - POST
+    uri: api/apps/pengangkutans
     metadata:
-      groupName: Report
+      groupName: Apps
       groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data hasil langsir.'
-      description: |-
-        API ini digunakan untuk memperlihatkan hasil langsir pada report di Android SIPS Mobile
-        Namun, jika ingin melakukan filter pada data yang dipanggil,
-        gunakan parameter pada URL berdasarkan _**Query Parameter**_.
-        Data diurutkan berdasarkan No dokumen, tanggal, status, bisnis unit (fcba), afdeling, tph, blok
+      subgroup: Pengangkutan
+      subgroupDescription: 'Sub Group untuk Pengangkutan'
+      title: 'Menyimpan data Pengangkutan ke dalam database SIPS Mobile.'
+      description: ''
       authenticated: true
       custom: []
     headers:
       Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
+      Content-Type: multipart/form-data
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
-    queryParameters:
-      tanggaldari:
-        name: tanggaldari
-        description: 'Optional. Filter Hasil Langsir berdasarkan rentang tanggal, parameter ini diisi tanggal dari. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-01'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      tanggalsampai:
-        name: tanggalsampai
-        description: 'Optional. Filter Hasil Langsir berdasarkan rentang tanggal, parameter ini diisi tanggal sampai. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-12-20'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
       nopengangkutan:
         name: nopengangkutan
-        description: 'Optional. Filter Hasil Langsir berdasarkan No Pengangkutan.'
-        required: false
-        example: LGS2010101101
+        description: ''
+        required: true
+        example: dicta
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      nospb:
+        name: nospb
+        description: ''
+        required: true
+        example: officiis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
         nullable: false
         custom: []
       nodokumen:
         name: nodokumen
-        description: 'Optional. Filter Hasil Langsir berdasarkan No Dokumen.'
-        required: false
-        example: SKJ-HOF/MTE/25/02/0001
+        description: ''
+        required: true
+        example: nesciunt
         type: string
         enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      kode_kendaraan:
-        name: kode_kendaraan
-        description: 'Optional. Filter Hasil Langsir berdasarkan kode_kendaraan.'
-        required: false
-        example: DT-R-5818-MSE
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      fcba:
-        name: fcba
-        description: 'Optional. Filter Hasil Langsir berdasarkan Bisnis Unit (FCBA).'
-        required: false
-        example: MTE
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      afdeling:
-        name: afdeling
-        description: 'Optional. Filter Hasil Langsir berdasarkan afdeling.'
-        required: false
-        example: AFD-01
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      tujuan:
-        name: tujuan
-        description: 'Optional. Filter Hasil Langsir berdasarkan tujuan.'
-        required: false
-        example: DOM
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      status:
-        name: status
-        description: 'Optional. Filter Hasil Langsir berdasarkan Status Hasil Langsir salah satu dari SELISIH,BELUM,SELESAI.'
-        required: false
-        example: SELISIH
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanQueryParameters:
-      tanggaldari: '2025-11-01'
-      tanggalsampai: '2025-12-20'
-      nopengangkutan: LGS2010101101
-      nodokumen: SKJ-HOF/MTE/25/02/0001
-      kode_kendaraan: DT-R-5818-MSE
-      fcba: MTE
-      afdeling: AFD-01
-      tujuan: DOM
-      status: SELISIH
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "List Data Hasil Langsir",
-           "data": [
-               {
-                   "id": "1",
-                   "tanggal": "2024-12-31 00:00:00",
-                   "nopengangkutan": "LGS2010101101",
-                   "nodokumen": "SKJ-HOF/MTE/25/02/0001",
-                   "kode_kendaraan": "DT-R-5818-MSE",
-                   "nama_kendaraan": "Dump Truck Rental KT 5818 MSE",
-                   "type_pengangkutan": "1",
-                   "fcba": "MTE",
-                   "afdeling": "AFD-01",
-                   "tujuan": "26",
-                   "janjang": "180",
-                   "janjang_diangkut": "190",
-                   "sisa": "-10",
-                   "status": "SELISIH",
-                   "informasi": "SELISIH : -10 JJG"
-               }
-           ]
-          }
-        headers: []
-        description: success
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer VP8fb6hvg15EDa64daceZ3k'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: api/report/upload-attendance
-    metadata:
-      groupName: Report
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data Attendance GAD / Attendance GAD Temp dari SIPS Mobile.'
-      description: |-
-        API ini digunakan untuk memanggil SIPS Mobile untuk dimasukkan ke Attendance GAD / Attendance GAD Temp.
-        Namun, jika ingin melakukan filter pada data yang dipanggil,
-        gunakan parameter pada URL berdasarkan _**Query Parameter**_.
-        Data diurutkan berdasarkan Tanggal terbaru, FCBA, Afdeling, Gang, dan Kode Karyawan.
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters:
-      totalcount:
-        name: totalcount
-        description: 'Optional. Filter Attendance berdasarkan nilai lebih dari totalcount.'
-        required: false
-        example: '2'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
       tanggal:
         name: tanggal
-        description: 'Optional. Filter Attendance berdasarkan tanggal. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-01'
+        description: 'Must be a valid date in the format <code>Y-m-d</code>.'
+        required: true
+        example: '2026-06-11'
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      tanggal_end:
-        name: tanggal_end
-        description: 'Optional. Filter Attendance berdasarkan rentang tanggal. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-20'
+      kode_karyawan_kerani:
+        name: kode_karyawan_kerani
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: quia
         type: string
         enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      fcba:
-        name: fcba
-        description: 'Optional. Filter Attendance berdasarkan FCBA.'
-        required: false
-        example: MTE
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      afdeling:
-        name: afdeling
-        description: 'Optional. Filter Attendance berdasarkan afdeling.'
-        required: false
-        example: AFD-01
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      gangcode:
-        name: gangcode
-        description: 'Optional. Filter Attendance berdasarkan gangcode.'
-        required: false
-        example: PN013
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanQueryParameters:
-      totalcount: '2'
-      tanggal: '2025-11-01'
-      tanggal_end: '2025-11-20'
-      fcba: MTE
-      afdeling: AFD-01
-      gangcode: PN013
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "List Data Attendance GAD / Attendance GAD Temp",
-           "data": [
-               {
-               	"totalcount" : 4,
-               	"id" : 229,
-               	"afdeling" : "AFD-01",
-               	"gangcode" : "PN013",
-               	"fddate" : "2025-10-31 17:00:00",
-               	"supervision_1" : null,
-               	"supervision_2" : null,
-               	"supervision_3" : null,
-               	"supervision_4" : null,
-               	"supervision_5" : null,
-               	"employeecode" : "03-891219-180801-0116",
-               	"attendance" : "KJ",
-               	"jobcode" : "505030101",
-               	"locationtype" : "FF",
-               	"locationcode" : "I45P",
-               	"mandays" : 0.25,
-               	"othrs" : 0,
-               	"rate" : 0,
-               	"unit" : 25,
-               	"output" : 0.425,
-               	"reference" : null,
-               	"remarks" : "SIPS MOBILE",
-               	"fcentry" : "andrew",
-               	"fcedit" : "adrianus",
-               	"fcip" : null,
-               	"fcba" : "MTE",
-               	"lastupdate" : "2026-01-08 03:46:54",
-               	"lasttime" : "10:46",
-               	"linenokey" : 1441715,
-               	"overtime_hours" : 0,
-               	"type_overtime" : 0,
-               	"chargejob" : null,
-               	"chargetype" : null,
-               	"chargecode" : null,
-               	"bucket" : null,
-               	"spbno" : null,
-               	"kg_brondolan" : 1.75,
-               	"rowstate" : "Approved",
-               	"document_classification" : 501,
-               	"basis_bm" : 0,
-               	"kg_janjang" : 384.75,
-               	"bjr" : 15.39,
-               	"documentno" : 229,
-               	"sourcetime" : "2025-10-31 19:56:04",
-               	"fieldcode" : "I45"
-               }
-           ]
-          }
-        headers: []
-        description: success
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 8aacDE5hV6d4bg3eZPv1kf6'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: api/report/upload-harvesting
-    metadata:
-      groupName: Report
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data Harvesting SPB dari SIPS Mobile.'
-      description: |-
-        API ini digunakan untuk memanggil data harvesting SPB dari SIPS Mobile.
-        Data menampilkan informasi bunch, bucket, dan weight calculations berdasarkan weighbridge ticket untuk tipe pengangkutan DIRECT TRANSPORT.
-        Namun, jika ingin melakukan filter pada data yang dipanggil, gunakan parameter pada URL berdasarkan _**Query Parameter**_.
-        Data diurutkan berdasarkan Tanggal penerimaan terbaru, No SPB, dan Chit Number.
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters:
-      nospb:
-        name: nospb
-        description: 'Optional. Filter berdasarkan No SPB.'
-        required: false
-        example: SPB2026004804
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      tanggal:
-        name: tanggal
-        description: 'Optional. Filter berdasarkan tanggal penerimaan. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2026-02-08'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      tanggal_end:
-        name: tanggal_end
-        description: 'Optional. Filter berdasarkan rentang tanggal penerimaan. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2026-02-09'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      kode_kendaraan:
-        name: kode_kendaraan
-        description: 'Optional. Filter berdasarkan Kode Kendaraan.'
-        required: false
-        example: L9770CL
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
       kode_karyawan_driver:
         name: kode_karyawan_driver
-        description: 'Optional. Filter berdasarkan Nama Driver.'
-        required: false
-        example: HENDRA
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: sint
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      mill:
-        name: mill
-        description: 'Optional. Filter berdasarkan Pabrik Tujuan.'
-        required: false
-        example: DOM
+      tkbm1:
+        name: tkbm1
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: tempora
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tkbm2:
+        name: tkbm2
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: unde
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tkbm3:
+        name: tkbm3
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: quibusdam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tkbm4:
+        name: tkbm4
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: quisquam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tkbm5:
+        name: tkbm5
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: perferendis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      type_pengangkutan:
+        name: type_pengangkutan
+        description: ''
+        required: true
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      kode_kendaraan:
+        name: kode_kendaraan
+        description: ''
+        required: true
+        example: at
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
         nullable: false
         custom: []
       fcba:
         name: fcba
-        description: 'Optional. Filter berdasarkan FCBA.'
+        description: |-
+          'tph' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,notph',
+          'fieldcode' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,fieldcode',. This field is required when <code>type_pengangkutan</code> is <code>1</code>.  The <code>fcba</code> of an existing record in the sips_production.field table.
         required: false
-        example: PTE
+        example: accusamus
         type: string
         enumValues: []
-        exampleWasSpecified: true
-        nullable: false
+        exampleWasSpecified: false
+        nullable: true
         custom: []
-      chitno:
-        name: chitno
-        description: 'Optional. Filter berdasarkan Weighbridge Chit Number.'
+      afdeling:
+        name: afdeling
+        description: 'This field is required when <code>type_pengangkutan</code> is <code>1</code>.  The <code>division</code> of an existing record in the sips_production.field table.'
         required: false
-        example: TBS2026004804
+        example: dolorem
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      fcba_destination:
+        name: fcba_destination
+        description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
+        required: false
+        example: non
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      afdeling_destination:
+        name: afdeling_destination
+        description: 'The <code>division</code> of an existing record in the sips_production.field table.'
+        required: false
+        example: ut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      pabrik_tujuan:
+        name: pabrik_tujuan
+        description: ''
+        required: true
+        example: assumenda
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
         nullable: false
         custom: []
-    cleanQueryParameters:
-      nospb: SPB2026004804
-      tanggal: '2026-02-08'
-      tanggal_end: '2026-02-09'
-      kode_kendaraan: L9770CL
-      kode_karyawan_driver: HENDRA
-      mill: DOM
-      fcba: PTE
-      chitno: TBS2026004804
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "List Data Detail Pengangkutan dengan Weighbridge",
-           "data": [
-               {
-                   "nospb": "SPB2026004804",
-                   "fieldcode": "M06",
-                   "receptiondate": "2026-02-08 00:00:00",
-                   "harvestdate": "2026-02-08 00:00:00",
-                   "cropcode": "OP",
-                   "productcode": "TBS",
-                   "own": "OWN",
-                   "vehicle": "L9770CL",
-                   "driver": "HENDRA",
-                   "mill": "DOM",
-                   "agreementcode": "",
-                   "transporttype": "DIRECTTRANSPORT",
-                   "spb_type": 0,
-                   "bunch": "127",
-                   "bucket": "",
-                   "pressemester_abw": "11.19",
-                   "bunch_estateweight": "1421",
-                   "fcentry": "PTE_PRODUKSI",
-                   "fcedit": "PTE_PRODUKSI",
-                   "fcip": "114.10.139.104",
-                   "fcba": "PTE",
-                   "lastupdate": "2026-02-09 10:38:37",
-                   "lasttime": "10:38",
-                   "chitno": "TBS2026004804",
-                   "mill_weight_bruto": "10090",
-                   "mill_weight_gross": "5920",
-                   "mill_weight_tarra": "4170",
-                   "mill_weight_potongan": "295.92",
-                   "mill_weight_netto": "5624.08",
-                   "mentah": "",
-                   "tankos": "",
-                   "hilang": "",
-                   "keterangan": "",
-                   "mill_weight_dtl": "1173.27",
-                   "bjr_chit": "9.24"
-               }
-           ]
-          }
-        headers: []
-        description: success
+      totaljanjang:
+        name: totaljanjang
+        description: ''
+        required: true
+        example: 1.4967516
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
         custom: []
+      output:
+        name: output
+        description: ''
+        required: true
+        example: 7.0
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      janjangnormal:
+        name: janjangnormal
+        description: ''
+        required: true
+        example: 30362496.9
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      brondolan:
+        name: brondolan
+        description: ''
+        required: false
+        example: 28500.7
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      mentah:
+        name: mentah
+        description: ''
+        required: false
+        example: 29749315.114193
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      abnormal:
+        name: abnormal
+        description: ''
+        required: false
+        example: 20417448.885
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      etd:
+        name: etd
+        description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
+        required: false
+        example: '2026-06-11 11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      eta:
+        name: eta
+        description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
+        required: false
+        example: '2026-06-11 11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      images:
+        name: images
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      exception_case:
+        name: exception_case
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      no_ba_exca:
+        name: no_ba_exca
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      card_id:
+        name: card_id
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      created_by:
+        name: created_by
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      nopengangkutan: dicta
+      nospb: officiis
+      nodokumen: nesciunt
+      tanggal: '2026-06-11'
+      kode_karyawan_kerani: quia
+      kode_karyawan_driver: sint
+      tkbm1: tempora
+      tkbm2: unde
+      tkbm3: quibusdam
+      tkbm4: quisquam
+      tkbm5: perferendis
+      type_pengangkutan: 3
+      kode_kendaraan: at
+      fcba: accusamus
+      afdeling: dolorem
+      fcba_destination: non
+      afdeling_destination: ut
+      pabrik_tujuan: assumenda
+      totaljanjang: 1.4967516
+      output: 7.0
+      janjangnormal: 30362496.9
+      brondolan: 28500.7
+      mentah: 29749315.114193
+      abnormal: 20417448.885
+      etd: '2026-06-11 11:26:42'
+      eta: '2026-06-11 11:26:42'
+    fileParameters:
+      images: null
+      no_ba_exca: null
+    responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer Dh46evfk6Z8cda3VgaPb51E'
+      - 'Bearer 6aEb4eZv613dhV8ck5agfDP'
     controller: null
     method: null
     route: null
@@ -916,789 +4474,566 @@ endpoints:
   -
     httpMethods:
       - GET
-    uri: api/report/upload-harvesting-quality
+    uri: 'api/apps/pengangkutans/{id}'
     metadata:
-      groupName: Report
+      groupName: Apps
       groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data Harvesting Quality dari SIPS Mobile.'
-      description: |-
-        API ini digunakan untuk memanggil data Harvesting Quality yang belum tersinkronisasi ke sistem SIPS Production
-        Gunakan parameter pada URL untuk filtering data berdasarkan _**Query Parameter**_.
-        Data diurutkan berdasarkan tanggal panen dan kode blok.
+      subgroup: Pengangkutan
+      subgroupDescription: 'Sub Group untuk Pengangkutan'
+      title: 'Menampilkan data Pengangkutan berdasarkan id Pengangkutan dari SIPS Mobile.'
+      description: ''
       authenticated: true
       custom: []
     headers:
       Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters:
-      empcode:
-        name: empcode
-        description: 'Optional. Filter berdasarkan Kode Karyawan.'
-        required: false
-        example: 06-000223-230221-0323
-        type: string
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Pengangkutan.'
+        required: true
+        example: 4
+        type: integer
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      fddate:
-        name: fddate
-        description: 'Optional. Filter berdasarkan tanggal panen, parameter ini untuk tanggal awal. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-05'
-        type: string
+    cleanUrlParameters:
+      id: 4
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 401
+        content: '{"success":false,"message":"Unauthenticated"}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer Vaghdc3a5Pefb166E8vk4DZ'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/apps/pengangkutans/{id}'
+    metadata:
+      groupName: Apps
+      groupDescription: ''
+      subgroup: Pengangkutan
+      subgroupDescription: 'Sub Group untuk Pengangkutan'
+      title: 'Mengubah data Pengangkutan berdasarkan id Pengangkutan.'
+      description: ''
+      authenticated: true
+      custom: []
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Pengangkutan.'
+        required: true
+        example: 18
+        type: integer
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      fddate_end:
-        name: fddate_end
-        description: 'Optional. Filter berdasarkan rentang tanggal, parameter ini untuk tanggal akhir. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-15'
+    cleanUrlParameters:
+      id: 18
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      kode_karyawan_kerani:
+        name: kode_karyawan_kerani
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: ratione
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      kode_karyawan_driver:
+        name: kode_karyawan_driver
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: unde
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tkbm1:
+        name: tkbm1
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: true
+        example: numquam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tkbm2:
+        name: tkbm2
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: voluptatem
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tkbm3:
+        name: tkbm3
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: atque
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tkbm4:
+        name: tkbm4
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: explicabo
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tkbm5:
+        name: tkbm5
+        description: 'The <code>fccode</code> of an existing record in the employee table.'
+        required: false
+        example: molestiae
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      type_pengangkutan:
+        name: type_pengangkutan
+        description: ''
+        required: true
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      kode_kendaraan:
+        name: kode_kendaraan
+        description: ''
+        required: true
+        example: sit
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      tph:
+        name: tph
+        description: 'The <code>notph</code> of an existing record in the tph table.'
+        required: true
+        example: aut
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
         nullable: false
         custom: []
       fieldcode:
         name: fieldcode
-        description: 'Optional. Filter berdasarkan Kode Blok.'
-        required: false
-        example: I43
+        description: 'The <code>fieldcode</code> of an existing record in the tph table.'
+        required: true
+        example: libero
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
       fcba:
         name: fcba
-        description: 'Optional. Filter berdasarkan Bisnis Unit (FCBA).'
-        required: false
-        example: MTE
+        description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
+        required: true
+        example: nulla
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-    cleanQueryParameters:
-      empcode: 06-000223-230221-0323
-      fddate: '2025-11-05'
-      fddate_end: '2025-11-15'
-      fieldcode: I43
-      fcba: MTE
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "List Data Harvesting Quality",
-           "data": [
-               {
-                   "empcode": "06-000223-230221-0323",
-                   "fddate": "2025-11-05",
-                   "fieldcode": "I43",
-                   "under_ripe": "1",
-                   "overripe": "1",
-                   "abnormal": "1",
-                   "long_stalk": "1",
-                   "eaten_by_rat": "0",
-                   "unharvest_ffb": "1",
-                   "uncollect_lf_circle": "0",
-                   "uncollect_lf_piece": "0",
-                   "unarrange_ffb": "0",
-                   "unprune_frond": "0",
-                   "qe_1_pelepah_tidak_disusun": "0",
-                   "qe_2_buah_matahari": "0",
-                   "qe_3_buah_busuk": "1",
-                   "qe_4_buah_mentah_diperam": "0",
-                   "qe_5_over_pruning": "0",
-                   "qe_6_brondolan_tidak_dialas": "0",
-                   "qe_7_brondolan_kotor_sampah": "0",
-                   "qe_8_buah_dibelah": "0",
-                   "qe_9": "0",
-                   "qe_10": "0",
-                   "fcentry": "",
-                   "fcedit": "",
-                   "fcip": "",
-                   "fcba": "MTE",
-                   "lastupdate": "2026-02-11",
-                   "lasttime": "11:02",
-                   "qe_11_buah_mentah_a1": "0",
-                   "qe_12_buah_tinggal_s": "0",
-                   "qe_13_b_ggng_pjg_t_dipotong": "0",
-                   "qe_14": "0",
-                   "qe_15": "0",
-                   "qe_16_buah_mentah_kerani": "0",
-                   "qe_17_buah_mentah_mandor": "0",
-                   "documentno": "42"
-               }
-           ]
-          }
-        headers: []
-        description: success
+      afdeling:
+        name: afdeling
+        description: 'The <code>division</code> of an existing record in the sips_production.field table.'
+        required: true
+        example: nisi
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
         custom: []
+      fcba_destination:
+        name: fcba_destination
+        description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
+        required: false
+        example: veritatis
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      afdeling_destination:
+        name: afdeling_destination
+        description: 'The <code>division</code> of an existing record in the sips_production.field table.'
+        required: false
+        example: ullam
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      pabrik_tujuan:
+        name: pabrik_tujuan
+        description: ''
+        required: true
+        example: eligendi
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      totaljanjang:
+        name: totaljanjang
+        description: ''
+        required: true
+        example: 12
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      output:
+        name: output
+        description: ''
+        required: true
+        example: 5
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      janjangnormal:
+        name: janjangnormal
+        description: ''
+        required: true
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      brondolan:
+        name: brondolan
+        description: ''
+        required: false
+        example: 7
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      mentah:
+        name: mentah
+        description: ''
+        required: false
+        example: 4
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      abnormal:
+        name: abnormal
+        description: ''
+        required: false
+        example: 18
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      eta:
+        name: eta
+        description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
+        required: false
+        example: '2026-06-11 11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      etd:
+        name: etd
+        description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
+        required: false
+        example: '2026-06-11 11:26:42'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      images:
+        name: images
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      exception_case:
+        name: exception_case
+        description: ''
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      no_ba_exca:
+        name: no_ba_exca
+        description: 'Must be a file. Must not be greater than 2048 kilobytes.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      kode_karyawan_kerani: ratione
+      kode_karyawan_driver: unde
+      tkbm1: numquam
+      tkbm2: voluptatem
+      tkbm3: atque
+      tkbm4: explicabo
+      tkbm5: molestiae
+      type_pengangkutan: 5
+      kode_kendaraan: sit
+      tph: aut
+      fieldcode: libero
+      fcba: nulla
+      afdeling: nisi
+      fcba_destination: veritatis
+      afdeling_destination: ullam
+      pabrik_tujuan: eligendi
+      totaljanjang: 12
+      output: 5
+      janjangnormal: 18
+      brondolan: 7
+      mentah: 4
+      abnormal: 18
+      eta: '2026-06-11 11:26:42'
+      etd: '2026-06-11 11:26:42'
+    fileParameters:
+      images: null
+      no_ba_exca: null
+    responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer c3ZVva8Eh4ek6dbPD5a6f1g'
+      - 'Bearer cP6a8E6VD5ev1kgdfah4Z3b'
     controller: null
     method: null
     route: null
     custom: []
   -
     httpMethods:
-      - GET
-    uri: api/report/upload-lhm
+      - DELETE
+    uri: 'api/apps/pengangkutans/{id}'
     metadata:
-      groupName: Report
+      groupName: Apps
       groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data LHM dari SIPS Mobile.'
-      description: |-
-        API ini digunakan untuk memanggil data LHM untuk upload ke sistem SIPS Production
-        Gunakan parameter pada URL untuk filtering data berdasarkan _**Query Parameter**_.
+      subgroup: Pengangkutan
+      subgroupDescription: 'Sub Group untuk Pengangkutan'
+      title: 'Menghapus data Pengangkutan berdasarkan id Pengangkutan.'
+      description: ''
       authenticated: true
       custom: []
     headers:
       Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters:
-      fddate:
-        name: fddate
-        description: 'Optional. Filter berdasarkan tanggal panen, parameter ini untuk tanggal awal. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-05'
-        type: string
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Pengangkutan.'
+        required: true
+        example: 20
+        type: integer
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      fddate_end:
-        name: fddate_end
-        description: 'Optional. Filter berdasarkan rentang tanggal, parameter ini untuk tanggal akhir. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-15'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      kemandoran:
-        name: kemandoran
-        description: 'Optional. Filter berdasarkan Kemandoran.'
-        required: false
-        example: MD011
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      employeecode:
-        name: employeecode
-        description: 'Optional. Filter berdasarkan Kode Karyawan.'
-        required: false
-        example: 06-000223-230221-0323
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      fcba:
-        name: fcba
-        description: 'Optional. Filter berdasarkan Bisnis Unit (FCBA).'
-        required: false
-        example: MTE
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      afdeling:
-        name: afdeling
-        description: 'Optional. Filter berdasarkan Afdeling.'
-        required: false
-        example: AFD-01
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      tahuntanam:
-        name: tahuntanam
-        description: 'Optional. Filter berdasarkan Tahun tanam.'
-        required: false
-        example: '2010'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      blok:
-        name: blok
-        description: 'Optional. Filter berdasarkan Kode Blok.'
-        required: false
-        example: I43
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      attendance:
-        name: attendance
-        description: 'Optional. Filter berdasarkan Kode Attendance.'
-        required: false
-        example: KJ
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      level_user:
-        name: level_user
-        description: 'Optional. Filter berdasarkan Kode Level_User.'
-        required: false
-        example: MDP
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      upload:
-        name: upload
-        description: 'Optional. Filter berdasarkan Kode Upload Y atau N.'
-        required: false
-        example: 'N'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanQueryParameters:
-      fddate: '2025-11-05'
-      fddate_end: '2025-11-15'
-      kemandoran: MD011
-      employeecode: 06-000223-230221-0323
-      fcba: MTE
-      afdeling: AFD-01
-      tahuntanam: '2010'
-      blok: I43
-      attendance: KJ
-      level_user: MDP
-      upload: 'N'
+    cleanUrlParameters:
+      id: 20
+    queryParameters: []
+    cleanQueryParameters: []
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "List Data LHM",
-           "data": [
-               {
-                  "id": 12606,
-                  "rowdata": "1",
-                  "kemandoran": "MD011",
-                  "fddate": "2026-04-21 00:00:00",
-                  "fcba": "MTE",
-                  "afdeling": "AFD-01",
-                  "employeecode": "06-031201-231107-0466",
-                  "nama": "AKBAR TANJUNG",
-                  "attendance": "KJ",
-                  "hk": null,
-                  "blok": "G50",
-                  "tahuntanam": "2009",
-                  "jjg": "69",
-                  "ha": "0",
-                  "mentahqty": "0",
-                  "mentahrp": "0",
-                  "emptybunchqty": "0",
-                  "emptybunchrp": "0",
-                  "jumlahdenda": "0",
-                  "totalalljjg": "173",
-                  "basis": "90",
-                  "rpbasis": "20000",
-                  "premilv1": "49",
-                  "rate1": "1044",
-                  "rplv1": "51156",
-                  "premilv2": "34",
-                  "rate2": "1128",
-                  "rplv2": "38352",
-                  "premilv3": "0",
-                  "rate3": "0",
-                  "rplv3": "0",
-                  "totalrppremi": "89508",
-                  "kurangbasis": "0",
-                  "harilibur": "0",
-                  "rphk": "175849",
-                  "total": "285357"
-               }
-           ]
-          }
-        headers: []
-        description: success
-        custom: []
+    responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer bade8fEhk6Pa53Z14cD6Vgv'
+      - 'Bearer eE8D61PvVkfd56aabg43Zch'
     controller: null
     method: null
     route: null
     custom: []
   -
     httpMethods:
-      - GET
-    uri: api/report/get-lhm
+      - PATCH
+    uri: 'api/apps/pengangkutans/{id}/status'
     metadata:
-      groupName: Report
+      groupName: Apps
       groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data LHM dari SIPS Mobile yang akan diupload.'
-      description: |-
-        API ini digunakan untuk memanggil data LHM untuk Approval agar terupload ke sistem SIPS Production
-        Gunakan parameter pada URL untuk filtering data berdasarkan _**Query Parameter**_.
+      subgroup: Pengangkutan
+      subgroupDescription: 'Sub Group untuk Pengangkutan'
+      title: 'Approved atau Reject status_pengangkutan (STATUS_PENGANGKUTAN) berdasarkan id Pengangkutan.'
+      description: ''
       authenticated: true
       custom: []
     headers:
       Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters:
-      fddate:
-        name: fddate
-        description: 'Optional. Filter berdasarkan tanggal panen, parameter ini untuk tanggal awal. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-05'
-        type: string
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Pengangkutan.'
+        required: true
+        example: 18
+        type: integer
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      fddate_end:
-        name: fddate_end
-        description: 'Optional. Filter berdasarkan rentang tanggal, parameter ini untuk tanggal akhir. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2025-11-15'
+    cleanUrlParameters:
+      id: 18
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      status_pengangkutan:
+        name: status_pengangkutan
+        description: ''
+        required: true
+        example: Reject
         type: string
-        enumValues: []
-        exampleWasSpecified: true
+        enumValues:
+          - Planned
+          - Reject
+          - Approved
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      kemandoran:
-        name: kemandoran
-        description: 'Optional. Filter berdasarkan Kemandoran.'
-        required: false
-        example: MD011
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      employeecode:
-        name: employeecode
-        description: 'Optional. Filter berdasarkan Kode Karyawan.'
-        required: false
-        example: 06-000223-230221-0323
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      fcba:
-        name: fcba
-        description: 'Optional. Filter berdasarkan Bisnis Unit (FCBA).'
-        required: false
-        example: MTE
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      afdeling:
-        name: afdeling
-        description: 'Optional. Filter berdasarkan Afdeling.'
-        required: false
-        example: AFD-01
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      tahuntanam:
-        name: tahuntanam
-        description: 'Optional. Filter berdasarkan Tahun tanam.'
-        required: false
-        example: '2010'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      blok:
-        name: blok
-        description: 'Optional. Filter berdasarkan Kode Blok.'
-        required: false
-        example: I43
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      attendance:
-        name: attendance
-        description: 'Optional. Filter berdasarkan Kode Attendance.'
-        required: false
-        example: KJ
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanQueryParameters:
-      fddate: '2025-11-05'
-      fddate_end: '2025-11-15'
-      kemandoran: MD011
-      employeecode: 06-000223-230221-0323
-      fcba: MTE
-      afdeling: AFD-01
-      tahuntanam: '2010'
-      blok: I43
-      attendance: KJ
-    bodyParameters: []
-    cleanBodyParameters: []
+    cleanBodyParameters:
+      status_pengangkutan: Reject
     fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "List Data LHM yang akan diupload",
-           "data": [
-               {
-                  "id": 12606,
-                  "rowdata": "1",
-                  "kemandoran": "MD011",
-                  "fddate": "2026-04-21 00:00:00",
-                  "fcba": "MTE",
-                  "afdeling": "AFD-01",
-                  "employeecode": "06-031201-231107-0466",
-                  "nama": "AKBAR TANJUNG",
-                  "attendance": "KJ",
-                  "hk": null,
-                  "blok": "G50",
-                  "tahuntanam": "2009",
-                  "jjg": "69",
-                  "ha": "0",
-                  "mentahqty": "0",
-                  "mentahrp": "0",
-                  "emptybunchqty": "0",
-                  "emptybunchrp": "0",
-                  "jumlahdenda": "0",
-                  "totalalljjg": "173",
-                  "basis": "90",
-                  "rpbasis": "20000",
-                  "premilv1": "49",
-                  "rate1": "1044",
-                  "rplv1": "51156",
-                  "premilv2": "34",
-                  "rate2": "1128",
-                  "rplv2": "38352",
-                  "premilv3": "0",
-                  "rate3": "0",
-                  "rplv3": "0",
-                  "totalrppremi": "89508",
-                  "kurangbasis": "0",
-                  "harilibur": "0",
-                  "rphk": "175849",
-                  "total": "285357"
-               }
-           ]
-          }
-        headers: []
-        description: success
-        custom: []
+    responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer PD4baZhVaE86cvk1e56g3fd'
+      - 'Bearer 3ef6DE6Zacavh1bdPV548kg'
     controller: null
     method: null
     route: null
     custom: []
   -
     httpMethods:
-      - GET
-    uri: api/report/get-lha
+      - PATCH
+    uri: 'api/apps/pengangkutans/{id}/spbno-etd'
     metadata:
-      groupName: Report
+      groupName: Apps
       groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data LHA dari SIPS Mobile.'
-      description: |-
-        API ini digunakan untuk memanggil data LHA dari SIPS Mobile.
-        Data menampilkan informasi panen.
-        Namun, jika ingin melakukan filter pada data yang dipanggil, gunakan parameter pada URL berdasarkan _**Query Parameter**_.
-        Data diurutkan berdasarkan Tanggal panen.
+      subgroup: Pengangkutan
+      subgroupDescription: 'Sub Group untuk Pengangkutan'
+      title: 'Update SPBNO dan ETD berdasarkan id Pengangkutan.'
+      description: ''
       authenticated: true
       custom: []
     headers:
       Authorization: 'Bearer {YOUR_AUTH_KEY}'
       Content-Type: application/json
       Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters:
-      tanggal:
-        name: tanggal
-        description: 'Optional. Filter berdasarkan tanggal penerimaan. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2026-02-08'
-        type: string
+    urlParameters:
+      id:
+        name: id
+        description: 'ID Pengangkutan.'
+        required: true
+        example: 10
+        type: integer
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      tanggal_end:
-        name: tanggal_end
-        description: 'Optional. Filter berdasarkan rentang tanggal penerimaan. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2026-02-09'
+    cleanUrlParameters:
+      id: 10
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      spbno:
+        name: spbno
+        description: ''
+        required: true
+        example: dolorem
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      fcba:
-        name: fcba
-        description: 'Optional. Filter berdasarkan FCBA.'
-        required: false
-        example: MTE
+      etd:
+        name: etd
+        description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
+        required: true
+        example: '2026-06-11 11:26:42'
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: false
         custom: []
-      afdeling:
-        name: afdeling
-        description: 'Optional. Filter berdasarkan Afdeling.'
-        required: false
-        example: AFD-01
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      kemandoran:
-        name: kemandoran
-        description: 'Optional. Filter berdasarkan Kemandoran.'
-        required: false
-        example: MD011
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanQueryParameters:
-      tanggal: '2026-02-08'
-      tanggal_end: '2026-02-09'
-      fcba: MTE
-      afdeling: AFD-01
-      kemandoran: MD011
-    bodyParameters: []
-    cleanBodyParameters: []
+    cleanBodyParameters:
+      spbno: dolorem
+      etd: '2026-06-11 11:26:42'
     fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "List Data LHA",
-           "data": [
-               {
-                   "tanggal": "2026-05-07 00:00:00",
-                   "kemandoran": "MD011",
-                   "fcba": "MTE",
-                   "afdeling": "AFD-01",
-                   "fccode": "G47",
-                   "fcname": "G47",
-                   "output": "186",
-                   "mentah": "0",
-                   "overripe": "6",
-                   "busuk": "0",
-                   "busuk2": "0",
-                   "buahkecil": "0",
-                   "parteno": "29",
-                   "tangkaipanjang": "0",
-                   "parteno50plus": "0"
-               },
-           ]
-          }
-        headers: []
-        description: success
-        custom: []
+    responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer ca16DV4aZdk3EfP85bhgev6'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: api/report/get-harvesting
-    metadata:
-      groupName: Report
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Memanggil data Harvesting dari SIPS Mobile.'
-      description: |-
-        API ini digunakan untuk memanggil data harvesting dari SIPS Mobile.
-        Data menampilkan informasi panen.
-        Namun, jika ingin melakukan filter pada data yang dipanggil, gunakan parameter pada URL berdasarkan _**Query Parameter**_.
-        Data diurutkan berdasarkan Tanggal panen.
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters:
-      tanggal:
-        name: tanggal
-        description: 'Optional. Filter berdasarkan tanggal penerimaan. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2026-02-08'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      tanggal_end:
-        name: tanggal_end
-        description: 'Optional. Filter berdasarkan rentang tanggal penerimaan. Harus dalam format YYYY-MM-DD.'
-        required: false
-        example: '2026-02-09'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      fcba:
-        name: fcba
-        description: 'Optional. Filter berdasarkan FCBA.'
-        required: false
-        example: MTE
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      afdeling:
-        name: afdeling
-        description: 'Optional. Filter berdasarkan Afdeling.'
-        required: false
-        example: AFD-01
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-      kemandoran:
-        name: kemandoran
-        description: 'Optional. Filter berdasarkan Kemandoran.'
-        required: false
-        example: MD011
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        custom: []
-    cleanQueryParameters:
-      tanggal: '2026-02-08'
-      tanggal_end: '2026-02-09'
-      fcba: MTE
-      afdeling: AFD-01
-      kemandoran: MD011
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 200
-        content: |-
-          {
-           "success": true,
-           "message": "List Data LHA",
-           "data": [
-               {
-                  "nodokumen": "MTE/AFD-01/G50-1B/240426/0029",
-                  "tanggal": "2026-04-24 00:00:00",
-                  "images": "http://dev.skj.my.id:82/file/harvesting_images/1777015776_compressed_1777002816922.jpg",
-                  "kode_karyawan_mandor1": null,
-                  "kode_karyawan_mandor_panen": null,
-                  "kode_karyawan_kerani": "06-830717-190901-0112",
-                  "tph": "46",
-                  "output": "31",
-                  "mentah": "0",
-                  "overripe": "0",
-                  "busuk": "0",
-                  "busuk2": "0",
-                  "buahkecil": "0",
-                  "parteno": "1",
-                  "brondol": "100",
-                  "alasbrondol": "N",
-                  "tangkaipanjang": "0",
-                  "parteno50plus": "0",
-                  "afdeling": "AFD-01",
-                  "fcba": "MTE",
-                  "notph": "46",
-                  "fieldcode": "G50",
-                  "ancakno": "1B",
-                  "typetph": "1",
-                  "location": "2.286671,118.042097",
-                  "status": "SELESAI"
-               }
-           ]
-          }
-        headers: []
-        description: success
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer b856fVgkeDv1aaPd3c4hEZ6'
+      - 'Bearer 6kVP54E1vcZ3fDbhad6a8eg'
     controller: null
     method: null
     route: null

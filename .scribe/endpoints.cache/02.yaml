@@ -98,50 +98,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Vabc8e6hfa3P4ZD6dEgvk15'
-    controller: null
-    method: null
-    route: null
-    custom: []
-  -
-    httpMethods:
-      - GET
-    uri: api/master/sips-fields
-    metadata:
-      groupName: Master
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Data Blok dari SIPS Production'
-      description: 'Digunakan untuk inisialisasi data TPH dan mendata hasil panen'
-      authenticated: true
-      custom: []
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        status: 401
-        content: '{"success":false,"message":"Unauthenticated"}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
-        custom: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer EbdP8ak5a1V3c4vhZ6feg6D'
+      - 'Bearer a5c6fbdP8g3v4ZV1aeEhk6D'
     controller: null
     method: null
     route: null
@@ -239,7 +196,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer eEkV6vg61Phbfd438ZD5aac'
+      - 'Bearer fae3Pk48ZbchEvV16a6gd5D'
     controller: null
     method: null
     route: null
@@ -315,7 +272,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ZfDa3P16aeEd84c5Vkgvb6h'
+      - 'Bearer vdPDef18g66kaZ5cabEV34h'
     controller: null
     method: null
     route: null
@@ -404,7 +361,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer gka6d36ZEc8bh5vf4DVP1ae'
+      - 'Bearer 8kv3EbgZP5c1faeh4aV66Dd'
     controller: null
     method: null
     route: null
@@ -504,7 +461,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8acDf4PhE5daVbgevZ631k6'
+      - 'Bearer V8Zg43hE6Pvkd1c6aD5afbe'
     controller: null
     method: null
     route: null
@@ -571,7 +528,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer aVb66ge5fkdE81Zc4PDahv3'
+      - 'Bearer Z3Dcde8kE61vhbgaa45Vf6P'
     controller: null
     method: null
     route: null
@@ -649,7 +606,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer VaPEvZ6fDec8b45dkag36h1'
+      - 'Bearer P6cDZag6V4fa8k35E1bvhed'
     controller: null
     method: null
     route: null
@@ -742,7 +699,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 14v35habVZgd6c86eaPEkfD'
+      - 'Bearer 6aPv6831gZEhckb4dDa5feV'
     controller: null
     method: null
     route: null
@@ -869,7 +826,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1EfvDPk35Zedc8a4ahgbV66'
+      - 'Bearer P4e8f6V5dkcZaD613Evgbah'
     controller: null
     method: null
     route: null
@@ -956,7 +913,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer V8b3af6vDa1eZd46hE5kcPg'
+      - 'Bearer E5DgbfV8kd3ca64Zv16heaP'
     controller: null
     method: null
     route: null
@@ -1102,7 +1059,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer a3P8dkg1VcbheDfavZ656E4'
+      - 'Bearer hc3D6641aVPaedg5kEbv8Zf'
     controller: null
     method: null
     route: null
@@ -1175,7 +1132,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer D8ekV1gcba6Evd63h4fP5Za'
+      - 'Bearer cEvZk6g86Vabhe13D4Pfd5a'
     controller: null
     method: null
     route: null
