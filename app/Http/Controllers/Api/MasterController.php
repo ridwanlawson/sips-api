@@ -414,10 +414,10 @@ class MasterController extends Controller
      */
     public function gang(Request $request)
     {
-        $query = Gang::where("ACTIVATION", "=", "Y")->select(
+        $query = Gang::where("ACTIVATION", "Y")->select(
             "FCCODE",
             "FCNAME",
-            DB::raw('"REMARKS AFDELING"'),
+            DB::raw('"REMARKS" as afdeling'),
             "FCBA",
         );
 

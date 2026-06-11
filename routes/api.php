@@ -35,7 +35,7 @@ Route::prefix("app")->group(function () {
     Route::get("/apks", [AppUploadController::class, "list"])->name(
         "app.list-versions",
     );
-    Route::delete("/apk/{id}", [AppUploadController::class, "delete"])->name(
+    Route::delete("/apk/{id}", [AppUploadController::class, "delete"])->name( 
         "app.delete-version",
     );
 });

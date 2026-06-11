@@ -1552,7 +1552,7 @@ class UploadController extends Controller
      * Endpoint ini digunakan untuk mengirim data LHM (Laporan Harian Mandor) dari SIPS Mobile ke tabel SIPSMOBILE.LHM_DATA.
      * Data harus dikirim sebagai array dengan struktur untuk perhitungan upah harian karyawan.
      *
-     * @bodyParam data array required Array data LHM yang akan diinsert ke tabel LHM_DATA.
+     * @bodyParam data array required Array data LHM yang akan diopen.
      * @bodyParam data[].ID string required ID Data Absensi (format: YYYY-MM-DD). Example: 123311
      * @bodyParam data[].ROWDATA string required baris data. Example: 1
      *
