@@ -127,7 +127,7 @@ return [
             'edition'       => 'ora$base',
             'prefix_schema' => env('DB_SCHEMA', 'SIPSMOBILE'), // Tambahkan schema default
             'timeout'       => env('DB_TIMEOUT', 120), // Connection timeout in seconds
-            'persistent'    => false,
+            'persistent'    => true,
         ],
 
         'sips_production' => [
@@ -145,7 +145,7 @@ return [
             'edition'       => 'ora$base',
             'prefix_schema' => env('DB_SCHEMA', 'IPLASPROD'), // Tambahkan schema default
             'timeout'       => env('DB_TIMEOUT', 120), // Connection timeout in seconds
-            'persistent'    => false,
+            'persistent'    => true,
         ],
 
     ],
