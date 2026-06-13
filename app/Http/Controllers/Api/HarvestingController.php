@@ -9,22 +9,24 @@ use Illuminate\Database\QueryException;
 use App\Http\Resources\AllResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+// use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 /**
  * @group Apps
- * 
+ *
  * @subgroup Panen
  * @subgroupDescription Sub Group untuk Panen
- * 
+ *
  */
 class HarvestingController extends Controller
 {
     /**
      * Memanggil data Panen dari SIPS Mobile.
      *
-     * API ini digunakan untuk memanggil data Panen secara keseluruhan. 
-     * Namun, jika ingin melakukan filter pada data yang dipanggil, 
+     * API ini digunakan untuk memanggil data Panen secara keseluruhan.
+     * Namun, jika ingin melakukan filter pada data yang dipanggil,
      * gunakan parameter pada URL berdasarkan _**Query Parameter**_.
      * Data diurutkan berdasarkan Tanggal terbaru, Bisnit Unit, Afdeling, dan Kode Karyawan.
      *
@@ -75,19 +77,19 @@ class HarvestingController extends Controller
     {
         try {
             // Ambil parameter dari query string
-            $nodokumen = $request->query('nodokumen');
-            $tanggal = $request->query('tanggal');
-            $tanggalEnd     = $request->query('tanggal_end');
-            $kode_karyawan = $request->query('kode_karyawan');
-            $fcba = $request->query('fcba');
-            $afdeling = $request->query('afdeling');
-            $tph = $request->query('tph');
-            $status_harvesting = $request->query('status_harvesting');
-            $kemandoran = $request->query('kemandoran');
+            $nodokumen = $request->query("nodokumen");
+            $tanggal = $request->query("tanggal");
+            $tanggalEnd = $request->query("tanggal_end");
+            $kode_karyawan = $request->query("kode_karyawan");
+            $fcba = $request->query("fcba");
+            $afdeling = $request->query("afdeling");
+            $tph = $request->query("tph");
+            $status_harvesting = $request->query("status_harvesting");
+            $kemandoran = $request->query("kemandoran");
 
             $query = "
                 SELECT
-                    DISTINCT  
+                    DISTINCT
                     HARVESTING.ID,
                     HARVESTING.NODOKUMEN,
                     HARVESTING.TANGGAL,
@@ -131,7 +133,7 @@ class HarvestingController extends Controller
                 LEFT JOIN
                     SIPSMOBILE.TPH
                 ON
-                    HARVESTING.TPH = TPH.NOTPH 
+                    HARVESTING.TPH = TPH.NOTPH
                     AND HARVESTING.FIELDCODE = TPH.FIELDCODE
                     AND HARVESTING.NOANCAK = TPH.ANCAKNO
                     AND HARVESTING.AFDELING = TPH.AFDELING
@@ -150,9 +152,9 @@ class HarvestingController extends Controller
                     HARVESTING.KODE_KARYAWAN_KERANI = KERANI.FCCODE
                 INNER JOIN
                     SIPSMOBILE.EMPLOYEE KARYAWAN
-                ON 
+                ON
                     HARVESTING.KODE_KARYAWAN = KARYAWAN.FCCODE
-                WHERE 
+                WHERE
                     HARVESTING.DELETED_AT IS NULL
             ";
 
@@ -160,7 +162,7 @@ class HarvestingController extends Controller
 
             if ($nodokumen) {
                 $query .= " AND NODOKUMEN = :nodokumen";
-                $bindings['nodokumen'] = $nodokumen;
+                $bindings["nodokumen"] = $nodokumen;
             }
 
             /**
@@ -173,57 +175,61 @@ class HarvestingController extends Controller
             if ($tanggal && $tanggalEnd) {
                 // Optional: jaga-jaga kalau user kebalik isi (tanggal > tanggalEnd)
                 $startDate = $tanggal;
-                $endDate   = $tanggalEnd;
+                $endDate = $tanggalEnd;
 
                 if ($startDate > $endDate) {
                     $startDate = $tanggalEnd;
-                    $endDate   = $tanggal;
+                    $endDate = $tanggal;
                 }
 
-                $query .= " and TRUNC(HARVESTING.TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
-                $bindings['tanggal'] = $startDate;
-                $bindings['tanggal_end']   = $endDate;
+                $query .=
+                    " and TRUNC(HARVESTING.TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                $bindings["tanggal"] = $startDate;
+                $bindings["tanggal_end"] = $endDate;
             } elseif ($tanggal) {
-                $query .= " and TRUNC(HARVESTING.TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
-                $bindings['tanggal'] = $tanggal;
+                $query .=
+                    " and TRUNC(HARVESTING.TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
+                $bindings["tanggal"] = $tanggal;
             } elseif ($tanggalEnd) {
-                $query .= " and TRUNC(HARVESTING.TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
-                $bindings['tanggal_end'] = $tanggalEnd;
+                $query .=
+                    " and TRUNC(HARVESTING.TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                $bindings["tanggal_end"] = $tanggalEnd;
             }
 
             if ($kode_karyawan) {
                 $query .= " AND HARVESTING.KODE_KARYAWAN = :kode_karyawan";
-                $bindings['kode_karyawan'] = $kode_karyawan;
+                $bindings["kode_karyawan"] = $kode_karyawan;
             }
 
             if ($tph) {
                 $query .= " AND HARVESTING.TPH = :tph";
-                $bindings['tph'] = $tph;
+                $bindings["tph"] = $tph;
             }
 
             if ($afdeling) {
                 $query .= " AND HARVESTING.AFDELING = :afdeling";
-                $bindings['afdeling'] = $afdeling;
+                $bindings["afdeling"] = $afdeling;
             }
 
             if ($fcba) {
                 $query .= " AND HARVESTING.FCBA = :fcba";
-                $bindings['fcba'] = $fcba;
+                $bindings["fcba"] = $fcba;
             }
 
             if ($status_harvesting) {
-                $query .= " AND HARVESTING.STATUS_HARVESTING = :status_harvesting";
-                $bindings['status_harvesting'] = $status_harvesting;
+                $query .=
+                    " AND HARVESTING.STATUS_HARVESTING = :status_harvesting";
+                $bindings["status_harvesting"] = $status_harvesting;
             }
 
             if ($kemandoran) {
                 $query .= " AND HARVESTING.KEMANDORAN = :kemandoran";
-                $bindings['kemandoran'] = $kemandoran;
+                $bindings["kemandoran"] = $kemandoran;
             }
 
             // Tambahkan bagian akhir query
             $query .= "
-                ORDER BY 
+                ORDER BY
                     HARVESTING.FCBA,
                     HARVESTING.TANGGAL DESC,
                     HARVESTING.AFDELING,
@@ -232,27 +238,33 @@ class HarvestingController extends Controller
             ";
 
             // Jalankan query
-            $datas = DB::connection('oracle')->select($query, $bindings);
+            $datas = DB::connection("oracle")->select($query, $bindings);
 
             if (empty($datas)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data Panen', $datas);
+            return new AllResource(true, "List Data Panen", $datas);
         } catch (\Exception $e) {
             // Log::error('Error mengambil data harvesting (index)', [
             //     'message' => $e->getMessage(),
             //     'trace' => $e->getTraceAsString(),
             // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -263,16 +275,16 @@ class HarvestingController extends Controller
     {
         // 1. BERSIHKAN FIELD ANGKA DULU
         $numericFields = [
-            'output',
-            'mentah',
-            'overripe',
-            'busuk',
-            'busuk2',
-            'buahkecil',
-            'parteno',
-            'parteno50plus',
-            'brondol',
-            'tangkaipanjang',
+            "output",
+            "mentah",
+            "overripe",
+            "busuk",
+            "busuk2",
+            "buahkecil",
+            "parteno",
+            "parteno50plus",
+            "brondol",
+            "tangkaipanjang",
         ];
 
         foreach ($numericFields as $field) {
@@ -285,49 +297,55 @@ class HarvestingController extends Controller
             // - string "null"
             // - ADA isinya tapi BUKAN angka (misal: " ", "abc")
             // → paksa jadi 0
-            if ($value === null || $value === '' || $value === 'null' || !is_numeric($value)) {
+            if (
+                $value === null ||
+                $value === "" ||
+                $value === "null" ||
+                !is_numeric($value)
+            ) {
                 $request->merge([$field => 0]);
             }
         }
 
         // Validasi inputan
         $request->validate([
-            'nodokumen' => 'required|string',
-            'tanggal' => 'required|date_format:Y-m-d',
-            'kode_karyawan_mandor1' => 'nullable|string|exists:employee,fccode',
-            'kode_karyawan_mandor_panen' => 'nullable|string|exists:employee,fccode',
-            'kode_karyawan_kerani' => 'nullable|string|exists:employee,fccode',
-            'kode_karyawan' => 'required|string|exists:employee,fccode',
-            'noancak' => 'required|string',
+            "nodokumen" => "required|string",
+            "tanggal" => "required|date_format:Y-m-d",
+            "kode_karyawan_mandor1" => "nullable|string|exists:employee,fccode",
+            "kode_karyawan_mandor_panen" =>
+                "nullable|string|exists:employee,fccode",
+            "kode_karyawan_kerani" => "nullable|string|exists:employee,fccode",
+            "kode_karyawan" => "required|string|exists:employee,fccode",
+            "noancak" => "required|string",
             // 'noancak' => 'required|string|exists:tph,ancakno',
-            'tph' => 'required|string',
+            "tph" => "required|string",
             // 'tph' => 'required|string|exists:tph,notph',
-            'fieldcode' => 'required|string',
+            "fieldcode" => "required|string",
             // 'fieldcode' => 'required|string|exists:tph,fieldcode',
-            'afdeling' => 'required|string',
+            "afdeling" => "required|string",
             // 'afdeling' => 'required|string|exists:tph,afdeling',
-            'fcba' => 'required|string',
+            "fcba" => "required|string",
             // 'fcba' => 'required|string|exists:tph,fcba',
-            'output' => 'required|integer|min:0',
-            'mentah' => 'nullable|integer|min:0',
-            'overripe' => 'nullable|integer|min:0',
-            'busuk' => 'nullable|integer|min:0',
-            'busuk2' => 'nullable|integer|min:0',
-            'buahkecil' => 'nullable|integer|min:0',
-            'parteno' => 'nullable|integer|min:0',
-            'parteno50plus' => 'nullable|integer|min:0',
-            'brondol' => 'nullable|integer|min:0',
-            'tangkaipanjang' => 'nullable|integer|min:0',
-            'alasbrondol' => 'nullable|string',
-            'status_assistensi' => 'nullable',
-            'kemandoran' => 'nullable|exists:users,gangcode',
-            'location' => 'nullable',
-            'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
-            'exception_case' => 'nullable',
-            'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
-            'id_device' => 'nullable',
-            'card_id' => 'nullable',
-            'created_by' => 'nullable',
+            "output" => "required|integer|min:0",
+            "mentah" => "nullable|integer|min:0",
+            "overripe" => "nullable|integer|min:0",
+            "busuk" => "nullable|integer|min:0",
+            "busuk2" => "nullable|integer|min:0",
+            "buahkecil" => "nullable|integer|min:0",
+            "parteno" => "nullable|integer|min:0",
+            "parteno50plus" => "nullable|integer|min:0",
+            "brondol" => "nullable|integer|min:0",
+            "tangkaipanjang" => "nullable|integer|min:0",
+            "alasbrondol" => "nullable|string",
+            "status_assistensi" => "nullable",
+            "kemandoran" => "nullable|exists:users,gangcode",
+            "location" => "nullable",
+            "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
+            "exception_case" => "nullable",
+            "no_ba_exca" => "nullable|file|mimes:pdf|max:2048",
+            "id_device" => "nullable",
+            "card_id" => "nullable",
+            "created_by" => "nullable",
         ]);
 
         try {
@@ -335,11 +353,11 @@ class HarvestingController extends Controller
             $imagePath = null;
 
             // Jika ada file image yang diunggah
-            if ($request->hasFile('images')) {
-                $image = $request->file('images');
-                $imageName = time() . '_' . $image->getClientOriginalName();
-                $image->move(public_path('file/harvesting_images'), $imageName); // Simpan di public/harvesting_images
-                $imagePath = 'file/harvesting_images/' . $imageName; // Path yang disimpan di database
+            if ($request->hasFile("images")) {
+                $image = $request->file("images");
+                $imageName = time() . "_" . $image->getClientOriginalName();
+                $image->move(public_path("file/harvesting_images"), $imageName); // Simpan di public/harvesting_images
+                $imagePath = "file/harvesting_images/" . $imageName; // Path yang disimpan di database
             }
 
             $imagePath = $imagePath ? asset($imagePath) : null;
@@ -348,49 +366,53 @@ class HarvestingController extends Controller
             $baExcaPath = null;
 
             // Jika ada file image yang diunggah
-            if ($request->hasFile('no_ba_exca')) {
-                $baExca = $request->file('no_ba_exca');
-                $baExcaName = time() . '_' . $baExca->getClientOriginalName();
-                $baExca->move(public_path('file/harvesting_images'), $baExcaName); // Simpan di public/harvesting_images
-                $baExcaPath = 'file/harvesting_images/' . $baExcaName; // Path yang disimpan di database
+            if ($request->hasFile("no_ba_exca")) {
+                $baExca = $request->file("no_ba_exca");
+                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+                $baExca->move(
+                    public_path("file/harvesting_images"),
+                    $baExcaName,
+                ); // Simpan di public/harvesting_images
+                $baExcaPath = "file/harvesting_images/" . $baExcaName; // Path yang disimpan di database
             }
 
             $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
 
             // Simpan data Harvesting ke dalam database
             $datas = Harvesting::create([
-                'NODOKUMEN' => $request->nodokumen,
-                'TANGGAL' => $request->tanggal,
-                'KODE_KARYAWAN_MANDOR1' => $request->kode_karyawan_mandor1,
-                'KODE_KARYAWAN_MANDOR_PANEN' => $request->kode_karyawan_mandor_panen,
-                'KODE_KARYAWAN_KERANI' => $request->kode_karyawan_kerani,
-                'KODE_KARYAWAN' => $request->kode_karyawan,
-                'NOANCAK' => $request->noancak,
-                'TPH' => $request->tph,
-                'FIELDCODE' => $request->fieldcode,
-                'AFDELING' => $request->afdeling,
-                'FCBA' => $request->fcba,
-                'OUTPUT' => $request->output,
-                'MENTAH' => $request->mentah,
-                'OVERRIPE' => $request->overripe,
-                'BUSUK' => $request->busuk,
-                'BUSUK2' => $request->busuk2,
-                'BUAHKECIL' => $request->buahkecil,
-                'PARTENO' => $request->parteno,
-                'PARTENO50PLUS' => $request->parteno50plus,
-                'BRONDOL' => $request->brondol,
-                'TANGKAIPANJANG' => $request->tangkaipanjang,
-                'ALASBRONDOL' => $request->alasbrondol ?? "N",
-                'KEMANDORAN' => $request->kemandoran,
-                'STATUS_ASSISTENSI' => $request->status_assistensi,
-                'STATUS_HARVESTING' => 'Planned',
-                'LOCATION' => $request->location,
-                'IMAGES' => $imagePath, // Simpan path image jika ada
-                'EXCEPTION_CASE' => $request->exception_case,
-                'NO_BA_EXCA' => $baExcaPath,
-                'ID_DEVICE' => $request->id_device,
-                'CARD_ID' => $request->card_id,
-                'CREATED_BY' => Auth::user()->username,
+                "NODOKUMEN" => $request->nodokumen,
+                "TANGGAL" => $request->tanggal,
+                "KODE_KARYAWAN_MANDOR1" => $request->kode_karyawan_mandor1,
+                "KODE_KARYAWAN_MANDOR_PANEN" =>
+                    $request->kode_karyawan_mandor_panen,
+                "KODE_KARYAWAN_KERANI" => $request->kode_karyawan_kerani,
+                "KODE_KARYAWAN" => $request->kode_karyawan,
+                "NOANCAK" => $request->noancak,
+                "TPH" => $request->tph,
+                "FIELDCODE" => $request->fieldcode,
+                "AFDELING" => $request->afdeling,
+                "FCBA" => $request->fcba,
+                "OUTPUT" => $request->output,
+                "MENTAH" => $request->mentah,
+                "OVERRIPE" => $request->overripe,
+                "BUSUK" => $request->busuk,
+                "BUSUK2" => $request->busuk2,
+                "BUAHKECIL" => $request->buahkecil,
+                "PARTENO" => $request->parteno,
+                "PARTENO50PLUS" => $request->parteno50plus,
+                "BRONDOL" => $request->brondol,
+                "TANGKAIPANJANG" => $request->tangkaipanjang,
+                "ALASBRONDOL" => $request->alasbrondol ?? "N",
+                "KEMANDORAN" => $request->kemandoran,
+                "STATUS_ASSISTENSI" => $request->status_assistensi,
+                "STATUS_HARVESTING" => "Planned",
+                "LOCATION" => $request->location,
+                "IMAGES" => $imagePath, // Simpan path image jika ada
+                "EXCEPTION_CASE" => $request->exception_case,
+                "NO_BA_EXCA" => $baExcaPath,
+                "ID_DEVICE" => $request->id_device,
+                "CARD_ID" => $request->card_id,
+                "CREATED_BY" => Auth::user()->username,
             ]);
 
             // Kembalikan respons dengan data yang baru saja disimpan
@@ -399,20 +421,26 @@ class HarvestingController extends Controller
             //     'nodokumen' => $request->nodokumen,
             //     'created_by' => Auth::user()->username,
             // ]);
-            return new AllResource(true, 'Data Panen berhasil ditambahkan.', $datas);
+            return new AllResource(
+                true,
+                "Data Panen berhasil ditambahkan.",
+                $datas,
+            );
         } catch (\Illuminate\Database\QueryException $e) {
-
             // Tangkap error duplicate Oracle
-            if (str_contains($e->getMessage(), 'ORA-00001')) {
-
+            if (str_contains($e->getMessage(), "ORA-00001")) {
                 // Log::warning('Duplicate data harvesting', [
                 //     'request' => $request->all()
                 // ]);
 
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data sudah pernah dimasukkan, cek kembali data Anda.'
-                ], 400);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" =>
+                            "Data sudah pernah dimasukkan, cek kembali data Anda.",
+                    ],
+                    400,
+                );
             }
 
             // Log error lainnya
@@ -421,10 +449,13 @@ class HarvestingController extends Controller
             //     'request' => $request->all()
             // ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data.',
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat menyimpan data.",
+                ],
+                500,
+            );
         }
     }
 
@@ -437,7 +468,7 @@ class HarvestingController extends Controller
     {
         try {
             $query = "
-                SELECT 
+                SELECT
                     HARVESTING.ID,
                     HARVESTING.NODOKUMEN,
                     HARVESTING.TANGGAL,
@@ -485,7 +516,7 @@ class HarvestingController extends Controller
                 INNER JOIN
                     SIPSMOBILE.TPH
                 ON
-                    HARVESTING.TPH = TPH.NOTPH 
+                    HARVESTING.TPH = TPH.NOTPH
                     AND HARVESTING.FIELDCODE = TPH.FIELDCODE
                     AND HARVESTING.AFDELING = TPH.AFDELING
                     AND HARVESTING.FCBA = TPH.FCBA
@@ -503,36 +534,42 @@ class HarvestingController extends Controller
                     HARVESTING.KODE_KARYAWAN_KERANI = KERANI.FCCODE
                 INNER JOIN
                     SIPSMOBILE.EMPLOYEE KARYAWAN
-                ON 
+                ON
                     HARVESTING.KODE_KARYAWAN = KARYAWAN.FCCODE
-                WHERE 
+                WHERE
                     HARVESTING.ID = :id
             ";
 
             // Jalankan query
-            $data = DB::connection('oracle')->selectOne($query, ['id' => $id]);
+            $data = DB::connection("oracle")->selectOne($query, ["id" => $id]);
 
             if (empty($data)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
             // Jika data ditemukan, kembalikan data
-            return new AllResource(true, 'Detail Data Panen', $data);
+            return new AllResource(true, "Detail Data Panen", $data);
         } catch (\Exception $e) {
             // Log::error('Error mengambil data harvesting (show)', [
             //     'id' => $id,
             //     'message' => $e->getMessage(),
             //     'trace' => $e->getTraceAsString(),
             // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -545,16 +582,16 @@ class HarvestingController extends Controller
     {
         // 1. BERSIHKAN FIELD ANGKA DULU
         $numericFields = [
-            'output',
-            'mentah',
-            'overripe',
-            'busuk',
-            'busuk2',
-            'buahkecil',
-            'parteno',
-            'parteno50plus',
-            'brondol',
-            'tangkaipanjang',
+            "output",
+            "mentah",
+            "overripe",
+            "busuk",
+            "busuk2",
+            "buahkecil",
+            "parteno",
+            "parteno50plus",
+            "brondol",
+            "tangkaipanjang",
         ];
 
         foreach ($numericFields as $field) {
@@ -566,41 +603,47 @@ class HarvestingController extends Controller
             // - string "null"
             // - ADA isinya tapi BUKAN angka (misal: " ", "abc")
             // → paksa jadi 0
-            if ($value === null || $value === '' || $value === 'null' || !is_numeric($value)) {
+            if (
+                $value === null ||
+                $value === "" ||
+                $value === "null" ||
+                !is_numeric($value)
+            ) {
                 $request->merge([$field => 0]);
             }
         }
 
         // Validasi input
         $validated = $request->validate([
-            'kode_karyawan_mandor1' => 'nullable|string|exists:employee,fccode',
-            'kode_karyawan_mandor_panen' => 'nullable|string|exists:employee,fccode',
-            'kode_karyawan_kerani' => 'nullable|string|exists:employee,fccode',
-            'kode_karyawan' => 'required|string|exists:employee,fccode',
+            "kode_karyawan_mandor1" => "nullable|string|exists:employee,fccode",
+            "kode_karyawan_mandor_panen" =>
+                "nullable|string|exists:employee,fccode",
+            "kode_karyawan_kerani" => "nullable|string|exists:employee,fccode",
+            "kode_karyawan" => "required|string|exists:employee,fccode",
             // 'noancak' => 'required|string|exists:tph,ancakno',
             // 'fieldcode' => 'required|string|exists:tph,fieldcode',
             // 'tph' => 'required|string|exists:tph,notph',
-            'noancak' => 'required|string',
-            'tph' => 'nullable|string',
-            'fieldcode' => 'required|string',
-            'afdeling' => 'required|string|exists:tph,afdeling',
-            'fcba' => 'required|string|exists:tph,fcba',
-            'exception_case' => 'nullable',
-            'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
-            'output' => 'required|numeric|min:0',
-            'mentah' => 'nullable|numeric|min:0',
-            'overripe' => 'nullable|numeric|min:0',
-            'busuk' => 'nullable|numeric|min:0',
-            'busuk2' => 'nullable|numeric|min:0',
-            'buahkecil' => 'nullable|numeric|min:0',
-            'parteno' => 'nullable|numeric|min:0',
-            'parteno50plus' => 'nullable|numeric|min:0',
-            'brondol' => 'nullable|numeric|min:0',
-            'tangkaipanjang' => 'nullable|numeric|min:0',
-            'alasbrondol' => 'nullable|string',
+            "noancak" => "required|string",
+            "tph" => "nullable|string",
+            "fieldcode" => "required|string",
+            "afdeling" => "required|string|exists:tph,afdeling",
+            "fcba" => "required|string|exists:tph,fcba",
+            "exception_case" => "nullable",
+            "no_ba_exca" => "nullable|file|mimes:pdf|max:2048",
+            "output" => "required|numeric|min:0",
+            "mentah" => "nullable|numeric|min:0",
+            "overripe" => "nullable|numeric|min:0",
+            "busuk" => "nullable|numeric|min:0",
+            "busuk2" => "nullable|numeric|min:0",
+            "buahkecil" => "nullable|numeric|min:0",
+            "parteno" => "nullable|numeric|min:0",
+            "parteno50plus" => "nullable|numeric|min:0",
+            "brondol" => "nullable|numeric|min:0",
+            "tangkaipanjang" => "nullable|numeric|min:0",
+            "alasbrondol" => "nullable|string",
             // 'kemandoran' => 'nullable|exists:users,gangcode',
-            'status_assistensi' => 'nullable',
-            'images' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            "status_assistensi" => "nullable",
+            "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
         ]);
 
         try {
@@ -609,20 +652,23 @@ class HarvestingController extends Controller
 
             // Jika data tidak ditemukan
             if (!$datas) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Panen tidak ditemukan'
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Panen tidak ditemukan",
+                    ],
+                    404,
+                );
             }
 
             $imagePath = $datas->images; // Default gunakan gambar lama
 
             // Jika ada file image yang diunggah
-            if (!empty($request->hasFile('images'))) {
-                $image = $request->file('images');
-                $imageName = time() . '_' . $image->getClientOriginalName();
-                $image->move(public_path('file/harvesting_images'), $imageName); // Simpan di public/harvesting_images
-                $imagePath = 'file/harvesting_images/' . $imageName; // Path yang disimpan di database
+            if (!empty($request->hasFile("images"))) {
+                $image = $request->file("images");
+                $imageName = time() . "_" . $image->getClientOriginalName();
+                $image->move(public_path("file/harvesting_images"), $imageName); // Simpan di public/harvesting_images
+                $imagePath = "file/harvesting_images/" . $imageName; // Path yang disimpan di database
                 $imagePath = $imagePath ? asset($imagePath) : null;
             }
 
@@ -630,42 +676,45 @@ class HarvestingController extends Controller
             $baExcaPath = null;
 
             // Jika ada file image yang diunggah
-            if ($request->hasFile('no_ba_exca')) {
-                $baExca = $request->file('no_ba_exca');
-                $baExcaName = time() . '_' . $baExca->getClientOriginalName();
-                $baExca->move(public_path('file/harvesting_images'), $baExcaName); // Simpan di public/harvesting_images
-                $baExcaPath = 'file/harvesting_images/' . $baExcaName; // Path yang disimpan di database
+            if ($request->hasFile("no_ba_exca")) {
+                $baExca = $request->file("no_ba_exca");
+                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+                $baExca->move(
+                    public_path("file/harvesting_images"),
+                    $baExcaName,
+                ); // Simpan di public/harvesting_images
+                $baExcaPath = "file/harvesting_images/" . $baExcaName; // Path yang disimpan di database
                 $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
             }
 
             // Menyusun data untuk update
             $updateData = [
-                $validated['kode_karyawan_mandor1'] ?? null,        // 1
-                $validated['kode_karyawan_mandor_panen'] ?? null,   // 2
-                $validated['kode_karyawan_kerani'] ?? null,         // 3
-                $validated['kode_karyawan'],                        // 4
-                $validated['noancak'],                              // 5
-                $validated['tph'],                                  // 6
-                $validated['fieldcode'],                            // 7
-                $validated['afdeling'],                             // 8
-                $validated['fcba'],                                 // 9
-                $validated['output'],                               // 10
-                $validated['mentah'] ?? null,                       // 11
-                $validated['overripe'] ?? null,                     // 12
-                $validated['busuk'] ?? null,                        // 13
-                $validated['busuk2'] ?? null,                       // 14
-                $validated['buahkecil'] ?? null,                    // 15
-                $validated['parteno'] ?? null,                      // 16
-                $validated['parteno50plus'] ?? null,                // 17
-                $validated['brondol'] ?? null,                      // 19
-                $validated['tangkaipanjang'] ?? null,               // 18
-                $validated['alasbrondol'] ?? "N",                   // 20
-                $validated['kemandoran'],                           // 22
-                $validated['status_assistensi'] ?? null,            // 21
-                $imagePath,                                         // 23
-                Auth::user()->username,                             // 24
-                $validated['exception_case'] ?? null,               // 25
-                $id,                                                // (ID untuk WHERE)
+                $validated["kode_karyawan_mandor1"] ?? null, // 1
+                $validated["kode_karyawan_mandor_panen"] ?? null, // 2
+                $validated["kode_karyawan_kerani"] ?? null, // 3
+                $validated["kode_karyawan"], // 4
+                $validated["noancak"], // 5
+                $validated["tph"], // 6
+                $validated["fieldcode"], // 7
+                $validated["afdeling"], // 8
+                $validated["fcba"], // 9
+                $validated["output"], // 10
+                $validated["mentah"] ?? null, // 11
+                $validated["overripe"] ?? null, // 12
+                $validated["busuk"] ?? null, // 13
+                $validated["busuk2"] ?? null, // 14
+                $validated["buahkecil"] ?? null, // 15
+                $validated["parteno"] ?? null, // 16
+                $validated["parteno50plus"] ?? null, // 17
+                $validated["brondol"] ?? null, // 19
+                $validated["tangkaipanjang"] ?? null, // 18
+                $validated["alasbrondol"] ?? "N", // 20
+                $validated["kemandoran"], // 22
+                $validated["status_assistensi"] ?? null, // 21
+                $imagePath, // 23
+                Auth::user()->username, // 24
+                $validated["exception_case"] ?? null, // 25
+                $id, // (ID untuk WHERE)
             ];
 
             // Build dynamic SET clause
@@ -735,10 +784,12 @@ class HarvestingController extends Controller
 
             // Update menggunakan query manual
             DB::update(
-                "UPDATE \"SIPSMOBILE\".\"HARVESTING\" 
-                SET " . $setClause . "
+                "UPDATE \"SIPSMOBILE\".\"HARVESTING\"
+                SET " .
+                    $setClause .
+                    "
                 WHERE \"ID\" = ?",
-                $updateData
+                $updateData,
             );
 
             $datas = Harvesting::findOrFail($id);
@@ -748,41 +799,53 @@ class HarvestingController extends Controller
             //     'id' => $id,
             //     'updated_by' => Auth::user()->username,
             // ]);
-            return response()->json([
-                'success' => true,
-                'message' => 'Data Panen berhasil diperbarui.',
-                'data' => $datas,
-            ], 200);
+            return response()->json(
+                [
+                    "success" => true,
+                    "message" => "Data Panen berhasil diperbarui.",
+                    "data" => $datas,
+                ],
+                200,
+            );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             // Log::warning('Harvesting tidak ditemukan (update)', [
             //     'id' => $id,
             // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Panen tidak ditemukan.',
-            ], 404);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Data Panen tidak ditemukan.",
+                ],
+                404,
+            );
         } catch (\Illuminate\Database\QueryException $e) {
             // Log::error('Error QueryException saat update harvesting', [
             //     'id' => $id,
             //     'message' => $e->getMessage(),
             //     'trace' => $e->getTraceAsString(),
             // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengupdate data.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengupdate data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         } catch (\Exception $e) {
             // Log::error('Error Exception saat update harvesting', [
             //     'id' => $id,
             //     'message' => $e->getMessage(),
             //     'trace' => $e->getTraceAsString(),
             // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan pada sistem.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan pada sistem.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -795,7 +858,7 @@ class HarvestingController extends Controller
     {
         // Validasi input status yang diizinkan
         $validated = $request->validate([
-            'status_harvesting' => 'required|string|in:Planned,Reject,Approved',
+            "status_harvesting" => "required|string|in:Planned,Reject,Approved",
         ]);
 
         try {
@@ -805,7 +868,7 @@ class HarvestingController extends Controller
             // Update status menggunakan query manual (konsisten dengan update lain)
             DB::update(
                 "UPDATE \"SIPSMOBILE\".\"HARVESTING\" \n SET \"STATUS_HARVESTING\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n                WHERE \"ID\" = ?",
-                [$validated['status_harvesting'], Auth::user()->username, $id]
+                [$validated["status_harvesting"], Auth::user()->username, $id],
             );
 
             // Ambil kembali data yang sudah diupdate
@@ -816,41 +879,54 @@ class HarvestingController extends Controller
             //     'status_harvesting' => $validated['status_harvesting'],
             //     'updated_by' => Auth::user()->username,
             // ]);
-            return response()->json([
-                'success' => true,
-                'message' => 'Status Harvesting berhasil diperbarui.',
-                'data' => $datas,
-            ], 200);
+            return response()->json(
+                [
+                    "success" => true,
+                    "message" => "Status Harvesting berhasil diperbarui.",
+                    "data" => $datas,
+                ],
+                200,
+            );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             // Log::warning('Harvesting tidak ditemukan (updateStatus)', [
             //     'id' => $id,
             // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Harvesting tidak ditemukan.',
-            ], 404);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Data Harvesting tidak ditemukan.",
+                ],
+                404,
+            );
         } catch (\Illuminate\Database\QueryException $e) {
             // Log::error('Error QueryException saat updateStatus harvesting', [
             //     'id' => $id,
             //     'message' => $e->getMessage(),
             //     'trace' => $e->getTraceAsString(),
             // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengupdate status harvesting.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" =>
+                        "Terjadi kesalahan saat mengupdate status harvesting.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         } catch (\Exception $e) {
             // Log::error('Error Exception saat updateStatus harvesting', [
             //     'id' => $id,
             //     'message' => $e->getMessage(),
             //     'trace' => $e->getTraceAsString(),
             // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan pada sistem.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan pada sistem.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -859,51 +935,91 @@ class HarvestingController extends Controller
      *
      * @urlParam id integer required ID Panen.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
+        $validated = $request->validate([
+            "ba_deleted" => "required|file|mimes:pdf|max:2048",
+        ]);
+
         try {
             $datas = Harvesting::findOrFail($id);
 
-            // isi deleted_by dulu
+            $baExcaPath = null;
+
+            if ($request->hasFile("ba_deleted")) {
+                $baExca = $request->file("ba_deleted");
+                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+
+                // ✅ ambil FCBA dari database
+                $fcba = strtolower($datas->fcba ?? "unknown");
+
+                // optional: biar aman dari spasi & karakter aneh
+                $fcba = Str::slug($fcba); // contoh: "Plant A" -> "plant-a"
+
+                // ✅ ambil tanggal dari data Harvesting (misal kolom: tanggal)
+                $tanggal = $datas->tanggal
+                    ? Carbon::parse($datas->tanggal)
+                    : Carbon::now();
+
+                $year = $tanggal->format("Y");
+                $month = $tanggal->format("m");
+
+                $filePath = "file/harvesting/files/$fcba/$year/$month";
+
+                // ✅ path folder dinamis
+                $destinationPath = public_path($filePath);
+
+                // ✅ buat folder jika belum ada
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+
+                // ✅ simpan file
+                $baExca->move($destinationPath, $baExcaName);
+
+                // ✅ path untuk database
+                $relativePath = $filePath . "/" . $baExcaName;
+                $baExcaPath = asset($relativePath);
+            }
+
+            // isi metadata delete
             $datas->deleted_by = Auth::user()->username ?? null;
+            $datas->deleted_attachment = $baExcaPath;
             $datas->save();
 
             $datas->delete();
-            // Log::info('Harvesting berhasil dihapus (destroy)', [
-            //     'id' => $id,
-            //     'deleted_by' => Auth::user()->username ?? null,
-            // ]);
-            return new AllResource(true, 'Data Panen berhasil dihapus.', $datas);
+
+            return new AllResource(
+                true,
+                "Data Panen berhasil dihapus.",
+                $datas,
+            );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // Log::warning('Harvesting tidak ditemukan (destroy)', [
-            //     'id' => $id,
-            // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Panen tidak ditemukan.',
-            ], 404);
-        } catch (QueryException $e) {
-            // Log::error('Error QueryException saat menghapus harvesting', [
-            //     'id' => $id,
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menghapus data.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Data Panen tidak ditemukan.",
+                ],
+                404,
+            );
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat menghapus data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         } catch (\Exception $e) {
-            // Log::error('Error Exception saat menghapus harvesting', [
-            //     'id' => $id,
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            // ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan pada sistem.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan pada sistem.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 }
