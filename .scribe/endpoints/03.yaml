@@ -25,7 +25,7 @@ endpoints:
         name: fcba
         description: 'optional Filter berdasarkan FCBA. Contoh: 01'
         required: false
-        example: iure
+        example: voluptas
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -35,15 +35,15 @@ endpoints:
         name: afdeling
         description: 'optional Filter berdasarkan afdeling/division. Contoh: AFD-01'
         required: false
-        example: et
+        example: mollitia
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanQueryParameters:
-      fcba: iure
-      afdeling: et
+      fcba: voluptas
+      afdeling: mollitia
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -75,7 +75,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 1v4Vg63dDfEe8hacaPZ56bk'
+      - 'Bearer ZafdgeV4b6aD3h1kP8v65cE'
     controller: null
     method: null
     route: null

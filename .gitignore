@@ -9,6 +9,7 @@
 /public/hot
 /public/storage
 
+/public/docs/*
 /public/file/*
 !/public/file/.gitkeep 
 
@@ -30,3 +31,4 @@ Desktop.ini
 /.nova
 /.scribe
 /.qoder
+/.scribe

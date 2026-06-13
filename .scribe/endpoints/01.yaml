@@ -26,7 +26,7 @@ endpoints:
         name: app_name
         description: ''
         required: true
-        example: ullam
+        example: autem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -53,7 +53,7 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      app_name: ullam
+      app_name: autem
       platform: android
       version: 1.0.0
     fileParameters: []
@@ -106,7 +106,7 @@ endpoints:
         name: app_name
         description: ''
         required: true
-        example: velit
+        example: aut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -173,7 +173,7 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      app_name: velit
+      app_name: aut
       platform: android
       version: 1.0.0
       force_update: false

@@ -32,7 +32,7 @@ endpoints:
         description: 'Array data attendance yang akan diinsert ke tabel ATTENDANCE_GAD dan ATTENDANCE_GAD_TEMP.'
         required: true
         example:
-          - quasi
+          - maxime
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -490,7 +490,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       data:
-        - quasi
+        - maxime
     fileParameters: []
     responses:
       -
@@ -529,7 +529,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer eVba4Zfch163dva8k6E5DgP'
+      - 'Bearer a35PfdcgaeZDh6846bvE1kV'
     controller: null
     method: null
     route: null
@@ -563,7 +563,7 @@ endpoints:
         description: 'Array data harvesting SPB yang akan diinsert ke tabel HARVESTINGSPB.'
         required: true
         example:
-          - unde
+          - et
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -673,7 +673,7 @@ endpoints:
         name: 'data[].agreementcode'
         description: 'optional Kode agreement. Example:'
         required: false
-        example: qui
+        example: ab
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -713,7 +713,7 @@ endpoints:
         name: 'data[].bucket'
         description: 'optional Jumlah bucket. Example:'
         required: false
-        example: 605148.51582675
+        example: 2.270444
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -843,7 +843,7 @@ endpoints:
         name: 'data[].mentah'
         description: 'optional Mentah. Example:'
         required: false
-        example: amet
+        example: optio
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -853,7 +853,7 @@ endpoints:
         name: 'data[].tankos'
         description: 'optional Tankos. Example:'
         required: false
-        example: omnis
+        example: labore
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -863,7 +863,7 @@ endpoints:
         name: 'data[].hilang'
         description: 'optional Hilang. Example:'
         required: false
-        example: autem
+        example: recusandae
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -901,7 +901,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       data:
-        - unde
+        - et
     fileParameters: []
     responses:
       -
@@ -940,7 +940,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3fbvVE1g6P4cahea865dkDZ'
+      - 'Bearer h4aE1cbvgef3ZVdPDa8k656'
     controller: null
     method: null
     route: null
@@ -974,7 +974,7 @@ endpoints:
         description: 'Array data harvesting quality yang akan diinsert ke tabel HARVESTINGQUALITY.'
         required: true
         example:
-          - similique
+          - quidem
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -1214,7 +1214,7 @@ endpoints:
         name: 'data[].fcentry'
         description: 'optional Dibuat oleh. Example:'
         required: false
-        example: earum
+        example: enim
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1224,7 +1224,7 @@ endpoints:
         name: 'data[].fcedit'
         description: 'optional Diubah oleh. Example:'
         required: false
-        example: neque
+        example: magnam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1234,7 +1234,7 @@ endpoints:
         name: 'data[].fcip'
         description: 'optional IP address. Example:'
         required: false
-        example: ut
+        example: consectetur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1332,7 +1332,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       data:
-        - similique
+        - quidem
     fileParameters: []
     responses:
       -
@@ -1371,7 +1371,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fZaEbDhdek358g4616vVcPa'
+      - 'Bearer vDhaEb1g63ePZkV4caf56d8'
     controller: null
     method: null
     route: null
@@ -1405,7 +1405,7 @@ endpoints:
         description: 'Array data attendance yang akan diinsert ke tabel ATTENDANCE_GAD.'
         required: true
         example:
-          - numquam
+          - eum
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -1863,7 +1863,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       data:
-        - numquam
+        - eum
     fileParameters: []
     responses:
       -
@@ -1902,7 +1902,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer afZ5kPe3va6D8d1b64gchVE'
+      - 'Bearer 6aV6he5Pdk48Zg3cfEbvD1a'
     controller: null
     method: null
     route: null
@@ -1936,7 +1936,7 @@ endpoints:
         description: 'Array data harvesting SPB yang akan diinsert ke tabel HARVESTINGSPB.'
         required: true
         example:
-          - deleniti
+          - voluptatem
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -2046,7 +2046,7 @@ endpoints:
         name: 'data[].agreementcode'
         description: 'optional Kode agreement. Example:'
         required: false
-        example: tenetur
+        example: maiores
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2086,7 +2086,7 @@ endpoints:
         name: 'data[].bucket'
         description: 'optional Jumlah bucket. Example:'
         required: false
-        example: 75687.1
+        example: 1.729258877
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -2216,7 +2216,7 @@ endpoints:
         name: 'data[].mentah'
         description: 'optional Mentah. Example:'
         required: false
-        example: quam
+        example: est
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2226,7 +2226,7 @@ endpoints:
         name: 'data[].tankos'
         description: 'optional Tankos. Example:'
         required: false
-        example: consequatur
+        example: libero
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2236,7 +2236,7 @@ endpoints:
         name: 'data[].hilang'
         description: 'optional Hilang. Example:'
         required: false
-        example: incidunt
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2246,7 +2246,7 @@ endpoints:
         name: 'data[].keterangan'
         description: 'optional Keterangan. Example:'
         required: false
-        example: sit
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2274,7 +2274,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       data:
-        - deleniti
+        - voluptatem
     fileParameters: []
     responses:
       -
@@ -2313,7 +2313,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer v6aEV54hDgZ3Pke8acd1bf6'
+      - 'Bearer DPEgb15vacah6d3ZkV86fe4'
     controller: null
     method: null
     route: null
@@ -2347,7 +2347,7 @@ endpoints:
         description: 'Array data harvesting quality yang akan diinsert ke tabel HARVESTINGQUALITY.'
         required: true
         example:
-          - ut
+          - dolor
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -2587,7 +2587,7 @@ endpoints:
         name: 'data[].fcentry'
         description: 'optional Dibuat oleh. Example:'
         required: false
-        example: accusamus
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2597,7 +2597,7 @@ endpoints:
         name: 'data[].fcedit'
         description: 'optional Diubah oleh. Example:'
         required: false
-        example: dolorem
+        example: non
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2607,7 +2607,7 @@ endpoints:
         name: 'data[].fcip'
         description: 'optional IP address. Example:'
         required: false
-        example: aliquid
+        example: quas
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2705,7 +2705,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       data:
-        - ut
+        - dolor
     fileParameters: []
     responses:
       -
@@ -2744,7 +2744,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer a31a66VD4bEdPgZckeh58fv'
+      - 'Bearer Pdv1ehb6c85a6k4VfEDZag3'
     controller: null
     method: null
     route: null
@@ -2778,7 +2778,7 @@ endpoints:
         description: 'Array data LHM yang akan diinsert ke tabel LHM_DATA.'
         required: true
         example:
-          - perspiciatis
+          - nostrum
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -2816,7 +2816,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       data:
-        - perspiciatis
+        - nostrum
     fileParameters: []
     responses:
       -
@@ -2855,7 +2855,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer adhkbP1ve6E5g4VafZD63c8'
+      - 'Bearer PcEVfa6d38ekDh45a6Zb1gv'
     controller: null
     method: null
     route: null
@@ -2889,7 +2889,7 @@ endpoints:
         description: 'Array data LHM yang akan diopen.'
         required: true
         example:
-          - nemo
+          - assumenda
         type: 'string[]'
         enumValues: []
         exampleWasSpecified: false
@@ -2917,7 +2917,7 @@ endpoints:
         custom: []
     cleanBodyParameters:
       data:
-        - nemo
+        - assumenda
     fileParameters: []
     responses:
       -
@@ -2956,7 +2956,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer e51bV348Evk6gPZcfdaaDh6'
+      - 'Bearer 51E6c6fa8veg3kaP4DdbVhZ'
     controller: null
     method: null
     route: null
