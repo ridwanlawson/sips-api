@@ -21,6 +21,7 @@ use Carbon\Carbon;
  */
 class PengangkutanController extends Controller
 {
+    use \App\Traits\ImageOptimizerTrait;
     /**
      * Memanggil data Pengangkutan dari SIPS Mobile.
      *
@@ -402,8 +403,6 @@ class PengangkutanController extends Controller
             "tkbm5" => "nullable|string|exists:employee,fccode",
             "type_pengangkutan" => "required|integer",
             "kode_kendaraan" => "required|string",
-            // 'tph' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,notph',
-            // 'fieldcode' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,fieldcode',
             "fcba" =>
                 "nullable|required_if:type_pengangkutan,1|string|exists:sips_production.field,fcba",
             "afdeling" =>
@@ -429,53 +428,78 @@ class PengangkutanController extends Controller
         ]);
 
         try {
+            $user = Auth::user();
+            $userFcba = $user->fcba;
+            $userAfdeling = $user->afdeling;
+
+            $requestFcba = $request->fcba;
+            $requestAfdeling = $request->afdeling;
+
+            // Determine effective fcba/afdeling and destination values
+            $effectiveFcba = $requestFcba;
+            $effectiveAfdeling = $requestAfdeling;
+            $effectiveFcbaDestination = $request->fcba_destination;
+            $effectiveAfdelingDestination = $request->afdeling_destination;
+
+            // If request fcba/afdeling differs from user's fcba/afdeling
+            if (
+                $requestFcba != $userFcba ||
+                $requestAfdeling != $userAfdeling
+            ) {
+                $effectiveFcbaDestination = $requestFcba;
+                $effectiveAfdelingDestination = $requestAfdeling;
+                $effectiveFcba = $userFcba;
+                $effectiveAfdeling = $userAfdeling;
+            }
+
             // Inisialisasi variabel path image (default null jika tidak ada file)
             $imagePath = null;
 
             // Jika ada file image yang diunggah
             if ($request->hasFile("images")) {
-                $image = $request->file("images");
-                $imageName = time() . "_" . $image->getClientOriginalName();
-                $image->move(
-                    public_path("file/pengangkutan_images"),
-                    $imageName,
-                ); // Simpan di public/pengangkutan_images
-                $imagePath = "file/pengangkutan_images/" . $imageName; // Path yang disimpan di database
+                $fcbaSlug = Str::slug(strtolower($effectiveFcba ?? "unknown"));
+                $tanggal = $request->tanggal
+                    ? Carbon::parse($request->tanggal)
+                    : Carbon::now();
+                $folderPath =
+                    "file/pengangkutan/images/$fcbaSlug/" .
+                    $tanggal->format("Y/m/d");
+                $imagePath = $this->optimizeAndSaveImage(
+                    $request->file("images"),
+                    $folderPath,
+                );
             }
 
             $imagePath = $imagePath ? asset($imagePath) : null;
 
-            // Inisialisasi variabel path image (default null jika tidak ada file)
+            // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
             $baExcaPath = null;
 
-            // Jika ada file image yang diunggah
+            // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
                 $baExca = $request->file("no_ba_exca");
                 $baExcaName = time() . "_" . $baExca->getClientOriginalName();
-                $baExca->move(
-                    public_path("file/pengangkutan_images"),
-                    $baExcaName,
-                ); // Simpan di public/pengangkutan_images
-                $baExcaPath = "file/pengangkutan_images/" . $baExcaName; // Path yang disimpan di database
+
+                $fcbaSlug = Str::slug(strtolower($effectiveFcba ?? "unknown"));
+                $tanggal = $request->tanggal
+                    ? Carbon::parse($request->tanggal)
+                    : Carbon::now();
+                $year = $tanggal->format("Y");
+                $month = $tanggal->format("m");
+                $day = $tanggal->format("d");
+
+                $relativePath = "file/pengangkutan/files/$fcbaSlug/$year/$month/$day";
+                $destinationPath = public_path($relativePath);
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+
+                $baExca->move($destinationPath, $baExcaName);
+                $baExcaPath = $relativePath . "/" . $baExcaName;
             }
 
             $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
-
-            // Jika afdeling dan fcba kosong, ambil dari pabrik_tujuan
-            if (
-                empty($afdeling) &&
-                empty($fcba) &&
-                !empty($pabrik_tujuan) &&
-                !empty($nopengangkutan)
-            ) {
-                $afdelingFcbaData = $this->getAfdelingFcbaFromPabrikTujuan(
-                    $nopengangkutan,
-                );
-                if ($afdelingFcbaData) {
-                    $afdeling = $afdelingFcbaData->afdeling;
-                    $fcba = $afdelingFcbaData->fcba;
-                }
-            }
 
             // Simpan data Pengangkutan ke dalam database
             $datas = Pengangkutan::create([
@@ -494,10 +518,10 @@ class PengangkutanController extends Controller
                 "KODE_KENDARAAN" => $request->kode_kendaraan,
                 "TPH" => $request->tph,
                 "FIELDCODE" => $request->fieldcode,
-                "FCBA" => $request->fcba,
-                "AFDELING" => $request->afdeling,
-                "FCBA_DESTINATION" => $request->fcba_destination,
-                "AFDELING_DESTINATION" => $request->afdeling_destination,
+                "FCBA" => $effectiveFcba,
+                "AFDELING" => $effectiveAfdeling,
+                "FCBA_DESTINATION" => $effectiveFcbaDestination,
+                "AFDELING_DESTINATION" => $effectiveAfdelingDestination,
                 "PABRIK_TUJUAN" => $request->pabrik_tujuan,
                 "TOTALJANJANG" => $request->totaljanjang,
                 "OUTPUT" => $request->output,
@@ -508,7 +532,7 @@ class PengangkutanController extends Controller
                 "ETD" => $request->etd,
                 "ETA" => $request->eta,
                 "STATUS_PENGANGKUTAN" => "Planned",
-                "IMAGES" => $imagePath, // Simpan path image jika ada
+                "IMAGES" => $imagePath,
                 "EXCEPTION_CASE" => $request->exception_case,
                 "NO_BA_EXCA" => $baExcaPath,
                 "CARD_ID" => $request->card_id,
@@ -724,29 +748,46 @@ class PengangkutanController extends Controller
 
             // Jika ada file image yang diunggah
             if (!empty($request->hasFile("images"))) {
-                $image = $request->file("images");
-                $imageName = time() . "_" . $image->getClientOriginalName();
-                $image->move(
-                    public_path("file/pengangkutan_images"),
-                    $imageName,
-                ); // Simpan di public/pengangkutan_images
-                $imagePath = "file/pengangkutan_images/" . $imageName; // Path yang disimpan di database
-                $imagePath = $imagePath ? asset($imagePath) : null;
+                $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
+                $tanggal = $datas->tanggal
+                    ? Carbon::parse($datas->tanggal)
+                    : Carbon::now();
+                $folderPath =
+                    "file/pengangkutan/images/$fcbaSlug/" .
+                    $tanggal->format("Y/m/d");
+                $imagePath = $this->optimizeAndSaveImage(
+                    $request->file("images"),
+                    $folderPath,
+                );
+                $imagePath = asset($imagePath);
             }
 
-            // Inisialisasi variabel path image (default null jika tidak ada file)
+            // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
             $baExcaPath = null;
 
-            // Jika ada file image yang diunggah
+            // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
                 $baExca = $request->file("no_ba_exca");
                 $baExcaName = time() . "_" . $baExca->getClientOriginalName();
-                $baExca->move(
-                    public_path("file/pengangkutan_images"),
-                    $baExcaName,
-                ); // Simpan di public/pengangkutan_images
-                $baExcaPath = "file/pengangkutan_images/" . $baExcaName; // Path yang disimpan di database
-                $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
+
+                $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
+                $tanggal = $datas->tanggal
+                    ? Carbon::parse($datas->tanggal)
+                    : Carbon::now();
+                $year = $tanggal->format("Y");
+                $month = $tanggal->format("m");
+                $day = $tanggal->format("d");
+
+                $relativePath = "file/pengangkutan/files/$fcbaSlug/$year/$month/$day";
+                $destinationPath = public_path($relativePath);
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+
+                $baExca->move($destinationPath, $baExcaName);
+                $baExcaPath = $relativePath . "/" . $baExcaName;
+                $baExcaPath = asset($baExcaPath);
             }
 
             // Menyusun data untuk update
@@ -1071,8 +1112,9 @@ class PengangkutanController extends Controller
 
                 $year = $tanggal->format("Y");
                 $month = $tanggal->format("m");
+                $day = $tanggal->format("d");
 
-                $filePath = "file/pengangkutan/files/$fcba/$year/$month";
+                $filePath = "file/pengangkutan/files/$fcba/$year/$month/$day";
 
                 // ✅ path folder dinamis
                 $destinationPath = public_path($filePath);

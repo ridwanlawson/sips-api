@@ -22,6 +22,7 @@ use Carbon\Carbon;
  */
 class HarvestingController extends Controller
 {
+    use \App\Traits\ImageOptimizerTrait;
     /**
      * Memanggil data Panen dari SIPS Mobile.
      *
@@ -354,26 +355,46 @@ class HarvestingController extends Controller
 
             // Jika ada file image yang diunggah
             if ($request->hasFile("images")) {
-                $image = $request->file("images");
-                $imageName = time() . "_" . $image->getClientOriginalName();
-                $image->move(public_path("file/harvesting_images"), $imageName); // Simpan di public/harvesting_images
-                $imagePath = "file/harvesting_images/" . $imageName; // Path yang disimpan di database
+                $fcbaSlug = Str::slug(strtolower($request->fcba ?? "unknown"));
+                $tanggal = $request->tanggal
+                    ? Carbon::parse($request->tanggal)
+                    : Carbon::now();
+                $folderPath =
+                    "file/harvesting/images/$fcbaSlug/" .
+                    $tanggal->format("Y/m/d");
+                $imagePath = $this->optimizeAndSaveImage(
+                    $request->file("images"),
+                    $folderPath,
+                );
             }
 
             $imagePath = $imagePath ? asset($imagePath) : null;
 
-            // Inisialisasi variabel path image (default null jika tidak ada file)
+            // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
             $baExcaPath = null;
 
-            // Jika ada file image yang diunggah
+            // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
                 $baExca = $request->file("no_ba_exca");
                 $baExcaName = time() . "_" . $baExca->getClientOriginalName();
-                $baExca->move(
-                    public_path("file/harvesting_images"),
-                    $baExcaName,
-                ); // Simpan di public/harvesting_images
-                $baExcaPath = "file/harvesting_images/" . $baExcaName; // Path yang disimpan di database
+
+                $fcbaSlug = Str::slug(strtolower($request->fcba ?? "unknown"));
+                $tanggal = $request->tanggal
+                    ? Carbon::parse($request->tanggal)
+                    : Carbon::now();
+                $year = $tanggal->format("Y");
+                $month = $tanggal->format("m");
+                $day = $tanggal->format("d");
+
+                $relativePath = "file/harvesting/files/$fcbaSlug/$year/$month/$day";
+                $destinationPath = public_path($relativePath);
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+
+                $baExca->move($destinationPath, $baExcaName);
+                $baExcaPath = $relativePath . "/" . $baExcaName;
             }
 
             $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
@@ -665,26 +686,46 @@ class HarvestingController extends Controller
 
             // Jika ada file image yang diunggah
             if (!empty($request->hasFile("images"))) {
-                $image = $request->file("images");
-                $imageName = time() . "_" . $image->getClientOriginalName();
-                $image->move(public_path("file/harvesting_images"), $imageName); // Simpan di public/harvesting_images
-                $imagePath = "file/harvesting_images/" . $imageName; // Path yang disimpan di database
-                $imagePath = $imagePath ? asset($imagePath) : null;
+                $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
+                $tanggal = $datas->tanggal
+                    ? Carbon::parse($datas->tanggal)
+                    : Carbon::now();
+                $folderPath =
+                    "file/harvesting/images/$fcbaSlug/" .
+                    $tanggal->format("Y/m/d");
+                $imagePath = $this->optimizeAndSaveImage(
+                    $request->file("images"),
+                    $folderPath,
+                );
+                $imagePath = asset($imagePath);
             }
 
-            // Inisialisasi variabel path image (default null jika tidak ada file)
+            // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
             $baExcaPath = null;
 
-            // Jika ada file image yang diunggah
+            // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
                 $baExca = $request->file("no_ba_exca");
                 $baExcaName = time() . "_" . $baExca->getClientOriginalName();
-                $baExca->move(
-                    public_path("file/harvesting_images"),
-                    $baExcaName,
-                ); // Simpan di public/harvesting_images
-                $baExcaPath = "file/harvesting_images/" . $baExcaName; // Path yang disimpan di database
-                $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
+
+                $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
+                $tanggal = $datas->tanggal
+                    ? Carbon::parse($datas->tanggal)
+                    : Carbon::now();
+                $year = $tanggal->format("Y");
+                $month = $tanggal->format("m");
+                $day = $tanggal->format("d");
+
+                $relativePath = "file/harvesting/files/$fcbaSlug/$year/$month/$day";
+                $destinationPath = public_path($relativePath);
+
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+
+                $baExca->move($destinationPath, $baExcaName);
+                $baExcaPath = $relativePath . "/" . $baExcaName;
+                $baExcaPath = asset($baExcaPath);
             }
 
             // Menyusun data untuk update
@@ -963,8 +1004,9 @@ class HarvestingController extends Controller
 
                 $year = $tanggal->format("Y");
                 $month = $tanggal->format("m");
+                $day = $tanggal->format("d");
 
-                $filePath = "file/harvesting/files/$fcba/$year/$month";
+                $filePath = "file/harvesting/files/$fcba/$year/$month/$day";
 
                 // ✅ path folder dinamis
                 $destinationPath = public_path($filePath);
