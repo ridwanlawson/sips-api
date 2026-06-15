@@ -3,7 +3,8 @@
 namespace App\Traits;
 
 use Illuminate\Http\UploadedFile;
-use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 trait ImageOptimizerTrait
 {
@@ -18,8 +19,10 @@ trait ImageOptimizerTrait
         }
 
         $filename = time() . "_" . $file->getClientOriginalName();
+        $manager = new ImageManager(new Driver());
 
-        Image::read($file)
+        $manager
+            ->read($file)
             ->resize(1920, null, function ($constraint) {
                 $constraint->aspectRatio();
             })
