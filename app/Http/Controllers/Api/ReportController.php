@@ -1329,9 +1329,7 @@ class ReportController extends Controller
             // 🔹 FILTER BASIC
             if ($upload) {
                 if ($upload === "Y") {
-                    $datas->whereRaw(
-                        "EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = ID)",
-                    );
+                    $datas->where("TYPEDATA", "LHM_DATA");
                 }
                 if ($upload === "N") {
                     $datas->whereRaw(
