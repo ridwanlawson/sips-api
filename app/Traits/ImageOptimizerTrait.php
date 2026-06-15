@@ -23,10 +23,7 @@ trait ImageOptimizerTrait
 
         $manager
             ->read($file)
-            ->resize(1920, null, function ($constraint) {
-                $constraint->aspectRatio();
-            })
-            ->save($destinationPath . "/" . $filename, 85);
+            ->save($destinationPath . "/" . $filename, quality: 75, strip: true);
 
         return $folderPath . "/" . $filename;
     }
