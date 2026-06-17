@@ -260,6 +260,8 @@ Route::post('/deploy', function (Request $request) {
 
     $expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), $secret);
 
+    Log::info('EXPECTED: ' . $expected);
+    Log::info('GITHUB : ' . $signature);
     if (!hash_equals($expected, $signature)) {
         Log::warning('Deploy gagal: signature salah');
         return response()->json(['message' => 'Invalid signature'], 403);
