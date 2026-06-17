@@ -1,66 +1,135 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<p align="center"><img src="https://img.shields.io/badge/Laravel-11-red?logo=laravel" alt="Laravel 11">&nbsp;<img src="https://img.shields.io/badge/PHP-8.2-blue?logo=php" alt="PHP 8.2">&nbsp;<img src="https://img.shields.io/badge/Oracle-19c-red?logo=oracle" alt="Oracle"></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+<h1 align="center">SIPSMOBILE API</h1>
 
-## About Laravel
+<p align="center">REST API backend untuk aplikasi mobile SIPS (Sistem Informasi Perkebunan Sawit). Menyediakan layanan data master, absensi, panen, pengangkutan, dan pelaporan untuk mendukung operasional perkebunan sawit.</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Autentikasi** — Register, login, logout, ganti password (Sanctum token-based)
+- **Master Data** — Users, fields, karyawan, kendaraan, business unit, section, gang
+- **Absensi** — Pencatatan kehadiran karyawan dengan upload data mobile
+- **Panen** — Pencatatan hasil panen (TPH, Ancak) dengan upload mobile
+- **Pengangkutan** — Manajemen pengangkutan TBS, SPB, ETD
+- **Pelaporan** — Hasil panen, pengangkutan, langsir, LHM, LHA
+- **Upload** — Upload absensi, panen, quality, LHM dari file/mobile
+- **App Update** — Upload & distribusi APK aplikasi mobile
+- **Device Management** — Registrasi & manajemen perangkat
+- **API Logging** — Pencatatan seluruh request/response API
+- **Oracle Database** — Koneksi ke Oracle 19c via yajra/laravel-oci8
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Laravel 11** — PHP Framework
+- **PHP 8.2**
+- **Oracle 19c** — Database (via `yajra/laravel-oci8`)
+- **Laravel Sanctum** — API Authentication
+- **Intervention Image** — Image manipulation
+- **Scribe** — API Documentation
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Instalasi
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+git clone <repo-url>
+cd sips-api
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-## Laravel Sponsors
+Sesuaikan konfigurasi database di `.env`:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```env
+DB_CONNECTION=oracle
+DB_HOST=your-oracle-host
+DB_PORT=1521
+DB_DATABASE=IPLASPROD
+DB_USERNAME=your-username
+DB_PASSWORD=your-password
+```
 
-### Premium Partners
+Jalankan migrasi dan server:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```bash
+php artisan migrate
+php artisan serve
+```
 
-## Contributing
+## API Endpoints
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Public
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/api/register` | Register user baru |
+| POST | `/api/login` | Login |
+| POST | `/api/app-update/check` | Cek update APK |
+| GET | `/api/app/apks` | Daftar versi APK |
 
-## Code of Conduct
+### Authenticated (Sanctum)
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/api/logout` | Logout |
+| GET | `/api/user/{id}` | Detail user |
+| POST | `/api/change-password` | Ganti password |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**Master Data**
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/api/master/sips-users` | Data users |
+| GET | `/api/master/sips-fields` | Data fields |
+| GET | `/api/master/sips-karyawans` | Data karyawan |
+| GET | `/api/master/sips-kendaraan` | Data kendaraan |
+| GET | `/api/master/sips-businessunit` | Data business unit |
+| GET | `/api/master/sips-section` | Data section |
+| GET | `/api/master/sips-gang` | Data gang |
+| CRUD | `/api/master/maps` | Data maps |
 
-## Security Vulnerabilities
+**Transaksi**
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| CRUD | `/api/apps/tphs` | TPH (Tempat Pengumpulan Hasil) |
+| CRUD | `/api/apps/ancaks` | Ancak (plot panen) |
+| CRUD | `/api/apps/karyawans` | Data karyawan |
+| CRUD | `/api/apps/absensis` | Absensi |
+| CRUD | `/api/apps/panens` | Panen |
+| CRUD | `/api/apps/pengangkutans` | Pengangkutan |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Upload**
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/api/uploads/attendance` | Upload absensi |
+| POST | `/api/uploads/harvesting` | Upload panen |
+| POST | `/api/uploads/harvestingquality` | Upload quality |
+| POST | `/api/uploads/attendance/mobile` | Upload absensi dari mobile |
+| POST | `/api/uploads/harvesting/mobile` | Upload panen dari mobile |
+| POST | `/api/uploads/harvestingquality/mobile` | Upload quality dari mobile |
+| POST | `/api/uploads/lhm_data/mobile` | Upload LHM dari mobile |
+
+**Reports**
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/api/report/hasil-panen` | Laporan hasil panen |
+| GET | `/api/report/hasil-pengangkutan` | Laporan hasil pengangkutan |
+| GET | `/api/report/hasil-langsir` | Laporan hasil langsir |
+| GET | `/api/report/get-lhm` | Data LHM |
+| GET | `/api/report/get-lha` | Data LHA |
+| GET | `/api/report/get-harvesting` | Data harvesting |
+
+## Development
+
+```bash
+# Jalankan server + queue + Vite concurrently
+composer run dev
+```
+
+## Testing
+
+```bash
+php artisan test
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Proprietary — PT. Sumber Kurnia Jaya
