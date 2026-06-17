@@ -45,7 +45,7 @@ Sesuaikan konfigurasi database di `.env`:
 DB_CONNECTION=oracle
 DB_HOST=your-oracle-host
 DB_PORT=1521
-DB_DATABASE=schema
+DB_DATABASE=your-schema
 DB_USERNAME=your-username
 DB_PASSWORD=your-password
 ```
