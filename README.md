@@ -26,7 +26,7 @@
 - **PHP 8.2**
 - **Oracle 19c** — Database (via `yajra/laravel-oci8`)
 - **Laravel Sanctum** — API Authentication
-- **Intervention Image** — Image manipulation
+- **Intervention Image** — Image manipulations
 - **Scribe** — API Documentation
 
 ## Instalasi
