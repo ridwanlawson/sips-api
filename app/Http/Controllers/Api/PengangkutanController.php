@@ -407,6 +407,8 @@ class PengangkutanController extends Controller
                 "nullable|required_if:type_pengangkutan,1|string|exists:sips_production.field,fcba",
             "afdeling" =>
                 "nullable|required_if:type_pengangkutan,1|string|exists:sips_production.field,division",
+            "fieldcode" => "nullable|required_if:type_pengangkutan,1|string",
+            "tph" => "nullable|required_if:type_pengangkutan,1|string",
             "fcba_destination" =>
                 "nullable|string|exists:sips_production.field,fcba",
             "afdeling_destination" =>
