@@ -241,77 +241,96 @@ Route::middleware([
     });
 });
 
-
 Route::post('/deploy', function (Request $request) {
-
-    // ===== CONFIG =====
-    $secret = env('DEPLOY_SECRET');
-    $branch = env('DEPLOY_BRANCH', 'main');
-    $path   = env('DEPLOY_PATH');
-
-    // ===== VALIDASI SIGNATURE =====
+    // DEBUG SEMENTARA
+    Log::info('DEBUG CONFIG', [
+        'deploy_path'   => config('app.deploy_path'),
+        'deploy_branch' => config('app.deploy_branch'),
+        'deploy_secret' => config('app.deploy_secret') ? 'ADA' : 'KOSONG',
+        'env_path'      => env('DEPLOY_PATH'),
+        'env_branch'    => env('DEPLOY_BRANCH'),
+        'env_secret'    => env('DEPLOY_SECRET') ? 'ADA' : 'KOSONG',
+    ]);
+    // ===== VALIDASI SIGNATURE GITHUB (WAJIB - PALING UTAMA) =====
+    $secret = config('app.deploy_secret');
+    $branch = config('app.deploy_branch');
+    $path   = rtrim(str_replace('/', '\\', config('app.deploy_path')), "\\/");
     $signature = $request->header('X-Hub-Signature-256');
-    Log::info('RAW BODY: ' . $request->getContent());
-    Log::info('SIGNATURE: ' . $request->header('X-Hub-Signature-256'));
-    if (!$signature) {
-        Log::warning('Deploy gagal: tidak ada signature');
-        return response()->json(['message' => 'Unauthorized'], 403);
+    $payload = $request->getContent();
+
+    if (!$signature || !$secret) {
+        Log::warning('Deploy ditolak: signature atau secret tidak ada');
+        return response()->json(['message' => 'Forbidden'], 403);
     }
 
-    // $rawBody = str_replace("\r\n", "\n", file_get_contents('php://input'));
+    $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret);
+    if (!hash_equals($expected, $signature)) {
+        Log::warning('Deploy ditolak: signature tidak valid', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+        ]);
+        return response()->json(['message' => 'Forbidden'], 403);
+    }
 
-    // $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
-
-    // Log::info('RAW BODY PHP: ' . $rawBody);
-    // Log::info('EXPECTED: ' . $expected);
-    // Log::info('GITHUB : ' . $signature);
-    // if (!hash_equals($expected, $signature)) {
-    //     Log::warning('Deploy gagal: signature salah');
-    //     return response()->json(['message' => 'Invalid signature'], 403);
-    // }
-
-    // ===== VALIDASI EVENT =====
+    // ===== VALIDASI EVENT & BRANCH =====
     if ($request->header('X-GitHub-Event') !== 'push') {
         return response()->json(['message' => 'Event diabaikan'], 200);
     }
 
-    // ===== VALIDASI BRANCH =====
-    $payload = $request->all();
-    $ref = $payload['ref'] ?? '';
-
+    $ref = $request->input('ref', '');
     if ($ref !== "refs/heads/$branch") {
         Log::info("Skip deploy: bukan branch $branch ($ref)");
         return response()->json(['message' => 'Branch tidak sesuai'], 200);
     }
 
-    // ===== VALIDASI PATH =====
     if (!is_dir($path)) {
-        Log::error("Deploy gagal: path tidak ditemukan ($path)");
+        Log::error("Path tidak ditemukan: $path");
         return response()->json(['message' => 'Path tidak valid'], 500);
     }
 
-    // ===== EXEC COMMAND (WINDOWS) =====
+    // ===== TOOL PATH =====
+    $git = '"C:\\Program Files\\Git\\bin\\git.exe"';
+    $php = '"C:\\php-8.2.12\\php.exe"';
+
+    $composerPhar = $path . '\\composer.phar';
+    $composer = file_exists($composerPhar)
+        ? "$php \"$composerPhar\""
+        : 'composer';
+
     $output = [];
 
-    // pindah ke folder (Windows cmd pakai cd /d)
-    $cmdBase = "cd /d $path && ";
+    $run = function (string $cmd) use ($path, &$output) {
+        $full = "cd /d \"$path\" && $cmd 2>&1";
+        exec($full, $out, $code);
+        $output = array_merge($output, $out);
+        return $code;
+    };
 
-    // git update (AMAN tanpa conflict)
-    exec($cmdBase . "git fetch origin 2>&1", $output);
-    exec($cmdBase . "git reset --hard origin/$branch 2>&1", $output);
+    try {
+        putenv('GIT_CONFIG_COUNT=1');
+        putenv('GIT_CONFIG_KEY_0=safe.directory');
+        putenv('GIT_CONFIG_VALUE_0=*');
 
-    // install dependency
-    exec($cmdBase . "composer install --no-dev --optimize-autoloader 2>&1", $output);
+        $run("$git fetch origin");
+        $run("$git reset --hard origin/$branch");
 
-    // cache laravel
-    exec($cmdBase . "php artisan config:cache 2>&1", $output);
-    exec($cmdBase . "php artisan route:cache 2>&1", $output);
-    exec($cmdBase . "php artisan view:cache 2>&1", $output);
+        $composerCheck = [];
+        exec('composer --version 2>&1', $composerCheck, $composerCode);
+        if ($composerCode === 0 || file_exists($composerPhar)) {
+            $run("$composer install --no-dev --optimize-autoloader --no-interaction");
+        } else {
+            $output[] = '[SKIP] composer tidak ditemukan, lewati install';
+        }
 
-    // ===== LOG =====
-    Log::info('Deploy success', $output);
+        $run("$php artisan config:cache");
+        $run("$php artisan route:cache");
+        $run("$php artisan view:cache");
 
-    return response()->json([
-        'message' => 'Deploy berhasil'
-    ]);
+        Log::info('Deploy success', $output);
+
+        return response()->json(['message' => 'Deploy berhasil', 'log' => $output]);
+    } catch (\Throwable $e) {
+        Log::error('Deploy error: ' . $e->getMessage(), $output);
+        return response()->json(['message' => 'Deploy gagal', 'error' => $e->getMessage(), 'log' => $output], 500);
+    }
 });
