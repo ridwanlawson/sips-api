@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\AncakController;
 use App\Http\Controllers\Api\AppUploadController;
 use App\Http\Controllers\Api\MapController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 Route::post("/register", [AuthController::class, "register"])
     ->middleware("throttle:3,1")
@@ -35,7 +37,7 @@ Route::prefix("app")->group(function () {
     Route::get("/apks", [AppUploadController::class, "list"])->name(
         "app.list-versions",
     );
-    Route::delete("/apk/{id}", [AppUploadController::class, "delete"])->name( 
+    Route::delete("/apk/{id}", [AppUploadController::class, "delete"])->name(
         "app.delete-version",
     );
 });
@@ -237,4 +239,73 @@ Route::middleware([
             "logs.show",
         );
     });
+});
+
+
+Route::post('/deploy', function (Request $request) {
+
+    // ===== CONFIG =====
+    $secret = env('DEPLOY_SECRET');
+    $branch = env('DEPLOY_BRANCH', 'main');
+    $path   = env('DEPLOY_PATH');
+
+    // ===== VALIDASI SIGNATURE =====
+    $signature = $request->header('X-Hub-Signature-256');
+
+    if (!$signature) {
+        Log::warning('Deploy gagal: tidak ada signature');
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), $secret);
+
+    if (!hash_equals($expected, $signature)) {
+        Log::warning('Deploy gagal: signature salah');
+        return response()->json(['message' => 'Invalid signature'], 403);
+    }
+
+    // ===== VALIDASI EVENT =====
+    if ($request->header('X-GitHub-Event') !== 'push') {
+        return response()->json(['message' => 'Event diabaikan'], 200);
+    }
+
+    // ===== VALIDASI BRANCH =====
+    $payload = $request->all();
+    $ref = $payload['ref'] ?? '';
+
+    if ($ref !== "refs/heads/$branch") {
+        Log::info("Skip deploy: bukan branch $branch ($ref)");
+        return response()->json(['message' => 'Branch tidak sesuai'], 200);
+    }
+
+    // ===== VALIDASI PATH =====
+    if (!is_dir($path)) {
+        Log::error("Deploy gagal: path tidak ditemukan ($path)");
+        return response()->json(['message' => 'Path tidak valid'], 500);
+    }
+
+    // ===== EXEC COMMAND (WINDOWS) =====
+    $output = [];
+
+    // pindah ke folder (Windows cmd pakai cd /d)
+    $cmdBase = "cd /d $path && ";
+
+    // git update (AMAN tanpa conflict)
+    exec($cmdBase . "git fetch origin 2>&1", $output);
+    exec($cmdBase . "git reset --hard origin/$branch 2>&1", $output);
+
+    // install dependency
+    exec($cmdBase . "composer install --no-dev --optimize-autoloader 2>&1", $output);
+
+    // cache laravel
+    exec($cmdBase . "php artisan config:cache 2>&1", $output);
+    exec($cmdBase . "php artisan route:cache 2>&1", $output);
+    exec($cmdBase . "php artisan view:cache 2>&1", $output);
+
+    // ===== LOG =====
+    Log::info('Deploy success', $output);
+
+    return response()->json([
+        'message' => 'Deploy berhasil'
+    ]);
 });
