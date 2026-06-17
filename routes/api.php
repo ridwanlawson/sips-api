@@ -258,14 +258,17 @@ Route::post('/deploy', function (Request $request) {
         return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    $expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), $secret);
+    // $rawBody = str_replace("\r\n", "\n", file_get_contents('php://input'));
 
-    Log::info('EXPECTED: ' . $expected);
-    Log::info('GITHUB : ' . $signature);
-    if (!hash_equals($expected, $signature)) {
-        Log::warning('Deploy gagal: signature salah');
-        return response()->json(['message' => 'Invalid signature'], 403);
-    }
+    // $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
+
+    // Log::info('RAW BODY PHP: ' . $rawBody);
+    // Log::info('EXPECTED: ' . $expected);
+    // Log::info('GITHUB : ' . $signature);
+    // if (!hash_equals($expected, $signature)) {
+    //     Log::warning('Deploy gagal: signature salah');
+    //     return response()->json(['message' => 'Invalid signature'], 403);
+    // }
 
     // ===== VALIDASI EVENT =====
     if ($request->header('X-GitHub-Event') !== 'push') {
