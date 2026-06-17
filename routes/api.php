@@ -251,7 +251,8 @@ Route::post('/deploy', function (Request $request) {
 
     // ===== VALIDASI SIGNATURE =====
     $signature = $request->header('X-Hub-Signature-256');
-
+    Log::info('RAW BODY: ' . $request->getContent());
+    Log::info('SIGNATURE: ' . $request->header('X-Hub-Signature-256'));
     if (!$signature) {
         Log::warning('Deploy gagal: tidak ada signature');
         return response()->json(['message' => 'Unauthorized'], 403);
