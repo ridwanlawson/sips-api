@@ -132,4 +132,4 @@ php artisan test
 
 ## License
 
-Proprietary — PT. Sentosa Kalimantan Jaya
+Proprietary — PT. Sentosa Kalimantan Jaya (SKJ)
