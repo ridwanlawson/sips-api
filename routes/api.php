@@ -243,20 +243,30 @@ Route::middleware([
 
 Route::post('/deploy', function (Request $request) {
     // DEBUG SEMENTARA
-    Log::info('DEBUG CONFIG', [
-        'deploy_path'   => config('app.deploy_path'),
-        'deploy_branch' => config('app.deploy_branch'),
-        'deploy_secret' => config('app.deploy_secret') ? 'ADA' : 'KOSONG',
-        'env_path'      => env('DEPLOY_PATH'),
-        'env_branch'    => env('DEPLOY_BRANCH'),
-        'env_secret'    => env('DEPLOY_SECRET') ? 'ADA' : 'KOSONG',
-    ]);
+    // Log::info('DEBUG CONFIG', [
+    //     'deploy_path'   => config('app.deploy_path'),
+    //     'deploy_branch' => config('app.deploy_branch'),
+    //     'deploy_secret' => config('app.deploy_secret') ? 'ADA' : 'KOSONG',
+    //     'env_path'      => env('DEPLOY_PATH'),
+    //     'env_branch'    => env('DEPLOY_BRANCH'),
+    //     'env_secret'    => env('DEPLOY_SECRET') ? 'ADA' : 'KOSONG',
+    // ]);
+
     // ===== VALIDASI SIGNATURE GITHUB (WAJIB - PALING UTAMA) =====
-    $secret = config('app.deploy_secret');
-    $branch = config('app.deploy_branch');
-    $path   = rtrim(str_replace('/', '\\', config('app.deploy_path')), "\\/");
+    $secret    = config('app.deploy_secret');
+    $branch    = config('app.deploy_branch');
+    $path      = rtrim(str_replace('/', '\\', config('app.deploy_path')), "\\/");
     $signature = $request->header('X-Hub-Signature-256');
-    $payload = $request->getContent();
+    $payload   = $request->getContent();
+
+    // DEBUG SIGNATURE
+    // Log::info('DEBUG SIGNATURE', [
+    //     'signature_dari_github' => $signature,
+    //     'payload_length'        => strlen($payload),
+    //     'payload_preview'       => substr($payload, 0, 100),
+    //     'expected'              => 'sha256=' . hash_hmac('sha256', $payload, $secret),
+    //     'secret_length'         => strlen($secret),
+    // ]);
 
     if (!$signature || !$secret) {
         Log::warning('Deploy ditolak: signature atau secret tidak ada');
@@ -266,7 +276,7 @@ Route::post('/deploy', function (Request $request) {
     $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret);
     if (!hash_equals($expected, $signature)) {
         Log::warning('Deploy ditolak: signature tidak valid', [
-            'ip' => $request->ip(),
+            'ip'         => $request->ip(),
             'user_agent' => $request->header('User-Agent'),
         ]);
         return response()->json(['message' => 'Forbidden'], 403);
