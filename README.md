@@ -60,19 +60,21 @@ php artisan serve
 ## API Endpoints
 
 ### Public
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| POST | `/api/register` | Register user baru |
-| POST | `/api/login` | Login |
-| POST | `/api/app-update/check` | Cek update APK |
-| GET | `/api/app/apks` | Daftar versi APK |
+
+| Method | Endpoint                | Deskripsi          |
+| ------ | ----------------------- | ------------------ |
+| POST   | `/api/register`         | Register user baru |
+| POST   | `/api/login`            | Login              |
+| POST   | `/api/app-update/check` | Cek update APK     |
+| GET    | `/api/app/apks`         | Daftar versi APK   |
 
 ### Authenticated (Sanctum)
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| POST | `/api/logout` | Logout |
-| GET | `/api/user/{id}` | Detail user |
-| POST | `/api/change-password` | Ganti password |
+
+| Method | Endpoint               | Deskripsi      |
+| ------ | ---------------------- | -------------- |
+| POST   | `/api/logout`          | Logout         |
+| GET    | `/api/user/{id}`       | Detail user    |
+| POST   | `/api/change-password` | Ganti password |
 
 **Master Data**
 | Method | Endpoint | Deskripsi |

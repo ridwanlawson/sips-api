@@ -303,7 +303,6 @@ class AttendanceController extends Controller
             "time_in" => "required|date_format:Y-m-d H:i:s",
             "time_out" => "nullable|date_format:Y-m-d H:i:s",
             "location_in" => "nullable",
-            // 'location_in' => 'required',
             "location_out" => "nullable",
             "pengancakan" => "nullable",
             "total_late_time" => "nullable|date_format:H:i",
@@ -387,7 +386,7 @@ class AttendanceController extends Controller
             $datas = Attendance::create([
                 "TANGGAL" => $request->tanggal,
                 "KODE_KARYAWAN_MANDOR" =>
-                    $request->kode_karyawan_mandor ??
+                $request->kode_karyawan_mandor ??
                     optional($idkode_karyawan_mandor)->idkaryawan,
                 "KODE_KARYAWAN" => $request->kode_karyawan,
                 "TIME_IN" => $request->time_in,
@@ -436,7 +435,7 @@ class AttendanceController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -837,7 +836,7 @@ class AttendanceController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat mengupdate status absensi.",
+                    "Terjadi kesalahan saat mengupdate status absensi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
