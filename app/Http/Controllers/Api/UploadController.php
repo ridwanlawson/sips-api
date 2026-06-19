@@ -1152,7 +1152,10 @@ class UploadController extends Controller
 
             DB::beginTransaction();
 
-            if (Auth::user()->level === "MDP") {
+            if (
+                Auth::user()->level === "MDP" ||
+                Auth::user()->level === "ADM"
+            ) {
                 $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
 
