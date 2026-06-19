@@ -204,7 +204,7 @@ class UploadController extends Controller
                         "KG_BRONDOLAN" => $data["KG_BRONDOLAN"] ?? 0,
                         "ROWSTATE" => $data["ROWSTATE"] ?? null,
                         "DOCUMENT_CLASSIFICATION" =>
-                            $data["DOCUMENT_CLASSIFICATION"] ?? null,
+                        $data["DOCUMENT_CLASSIFICATION"] ?? null,
                         "BASIS_BM" => $data["BASIS_BM"] ?? 0,
                         "BJR" => $data["BJR"] ?? 0,
                         "DOCUMENTNO" => $data["DOCUMENTNO"] ?? null,
@@ -252,7 +252,7 @@ class UploadController extends Controller
                         "JANJANG" => $data["JANJANG"] ?? 0, // Default 0 untuk numeric field
                         "ROWSTATE" => $data["ROWSTATE"] ?? null,
                         "DOCUMENT_CLASSIFICATION" =>
-                            $data["DOCUMENT_CLASSIFICATION"] ?? null,
+                        $data["DOCUMENT_CLASSIFICATION"] ?? null,
                         "GENERATE" => $data["GENERATE"] ?? "SIPS MOBILE",
                         "GENERATETIME" => $currentDateTime,
                         "BASIS_BM" => $data["BASIS_BM"] ?? 0,
@@ -284,7 +284,7 @@ class UploadController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -391,7 +391,7 @@ class UploadController extends Controller
                     "MILL" => $data["MILL"] ?? null,
                     "AGREEMENTCODE" => $data["AGREEMENTCODE"] ?? null,
                     "TRANSPORTTYPE" =>
-                        $data["TRANSPORTTYPE"] ?? "DIRECTTRANSPORT",
+                    $data["TRANSPORTTYPE"] ?? "DIRECTTRANSPORT",
                     "SPB_TYPE" => $data["SPB_TYPE"] ?? 0,
                     "BUNCH" => $data["BUNCH"] ?? null,
                     "BUCKET" => $data["BUCKET"] ?? null,
@@ -408,7 +408,7 @@ class UploadController extends Controller
                     "MILL_WEIGHT_GROSS" => $data["MILL_WEIGHT_GROSS"] ?? null,
                     "MILL_WEIGHT_TARRA" => $data["MILL_WEIGHT_TARRA"] ?? null,
                     "MILL_WEIGHT_POTONGAN" =>
-                        $data["MILL_WEIGHT_POTONGAN"] ?? null,
+                    $data["MILL_WEIGHT_POTONGAN"] ?? null,
                     "MILL_WEIGHT_NETTO" => $data["MILL_WEIGHT_NETTO"] ?? null,
                     "MENTAH" => $data["MENTAH"] ?? null,
                     "TANKOS" => $data["TANKOS"] ?? null,
@@ -432,7 +432,7 @@ class UploadController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -582,7 +582,7 @@ class UploadController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -766,12 +766,12 @@ class UploadController extends Controller
                         "KG_BRONDOLAN" => $data["KG_BRONDOLAN"] ?? 0,
                         "ROWSTATE" => $data["ROWSTATE"] ?? null,
                         "DOCUMENT_CLASSIFICATION" =>
-                            $data["DOCUMENT_CLASSIFICATION"] ?? null,
+                        $data["DOCUMENT_CLASSIFICATION"] ?? null,
                         "BASIS_BM" => $data["BASIS_BM"] ?? 0,
                         "BJR" => $data["BJR"] ?? 0,
                         "DOCUMENTNO" => $data["DOCUMENTNO"] ?? null,
                         "LASTAPPROVAL" =>
-                            Auth::user()->username ?? "SIPSMOBILE",
+                        Auth::user()->username ?? "SIPSMOBILE",
                     ];
                     DB::connection("oracle")->insert($sql1, $params1);
                     $inserted[] = $data["DOCUMENTNO"] ?? null;
@@ -797,7 +797,7 @@ class UploadController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -904,7 +904,7 @@ class UploadController extends Controller
                     "MILL" => $data["MILL"] ?? null,
                     "AGREEMENTCODE" => $data["AGREEMENTCODE"] ?? null,
                     "TRANSPORTTYPE" =>
-                        $data["TRANSPORTTYPE"] ?? "DIRECTTRANSPORT",
+                    $data["TRANSPORTTYPE"] ?? "DIRECTTRANSPORT",
                     "SPB_TYPE" => $data["SPB_TYPE"] ?? 0,
                     "BUNCH" => $data["BUNCH"] ?? null,
                     "BUCKET" => $data["BUCKET"] ?? null,
@@ -921,7 +921,7 @@ class UploadController extends Controller
                     "MILL_WEIGHT_GROSS" => $data["MILL_WEIGHT_GROSS"] ?? null,
                     "MILL_WEIGHT_TARRA" => $data["MILL_WEIGHT_TARRA"] ?? null,
                     "MILL_WEIGHT_POTONGAN" =>
-                        $data["MILL_WEIGHT_POTONGAN"] ?? null,
+                    $data["MILL_WEIGHT_POTONGAN"] ?? null,
                     "MILL_WEIGHT_NETTO" => $data["MILL_WEIGHT_NETTO"] ?? null,
                     "MENTAH" => $data["MENTAH"] ?? null,
                     "TANKOS" => $data["TANKOS"] ?? null,
@@ -946,7 +946,7 @@ class UploadController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -1097,7 +1097,7 @@ class UploadController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -1150,9 +1150,9 @@ class UploadController extends Controller
             $currentDateTime = now(); // Current timestamp
             $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
-            DB::beginTransaction();
+            $conn = DB::connection("oracle");
+            $conn->beginTransaction();
             if (Auth::user()->level === "MDP") {
-                $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
 
                 $tempRows = [];
@@ -1231,7 +1231,7 @@ class UploadController extends Controller
                         EMPLOYEECODE, NAMA, ATTENDANCE, HK, HECTARAGEPLANTED, TOTALLUASAN,
                         BLOK, TAHUNTANAM, JJG, BRD, HA,
                         MENTAHQTY, MENTAHRP, EMPTYBUNCHQTY, EMPTYBUNCHRP, JUMLAHDENDA,
-                        TOTALALLJJG, BASIS, RPBASIS,
+                        TOTALALLJJG, BASIS, BASIS_HA, RPBASIS,
                         PREMILV1, RATE1, RPLV1,
                         PREMILV2, RATE2, RPLV2,
                         PREMILV3, RATE3, RPLV3,
@@ -1243,7 +1243,7 @@ class UploadController extends Controller
                         JOBCODE, LOCATIONTYPE, LOCATIONCODE, MANDAYS,
                         OTHRS,RATE,UNIT,OUTPUT,REFERENCE,REMARKS,
                         OVERTIME_HOURS, TYPE_OVERTIME,
-                        CHARGEJOB,CHARGECODE,CHARGECODE,BUCKET,SPBNO,
+                        CHARGEJOB,CHARGETYPE,CHARGECODE,BUCKET,SPBNO,
                         KG_BRONDOLAN, ROWSTATE, DOCUMENT_CLASSIFICATION,
                         BASIS_BM, KG_JANJANG, BJR, DOCUMENTNO, SOURCETIME,
                         JANJANG, GENERATE, GENERATETIME, FIELDCODE,
@@ -1276,25 +1276,26 @@ class UploadController extends Controller
                         v.JUMLAHDENDA,
                         v.TOTALALLJJG,
                         v.BASIS,
+                        v.BASIS_HA,
                         v.RPBASIS,
                         v.PREMILV1, v.RATE1, v.RPLV1,
                         v.PREMILV2, v.RATE2, v.RPLV2,
                         v.PREMILV3, v.RATE3, v.RPLV3,
                         v.TOTALRPPREMI,
                         CASE
-                            WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN 0
+                            WHEN TO_NUMBER(agg.SUM_HA) >= TO_NUMBER(agg.SUM_BASIS_HA) THEN 0
                             ELSE v.KURANGBASIS
                         END,
                         v.HARILIBUR,
                         v.TOTALBRD,
                         v.RATE_BRONDOLAN,
                         CASE
-                            WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN TO_NUMBER(?)
+                            WHEN TO_NUMBER(agg.SUM_HA) >= TO_NUMBER(agg.SUM_BASIS_HA) AND v.ROWDATA = 1 THEN TO_NUMBER(?)
                             ELSE v.RPHK
                         END,
                         v.BRD_RP,
                         CASE
-                            WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN
+                            WHEN TO_NUMBER(agg.SUM_HA) >= TO_NUMBER(agg.SUM_BASIS_HA) AND v.ROWDATA = 1 THEN
                                 TO_NUMBER(?) + v.BRD_RP + v.RPBASIS + v.TOTALRPPREMI + v.HARILIBUR + 0 + v.JUMLAHDENDA
                             ELSE v.TOTAL
                         END,
@@ -1379,7 +1380,6 @@ class UploadController extends Controller
             }
 
             if (Auth::user()->level !== "MDP") {
-                $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
 
                 // 1. Prepare temp rows (DEDUP)
@@ -1578,7 +1578,8 @@ class UploadController extends Controller
 
             Log::info("TIDAK LUAR BIASA " . $checkLastApproval);
 
-            DB::commit();
+            $conn->commit();
+            $conn->rollBack();
 
             return new AllResource(
                 true,
@@ -1597,7 +1598,7 @@ class UploadController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
