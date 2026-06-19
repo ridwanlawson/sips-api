@@ -1205,7 +1205,7 @@ class UploadController extends Controller
                 $rate3 = null;
                 if (!empty($overBasisIDs)) {
                     $rate3 = $conn->selectOne(
-                        "SELECT RATE_3 FROM SIPSMOBILE.PARAMETERDETAIL p
+                        "SELECT RATE_3 FROM IPLASPROD.PARAMETERDETAIL p
                          WHERE PARCODE = 'HARI_KERJA'
                            AND FCBA = ?
                            AND p.PARHEADCODE = ?",
