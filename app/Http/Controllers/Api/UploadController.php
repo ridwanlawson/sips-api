@@ -1202,7 +1202,7 @@ class UploadController extends Controller
                 }
 
                 // 🔥 AMBIL RATE_3 (PASTIKAN NUMBER)
-                $rate3 = $conn
+                $rate3 = DB::connection("sips_production")
                     ->table("IPLASPROD.PARAMETERDETAIL")
                     ->where("PARCODE", "HARI_KERJA")
                     ->where("FCBA", $fcba)
