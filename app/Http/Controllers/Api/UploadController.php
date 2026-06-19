@@ -1151,21 +1151,22 @@ class UploadController extends Controller
             $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
 
             DB::beginTransaction();
-
             if (Auth::user()->level === "MDP") {
                 $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
-
-                // 1. Prepare temp table data (ID, ROWDATA, HA)
+            
                 $tempRows = [];
-
+                $tahun = null;
+                $fcba = null;
+            
                 foreach ($datas as $r_data) {
                     $data = array_change_key_case($r_data, CASE_UPPER);
-
+            
                     $key = $data["ID"] . "|" . $data["ROWDATA"];
+            
                     $tahun = \Carbon\Carbon::parse($data["FDDATE"])->year;
                     $fcba = $data["FCBA"];
-
+            
                     $tempRows[$key] = [
                         "ID" => (int) $data["ID"],
                         "ROWDATA" => (int) $data["ROWDATA"],
@@ -1173,209 +1174,195 @@ class UploadController extends Controller
                         "BASIS_HA" => (float) ($data["BASIS_HA"] ?? 0),
                     ];
                 }
-
+            
                 $tempRows = array_values($tempRows);
-
-                // 2. Insert ke TEMP TABLE (buat TEMP_LHM_INPUT)
+            
+                // 🔥 CLEAN TEMP DULU (biar tidak numpuk)
+                $conn->statement("DELETE FROM SIPSMOBILE.TEMP_LHM_INPUT");
+            
+                // ✅ INSERT TEMP (FIXED)
                 foreach (array_chunk($tempRows, 1000) as $chunk) {
                     $bindings = [];
                     $selects = [];
-
+            
                     foreach ($chunk as $row) {
-                        $selects[] = "SELECT ?, ?, ? FROM dual";
+                        $selects[] = "SELECT ?, ?, ?, ? FROM dual";
                         $bindings[] = $row["ID"];
                         $bindings[] = $row["ROWDATA"];
                         $bindings[] = $row["HA"];
                         $bindings[] = $row["BASIS_HA"];
                     }
-
-                    $sql =
-                        "INSERT INTO SIPSMOBILE.TEMP_LHM_INPUT (ID, ROWDATA, HA, BASIS_HA)
-                            " . implode(" UNION ALL ", $selects);
-
+            
+                    $sql = "
+                        INSERT INTO SIPSMOBILE.TEMP_LHM_INPUT (ID, ROWDATA, HA, BASIS_HA)
+                        " . implode(" UNION ALL ", $selects);
+            
                     $conn->statement($sql, $bindings);
                 }
-
-                // 3. INSERT SELECT dari VIEW
-                $conn->statement(
-                    "
-                INSERT INTO SIPSMOBILE.LHM_DATA (
-                    ID, ROWDATA, KEMANDORAN, GANGCODE, FDDATE, FCBA, AFDELING, AFDELING_BLOK,
-                    EMPLOYEECODE, NAMA, ATTENDANCE, HK, HECTARAGEPLANTED, TOTALLUASAN,
-                    BLOK, TAHUNTANAM, JJG, BRD, HA,
-                    MENTAHQTY, MENTAHRP, EMPTYBUNCHQTY, EMPTYBUNCHRP, JUMLAHDENDA,
-                    TOTALALLJJG, BASIS, RPBASIS,
-                    PREMILV1, RATE1, RPLV1,
-                    PREMILV2, RATE2, RPLV2,
-                    PREMILV3, RATE3, RPLV3,
-                    TOTALRPPREMI,
-                    KURANGBASIS, HARILIBUR, TOTALBRD, RATE_BRONDOLAN,
-                    RPHK, BRD_RP, TOTAL,
-                    ATTENDANCE_UPLOAD,
-                    SUPERVISION_1, SUPERVISION_2, SUPERVISION_3, SUPERVISION_4, SUPERVISION_5,
-                    JOBCODE, LOCATIONTYPE, LOCATIONCODE, MANDAYS,
-                    OTHRS,RATE,UNIT,OUTPUT,REFERENCE,REMARKS,
-                    OVERTIME_HOURS, TYPE_OVERTIME,
-                    CHARGEJOB,CHARGETYPE,CHARGECODE,BUCKET,SPBNO,
-                    KG_BRONDOLAN, ROWSTATE, DOCUMENT_CLASSIFICATION,
-                    BASIS_BM, KG_JANJANG, BJR, DOCUMENTNO, SOURCETIME,
-                    JANJANG, GENERATE, GENERATETIME, FIELDCODE,
-                    FCENTRY, FCEDIT, FCIP, LASTUPDATE, LASTTIME, LASTAPPROVAL
-                )
-                SELECT
-                    v.ID,
-                    v.ROWDATA,
-                    v.KEMANDORAN,
-                    v.GANGCODE,
-                    v.FDDATE,
-                    v.FCBA,
-                    v.AFDELING,
-                    v.AFDELING_BLOK,
-                    v.EMPLOYEECODE,
-                    v.NAMA,
-                    v.ATTENDANCE,
-                    v.HK,
-                    v.HECTARAGEPLANTED,
-                    v.TOTALLUASAN,
-                    v.BLOK,
-                    v.TAHUNTANAM,
-                    v.JJG,
-                    v.BRD,
-                    tmp.HA,
-                    v.MENTAHQTY,
-                    v.MENTAHRP,
-                    v.EMPTYBUNCHQTY,
-                    v.EMPTYBUNCHRP,
-                    v.JUMLAHDENDA,
-                    v.TOTALALLJJG,
-                    v.BASIS,
-                    v.RPBASIS,
-                    v.PREMILV1, v.RATE1, v.RPLV1,
-                    v.PREMILV2, v.RATE2, v.RPLV2,
-                    v.PREMILV3, v.RATE3, v.RPLV3,
-                    v.TOTALRPPREMI,
-                    /* ✅ KURANGBASIS */
-                    CASE
-                        WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN 0
-                        ELSE v.KURANGBASIS
-                    END,
-                    v.HARILIBUR,
-                    v.TOTALBRD,
-                    v.RATE_BRONDOLAN,
-                    /* ✅ RPHK */
-                    CASE
-                        WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN param.RATE_3
-                        ELSE v.RPHK
-                    END,
-                    v.BRD_RP,
-                    /* ✅ TOTAL FINAL */
-                    (
+            
+                // 🔥 AMBIL RATE_3 (PASTIKAN NUMBER)
+                $rate3 = $conn->table("PARAMETERDETAIL")
+                    ->where("PARCODE", "HARI_KERJA")
+                    ->where("FCBA", $fcba)
+                    ->where("PARHEADCODE", $tahun)
+                    ->value("RATE_3");
+            
+                if ($rate3 === null) {
+                    throw new \Exception("RATE_3 tidak ditemukan");
+                }
+            
+                // 🔥 INSERT FINAL
+                $conn->statement("
+                    INSERT INTO SIPSMOBILE.LHM_DATA (
+                        ID, ROWDATA, KEMANDORAN, GANGCODE, FDDATE, FCBA, AFDELING, AFDELING_BLOK,
+                        EMPLOYEECODE, NAMA, ATTENDANCE, HK, HECTARAGEPLANTED, TOTALLUASAN,
+                        BLOK, TAHUNTANAM, JJG, BRD, HA,
+                        MENTAHQTY, MENTAHRP, EMPTYBUNCHQTY, EMPTYBUNCHRP, JUMLAHDENDA,
+                        TOTALALLJJG, BASIS, RPBASIS,
+                        PREMILV1, RATE1, RPLV1,
+                        PREMILV2, RATE2, RPLV2,
+                        PREMILV3, RATE3, RPLV3,
+                        TOTALRPPREMI,
+                        KURANGBASIS, HARILIBUR, TOTALBRD, RATE_BRONDOLAN,
+                        RPHK, BRD_RP, TOTAL,
+                        ATTENDANCE_UPLOAD,
+                        SUPERVISION_1, SUPERVISION_2, SUPERVISION_3, SUPERVISION_4, SUPERVISION_5,
+                        JOBCODE, LOCATIONTYPE, LOCATIONCODE, MANDAYS,
+                        OTHRS,RATE,UNIT,OUTPUT,REFERENCE,REMARKS,
+                        OVERTIME_HOURS, TYPE_OVERTIME,
+                        CHARGEJOB,CHARGECODE,CHARGECODE,BUCKET,SPBNO,
+                        KG_BRONDOLAN, ROWSTATE, DOCUMENT_CLASSIFICATION,
+                        BASIS_BM, KG_JANJANG, BJR, DOCUMENTNO, SOURCETIME,
+                        JANJANG, GENERATE, GENERATETIME, FIELDCODE,
+                        FCENTRY, FCEDIT, FCIP, LASTUPDATE, LASTTIME, LASTAPPROVAL
+                    )
+                    SELECT
+                        v.ID,
+                        v.ROWDATA,
+                        v.KEMANDORAN,
+                        v.GANGCODE,
+                        v.FDDATE,
+                        v.FCBA,
+                        v.AFDELING,
+                        v.AFDELING_BLOK,
+                        v.EMPLOYEECODE,
+                        v.NAMA,
+                        v.ATTENDANCE,
+                        v.HK,
+                        v.HECTARAGEPLANTED,
+                        v.TOTALLUASAN,
+                        v.BLOK,
+                        v.TAHUNTANAM,
+                        v.JJG,
+                        v.BRD,
+                        tmp.HA,
+                        v.MENTAHQTY,
+                        v.MENTAHRP,
+                        v.EMPTYBUNCHQTY,
+                        v.EMPTYBUNCHRP,
+                        v.JUMLAHDENDA,
+                        v.TOTALALLJJG,
+                        v.BASIS,
+                        v.RPBASIS,
+                        v.PREMILV1, v.RATE1, v.RPLV1,
+                        v.PREMILV2, v.RATE2, v.RPLV2,
+                        v.PREMILV3, v.RATE3, v.RPLV3,
+                        v.TOTALRPPREMI,
                         CASE
-                            WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN param.RATE_3
-                            ELSE v.RPHK
-                        END
-                        + v.BRD_RP
-                        + v.RPBASIS
-                        + v.TOTALRPPREMI
-                        + v.HARILIBUR
-                        + CASE
                             WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN 0
                             ELSE v.KURANGBASIS
-                          END
-                        + v.JUMLAHDENDA
-                    ),
-                    v.ATTENDANCE_UPLOAD,
-                    v.SUPERVISION_1,
-                    v.SUPERVISION_2,
-                    v.SUPERVISION_3,
-                    v.SUPERVISION_4,
-                    v.SUPERVISION_5,
-                    v.JOBCODE,
-                    v.LOCATIONTYPE,
-                    v.LOCATIONCODE,
-                    v.MANDAYS,
-                    v.OTHRS,
-                    v.RATE,
-                    v.UNIT,
-                    v.OUTPUT,
-                    v.REFERENCE,
-                    v.REMARKS,
-                    v.OVERTIME_HOURS,
-                    v.TYPE_OVERTIME,
-                    v.CHARGEJOB,
-                    v.CHARGETYPE,
-                    v.CHARGECODE,
-                    v.BUCKET,
-                    v.SPBNO,
-                    v.KG_BRONDOLAN,
-                    v.ROWSTATE,
-                    v.DOCUMENT_CLASSIFICATION,
-                    v.BASIS_BM,
-                    v.KG_JANJANG,
-                    v.BJR,
-                    v.DOCUMENTNO,
-                    v.SOURCETIME,
-                    v.JANJANG,
-                    v.GENERATE,
-                    v.GENERATETIME,
-                    v.FIELDCODE,
-                    v.FCENTRY,
-                    v.FCEDIT,
-                    v.FCIP,
-                    v.LASTUPDATE,
-                    v.LASTTIME,
-                    ?
-                FROM SIPSMOBILE.VIEW_LHM v
-                JOIN SIPSMOBILE.TEMP_LHM_INPUT tmp
-                    ON v.ID = tmp.ID AND v.ROWDATA = tmp.ROWDATA
-                /* ✅ AGGREGATE */
-                JOIN (
-                    SELECT
-                        ID,
-                        SUM(HA) AS SUM_HA,
-                        SUM(BASIS_HA) AS SUM_BASIS_HA
-                    FROM SIPSMOBILE.TEMP_LHM_INPUT
-                    GROUP BY ID
-                ) agg ON agg.ID = v.ID
-                /* ✅ PARAMETER RATE_3 */
-                JOIN (
-                    SELECT RATE_3
-                    FROM PARAMETERDETAIL p
-                    WHERE PARCODE = 'HARI_KERJA'
-                      AND FCBA = ?
-                      AND PARHEADCODE = ?
-                ) param ON 1=1
-                ",
-                    [$user, $fcba, $tahun],
-                );
-
+                        END,
+                        v.HARILIBUR,
+                        v.TOTALBRD,
+                        v.RATE_BRONDOLAN,
+                        CASE
+                            WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN TO_NUMBER(?)
+                            ELSE v.RPHK
+                        END,
+                        v.BRD_RP,
+                        CASE
+                            WHEN agg.SUM_HA > agg.SUM_BASIS_HA THEN
+                                TO_NUMBER(?) + v.BRD_RP + v.RPBASIS + v.TOTALRPPREMI + v.HARILIBUR + 0 + v.JUMLAHDENDA
+                            ELSE v.TOTAL
+                        END,
+                        v.ATTENDANCE_UPLOAD,
+                        v.SUPERVISION_1,
+                        v.SUPERVISION_2,
+                        v.SUPERVISION_3,
+                        v.SUPERVISION_4,
+                        v.SUPERVISION_5,
+                        v.JOBCODE,
+                        v.LOCATIONTYPE,
+                        v.LOCATIONCODE,
+                        v.MANDAYS,
+                        v.OTHRS,
+                        v.RATE,
+                        v.UNIT,
+                        v.OUTPUT,
+                        v.REFERENCE,
+                        v.REMARKS,
+                        v.OVERTIME_HOURS,
+                        v.TYPE_OVERTIME,
+                        v.CHARGEJOB,
+                        v.CHARGETYPE,
+                        v.CHARGECODE,
+                        v.BUCKET,
+                        v.SPBNO,
+                        v.KG_BRONDOLAN,
+                        v.ROWSTATE,
+                        v.DOCUMENT_CLASSIFICATION,
+                        v.BASIS_BM,
+                        v.KG_JANJANG,
+                        v.BJR,
+                        v.DOCUMENTNO,
+                        v.SOURCETIME,
+                        v.JANJANG,
+                        v.GENERATE,
+                        v.GENERATETIME,
+                        v.FIELDCODE,
+                        v.FCENTRY,
+                        v.FCEDIT,
+                        v.FCIP,
+                        v.LASTUPDATE,
+                        v.LASTTIME,
+                        ?
+                    FROM SIPSMOBILE.VIEW_LHM v
+                    JOIN SIPSMOBILE.TEMP_LHM_INPUT tmp
+                        ON v.ID = tmp.ID AND v.ROWDATA = tmp.ROWDATA
+                    JOIN (
+                        SELECT ID, SUM(HA) SUM_HA, SUM(BASIS_HA) SUM_BASIS_HA
+                        FROM SIPSMOBILE.TEMP_LHM_INPUT
+                        GROUP BY ID
+                    ) agg ON agg.ID = v.ID
+                ", [
+                    $rate3, // RPHK
+                    $rate3, // TOTAL
+                    $user   // LASTAPPROVAL
+                ]);
+            
+                // UPDATE STATUS
                 $conn->statement("
                     UPDATE SIPSMOBILE.ATTENDANCE a
                     SET a.STATUS_ATTENDANCE = 'Approved'
                     WHERE EXISTS (
-                        SELECT 1
-                        FROM SIPSMOBILE.LHM_DATA l
-                        JOIN SIPSMOBILE.TEMP_LHM_INPUT tmp
-                            ON l.ID = tmp.ID AND l.ROWDATA = tmp.ROWDATA
+                        SELECT 1 FROM SIPSMOBILE.LHM_DATA l
                         WHERE l.ID = a.ID
                     )
                 ");
-
+            
                 $conn->statement("
                     UPDATE SIPSMOBILE.HARVESTING h
                     SET h.STATUS_HARVESTING = 'Approved'
                     WHERE EXISTS (
                         SELECT 1
                         FROM SIPSMOBILE.LHM_DATA l
-                        JOIN SIPSMOBILE.TEMP_LHM_INPUT tmp
-                            ON l.ID = tmp.ID AND l.ROWDATA = tmp.ROWDATA
                         WHERE TRUNC(l.FDDATE) = TRUNC(h.TANGGAL)
                         AND l.EMPLOYEECODE = h.KODE_KARYAWAN
                         AND l.FIELDCODE = h.FIELDCODE
                     )
                 ");
             }
-
+            
             if (Auth::user()->level !== "MDP") {
                 $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
