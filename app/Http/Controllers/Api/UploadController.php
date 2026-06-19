@@ -1202,12 +1202,22 @@ class UploadController extends Controller
                 }
 
                 // 🔥 AMBIL RATE_3 (PASTIKAN NUMBER)
-                $rate3 = DB::connection("sips_production")
-                    ->table("IPLASPROD.PARAMETERDETAIL")
-                    ->where("PARCODE", "HARI_KERJA")
-                    ->where("FCBA", $fcba)
-                    ->where("PARHEADCODE", $tahun)
-                    ->value("RATE_3");
+                $rate3 = $conn->selectOne(
+                    "
+                    SELECT RATE_3
+                    FROM IPLASPROD.PARAMETERDETAIL
+                    WHERE PARCODE = :parcode
+                      AND FCBA = :fcba
+                      AND PARHEADCODE = :tahun
+                ",
+                    [
+                        "parcode" => "HARI_KERJA",
+                        "fcba" => $fcba,
+                        "tahun" => $tahun,
+                    ],
+                );
+
+                $rate3 = $rate3 ? (float) $rate3->rate_3 : null;
 
                 if ($rate3 === null) {
                     throw new \Exception("RATE_3 tidak ditemukan");
