@@ -1211,7 +1211,6 @@ class UploadController extends Controller
                            AND p.PARHEADCODE = ?",
                         [$fcba, $tahun],
                     );
-                    $rate3 = $rate3 ? (float) $rate3->RATE_3 : null;
                 }
 
                 // 4. Insert ke TEMP_LHM_INPUT
