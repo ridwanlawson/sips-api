@@ -1202,7 +1202,7 @@ class UploadController extends Controller
                 }
 
                 // 3. Ambil RATE_3 dari PARAMETERDETAIL jika ada ID yang over basis
-                $rate3 = null;
+                $rate3 = 0;
                 if (!empty($overBasisIDs)) {
                     $rate3 = $conn->selectOne(
                         "SELECT RATE_3 FROM IPLASPROD.PARAMETERDETAIL p
