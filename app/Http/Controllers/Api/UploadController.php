@@ -1154,19 +1154,19 @@ class UploadController extends Controller
             if (Auth::user()->level === "MDP") {
                 $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
-            
+
                 $tempRows = [];
                 $tahun = null;
                 $fcba = null;
-            
+
                 foreach ($datas as $r_data) {
                     $data = array_change_key_case($r_data, CASE_UPPER);
-            
+
                     $key = $data["ID"] . "|" . $data["ROWDATA"];
-            
+
                     $tahun = \Carbon\Carbon::parse($data["FDDATE"])->year;
                     $fcba = $data["FCBA"];
-            
+
                     $tempRows[$key] = [
                         "ID" => (int) $data["ID"],
                         "ROWDATA" => (int) $data["ROWDATA"],
@@ -1174,17 +1174,17 @@ class UploadController extends Controller
                         "BASIS_HA" => (float) ($data["BASIS_HA"] ?? 0),
                     ];
                 }
-            
+
                 $tempRows = array_values($tempRows);
-            
+
                 // 🔥 CLEAN TEMP DULU (biar tidak numpuk)
                 $conn->statement("DELETE FROM SIPSMOBILE.TEMP_LHM_INPUT");
-            
+
                 // ✅ INSERT TEMP (FIXED)
                 foreach (array_chunk($tempRows, 1000) as $chunk) {
                     $bindings = [];
                     $selects = [];
-            
+
                     foreach ($chunk as $row) {
                         $selects[] = "SELECT ?, ?, ?, ? FROM dual";
                         $bindings[] = $row["ID"];
@@ -1192,27 +1192,30 @@ class UploadController extends Controller
                         $bindings[] = $row["HA"];
                         $bindings[] = $row["BASIS_HA"];
                     }
-            
-                    $sql = "
+
+                    $sql =
+                        "
                         INSERT INTO SIPSMOBILE.TEMP_LHM_INPUT (ID, ROWDATA, HA, BASIS_HA)
                         " . implode(" UNION ALL ", $selects);
-            
+
                     $conn->statement($sql, $bindings);
                 }
-            
+
                 // 🔥 AMBIL RATE_3 (PASTIKAN NUMBER)
-                $rate3 = $conn->table("PARAMETERDETAIL")
+                $rate3 = $conn
+                    ->table("IPLASPROD.PARAMETERDETAIL")
                     ->where("PARCODE", "HARI_KERJA")
                     ->where("FCBA", $fcba)
                     ->where("PARHEADCODE", $tahun)
                     ->value("RATE_3");
-            
+
                 if ($rate3 === null) {
                     throw new \Exception("RATE_3 tidak ditemukan");
                 }
-            
+
                 // 🔥 INSERT FINAL
-                $conn->statement("
+                $conn->statement(
+                    "
                     INSERT INTO SIPSMOBILE.LHM_DATA (
                         ID, ROWDATA, KEMANDORAN, GANGCODE, FDDATE, FCBA, AFDELING, AFDELING_BLOK,
                         EMPLOYEECODE, NAMA, ATTENDANCE, HK, HECTARAGEPLANTED, TOTALLUASAN,
@@ -1334,12 +1337,14 @@ class UploadController extends Controller
                         FROM SIPSMOBILE.TEMP_LHM_INPUT
                         GROUP BY ID
                     ) agg ON agg.ID = v.ID
-                ", [
-                    $rate3, // RPHK
-                    $rate3, // TOTAL
-                    $user   // LASTAPPROVAL
-                ]);
-            
+                ",
+                    [
+                        $rate3, // RPHK
+                        $rate3, // TOTAL
+                        $user, // LASTAPPROVAL
+                    ],
+                );
+
                 // UPDATE STATUS
                 $conn->statement("
                     UPDATE SIPSMOBILE.ATTENDANCE a
@@ -1349,7 +1354,7 @@ class UploadController extends Controller
                         WHERE l.ID = a.ID
                     )
                 ");
-            
+
                 $conn->statement("
                     UPDATE SIPSMOBILE.HARVESTING h
                     SET h.STATUS_HARVESTING = 'Approved'
@@ -1362,7 +1367,7 @@ class UploadController extends Controller
                     )
                 ");
             }
-            
+
             if (Auth::user()->level !== "MDP") {
                 $conn = DB::connection("oracle");
                 $user = Auth::user()->username;
