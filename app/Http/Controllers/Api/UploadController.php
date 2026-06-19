@@ -1274,13 +1274,13 @@ class UploadController extends Controller
                         v.JUMLAHDENDA, v.TOTALALLJJG, v.BASIS, v.RPBASIS, v.PREMILV1, v.RATE1,
                         v.RPLV1, v.PREMILV2, v.RATE2, v.RPLV2, v.PREMILV3, v.RATE3, v.RPLV3,
                         v.TOTALRPPREMI,
-                        -- KURANGBASIS: 0 jika over basis, else nilai asli
+                        /* KURANGBASIS: 0 jika over basis, else nilai asli*/
                         CASE WHEN ob.ID IS NOT NULL THEN 0 ELSE v.KURANGBASIS END AS KURANGBASIS,
                         v.HARILIBUR, v.TOTALBRD, v.RATE_BRONDOLAN,
-                        -- RPHK: RATE_3 dari parameter jika over basis, else nilai asli
+                        /* RPHK: RATE_3 dari parameter jika over basis, else nilai asli*/
                         CASE WHEN ob.ID IS NOT NULL THEN ? ELSE v.RPHK END AS RPHK,
                         v.BRD_RP,
-                        -- TOTAL dihitung ulang jika over basis
+                        /* TOTAL dihitung ulang jika over basis*/
                         CASE
                             WHEN ob.ID IS NOT NULL THEN
                                 ? + v.BRD_RP + v.RPBASIS + v.TOTALRPPREMI + v.HARILIBUR + 0 + v.JUMLAHDENDA
