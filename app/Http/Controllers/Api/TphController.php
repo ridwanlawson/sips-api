@@ -151,11 +151,6 @@ class TphController extends Controller
                     tph.NOTPH,
                     tph.ANCAKNO
             ";
-            // LOG QUERY
-            \Log::info("SQL Query:", [
-                "query" => $query,
-                "bindings" => $bindings,
-            ]);
             // Jalankan query
             $datas = DB::connection("oracle")->select($query, $bindings);
 
