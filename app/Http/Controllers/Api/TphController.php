@@ -12,14 +12,13 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * @group Apps
- * 
+ *
  * @subgroup TPH
  * @subgroupDescription Sub Group untuk TPH
- * 
+ *
  */
 class TphController extends Controller
 {
-
     /**
      * Memanggil data TPH dari SIPS Mobile.
      *
@@ -61,38 +60,38 @@ class TphController extends Controller
     {
         try {
             // Ambil parameter dari query string
-            $notph = $request->query('notph');
-            $fieldcode = $request->query('fieldcode');
-            $ancakno = $request->query('ancakno');
-            $typetph = $request->query('typetph');
-            $status = $request->query('status');
-            $fcba = $request->query('fcba');
-            $afdeling = $request->query('afdeling');
-            $ha = $request->query('ha');
-            $tahuntanam = $request->query('tahuntanam');
+            $notph = $request->query("notph");
+            $fieldcode = $request->query("fieldcode");
+            $ancakno = $request->query("ancakno");
+            $typetph = $request->query("typetph");
+            $status = $request->query("status");
+            $fcba = $request->query("fcba");
+            $afdeling = $request->query("afdeling");
+            $ha = $request->query("ha");
+            $tahuntanam = $request->query("tahuntanam");
 
             $query = "
-                select 
+                select
                     TPH.ID,
-                    TPH.NOTPH, 
-                    TPH.FIELDCODE, 
-                    TPH.ANCAKNO, 
-                    TPH.TYPETPH, 
-                    TPH.STATUS, 
-                    TPH.LOCATION, 
-                    TPH.FCBA, 
+                    TPH.NOTPH,
+                    TPH.FIELDCODE,
+                    TPH.ANCAKNO,
+                    TPH.TYPETPH,
+                    TPH.STATUS,
+                    TPH.LOCATION,
+                    TPH.FCBA,
                     TPH.AFDELING,
                     TPH.HA,
                     TPH.TAHUNTANAM,
                     TPH.BJR
-                from 
+                from
                     SIPSMOBILE.TPH
-                inner join 
-                    IPLASPROD.FIELD 
-                on 
-                    TPH.FIELDCODE = FIELD.FCCODE 
-                    and TPH.FCBA = FIELD.FCBA 
-                where 
+                inner join
+                    IPLASPROD.FIELD
+                on
+                    TPH.FIELDCODE = FIELD.FCCODE
+                    and TPH.FCBA = FIELD.FCBA
+                where
                     TPH.FCBA IS NOT NULL";
 
             // Parameter binding
@@ -101,78 +100,88 @@ class TphController extends Controller
             // Filter berdasarkan parameter
             if ($notph) {
                 $query .= " and TPH.NOTPH = :notph";
-                $bindings['notph'] = $notph;
+                $bindings["notph"] = $notph;
             }
 
             if ($fieldcode) {
                 $query .= " and TPH.FIELDCODE = :fieldcode";
-                $bindings['fieldcode'] = $fieldcode;
+                $bindings["fieldcode"] = $fieldcode;
             }
 
             if ($ancakno) {
                 $query .= " and tph.ANCAKNO = :ancakno";
-                $bindings['ancakno'] = $ancakno;
+                $bindings["ancakno"] = $ancakno;
             }
 
             if ($typetph) {
                 $query .= " and tph.TYPETPH = :typetph";
-                $bindings['typetph'] = $typetph;
+                $bindings["typetph"] = $typetph;
             }
 
             if ($status) {
                 $query .= " and tph.STATUS = :status";
-                $bindings['status'] = $status;
+                $bindings["status"] = $status;
             }
 
             if ($fcba) {
                 $query .= " and tph.FCBA = :fcba";
-                $bindings['fcba'] = $fcba;
+                $bindings["fcba"] = $fcba;
             }
 
             if ($afdeling) {
                 $query .= " and tph.AFDELING = :afdeling";
-                $bindings['afdeling'] = $afdeling;
+                $bindings["afdeling"] = $afdeling;
             }
 
             if ($ha) {
                 $query .= " and tph.HA = :ha";
-                $bindings['ha'] = $ha;
+                $bindings["ha"] = $ha;
             }
 
             if ($tahuntanam) {
                 $query .= " and tph.TAHUNTANAM = :tahuntanam";
-                $bindings['tahuntanam'] = $tahuntanam;
+                $bindings["tahuntanam"] = $tahuntanam;
             }
 
             // Tambahkan bagian akhir query
             $query .= "
-                order by 
+                order by
                     tph.FCBA,
                     tph.AFDELING,
                     tph.NOTPH,
                     tph.ANCAKNO
             ";
-
+            // LOG QUERY
+            \Log::info("SQL Query:", [
+                "query" => $query,
+                "bindings" => $bindings,
+            ]);
             // Jalankan query
-            $datas = DB::connection('oracle')->select($query, $bindings);
+            $datas = DB::connection("oracle")->select($query, $bindings);
 
             // Jika data kosong
             if (empty($datas)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Data tidak ditemukan.',
-                    'data' => []
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "message" => "Data tidak ditemukan.",
+                        "data" => [],
+                    ],
+                    404,
+                );
             }
 
-            return new AllResource(true, 'List Data TPH', $datas);
+            return new AllResource(true, "List Data TPH", $datas);
         } catch (\Exception $e) {
             // Tangani kesalahan yang mungkin terjadi
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage() // Tambahkan pesan error teknis jika diperlukan
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengambil data.",
+                    "error" => $e->getMessage(), // Tambahkan pesan error teknis jika diperlukan
+                ],
+                500,
+            );
         }
     }
 
@@ -184,70 +193,72 @@ class TphController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'notph'       => 'required|string',
-            'fieldcode'   => 'required|string|exists:sips_production.field,fccode',
-            'ancakno'     => 'required|string',
-            'fcba'        => 'required|string|exists:sips_production.field,fcba',
-            'afdeling'    => 'required|string|exists:sips_production.field,division',
-            'typetph'     => 'required|integer',
-            'status'      => 'required|string',
-            'location'    => 'nullable',
-            'ha'          => 'required|numeric',
-            'tahuntanam'  => 'nullable|integer',
-            'bjr'         => 'nullable|numeric',
-            'created_by'  => 'nullable',
+            "notph" => "required|string",
+            "fieldcode" =>
+                "required|string|exists:sips_production.field,fccode",
+            "ancakno" => "required|string",
+            "fcba" => "required|string|exists:sips_production.field,fcba",
+            "afdeling" =>
+                "required|string|exists:sips_production.field,division",
+            "typetph" => "required|integer",
+            "status" => "required|string",
+            "location" => "nullable",
+            "ha" => "required|numeric",
+            "tahuntanam" => "nullable|integer",
+            "bjr" => "nullable|numeric",
+            "created_by" => "nullable",
         ]);
 
         try {
-
             // cek data existing berdasarkan kombinasi unik
-            $existing = Tph::where('notph', $validated['notph'])
-                ->where('fieldcode', $validated['fieldcode']) // blok
-                ->where('afdeling', $validated['afdeling'])
-                ->where('fcba', $validated['fcba'])
+            $existing = Tph::where("notph", $validated["notph"])
+                ->where("fieldcode", $validated["fieldcode"]) // blok
+                ->where("afdeling", $validated["afdeling"])
+                ->where("fcba", $validated["fcba"])
                 ->first();
 
             if ($existing) {
-
                 // hanya update field tertentu
                 $existing->update([
-                    'location'    => $validated['location'] ?? $existing->location,
-                    'ancakno'     => $validated['ancakno'],
-                    'tahuntanam'  => $validated['tahuntanam'],
-                    'bjr'         => $validated['bjr'],
-                    'updated_by'  => Auth::user()->username,
+                    "location" => $validated["location"] ?? $existing->location,
+                    "ancakno" => $validated["ancakno"],
+                    "tahuntanam" => $validated["tahuntanam"],
+                    "bjr" => $validated["bjr"],
+                    "updated_by" => Auth::user()->username,
                 ]);
 
                 return new AllResource(
                     true,
-                    'Data TPH sudah ada, berhasil diupdate.',
-                    $existing
+                    "Data TPH sudah ada, berhasil diupdate.",
+                    $existing,
                 );
             }
 
             // jika belum ada -> insert baru
-            $validated['created_by'] = Auth::user()->username;
-            $validated['updated_by'] = Auth::user()->username;
+            $validated["created_by"] = Auth::user()->username;
+            $validated["updated_by"] = Auth::user()->username;
 
             $data = Tph::create($validated);
 
-            return new AllResource(
-                true,
-                'Data TPH berhasil disimpan.',
-                $data
-            );
+            return new AllResource(true, "Data TPH berhasil disimpan.", $data);
         } catch (QueryException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan database.',
-                'error'   => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan database.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan pada sistem.',
-                'error'   => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan pada sistem.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -260,18 +271,24 @@ class TphController extends Controller
     {
         try {
             $datas = Tph::findOrFail($id);
-            return new AllResource(true, 'Detail Data TPH', $datas);
+            return new AllResource(true, "Detail Data TPH", $datas);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data TPH tidak ditemukan.',
-            ], 404);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Data TPH tidak ditemukan.",
+                ],
+                404,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan pada sistem.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan pada sistem.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -284,54 +301,71 @@ class TphController extends Controller
     {
         // Validasi input
         $validated = $request->validate([
-            'notph' => 'required|string',
-            'fieldcode' => 'required|string|exists:sips_production.field,fccode',
-            'ancakno' => 'required|string',
-            'fcba' => 'required|string|exists:sips_production.field,fcba',
-            'afdeling' => 'required|string|exists:sips_production.field,division',
-            'typetph' => 'required|string',
-            'status' => 'required|string',
-            'location' => 'nullable',
-            'ha' => 'required|numeric',
-            'tahuntanam' => 'nullable|integer',
-            'bjr' => 'nullable|numeric',
-            'updated_by' => 'nullable',
+            "notph" => "required|string",
+            "fieldcode" =>
+                "required|string|exists:sips_production.field,fccode",
+            "ancakno" => "required|string",
+            "fcba" => "required|string|exists:sips_production.field,fcba",
+            "afdeling" =>
+                "required|string|exists:sips_production.field,division",
+            "typetph" => "required|string",
+            "status" => "required|string",
+            "location" => "nullable",
+            "ha" => "required|numeric",
+            "tahuntanam" => "nullable|integer",
+            "bjr" => "nullable|numeric",
+            "updated_by" => "nullable",
         ]);
 
         try {
-
             $datas = Tph::findOrFail($id);
 
             // Jika data tidak ditemukan
             if (!$datas) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'TPH tidak ditemukan'
-                ], 404);
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "TPH tidak ditemukan",
+                    ],
+                    404,
+                );
             }
 
-            $validated['updated_by'] = Auth::user()->username;
+            $validated["updated_by"] = Auth::user()->username;
 
             $datas->update($validated);
 
-            return new AllResource(true, 'Data TPH berhasil diperbarui.', $datas);
+            return new AllResource(
+                true,
+                "Data TPH berhasil diperbarui.",
+                $datas,
+            );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data TPH tidak ditemukan.',
-            ], 404);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Data TPH tidak ditemukan.",
+                ],
+                404,
+            );
         } catch (QueryException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengupdate data.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat mengupdate data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan pada sistem.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan pada sistem.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 
@@ -345,24 +379,33 @@ class TphController extends Controller
         try {
             $datas = Tph::findOrFail($id);
             $datas->delete();
-            return new AllResource(true, 'Data TPH berhasil dihapus.', $datas);
+            return new AllResource(true, "Data TPH berhasil dihapus.", $datas);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data TPH tidak ditemukan.',
-            ], 404);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Data TPH tidak ditemukan.",
+                ],
+                404,
+            );
         } catch (QueryException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menghapus data.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan saat menghapus data.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan pada sistem.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Terjadi kesalahan pada sistem.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 }
