@@ -391,7 +391,7 @@ class PengangkutanController extends Controller
         // Validasi inputan
         $request->validate([
             "nopengangkutan" => "required|string",
-            "nospb" => "required|string",
+            "nospb" => "required_if:type_pengangkutan,1|string",
             "nodokumen" => "required|string",
             "tanggal" => "required|date_format:Y-m-d",
             "kode_karyawan_kerani" => "required|string|exists:employee,fccode",
