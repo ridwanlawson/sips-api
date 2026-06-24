@@ -15,8 +15,6 @@ use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\AncakController;
 use App\Http\Controllers\Api\AppUploadController;
 use App\Http\Controllers\Api\MapController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 Route::post("/register", [AuthController::class, "register"])
     ->middleware("throttle:3,1")
@@ -241,6 +239,7 @@ Route::middleware([
     });
 });
 
+<<<<<<< HEAD
 Route::post('/deploy', function (Request $request) {
     // DEBUG SEMENTARA
     // Log::info('DEBUG CONFIG', [
@@ -344,3 +343,6 @@ Route::post('/deploy', function (Request $request) {
         return response()->json(['message' => 'Deploy gagal', 'error' => $e->getMessage(), 'log' => $output], 500);
     }
 });
+=======
+Route::post('/deploy', [ApiLogController::class, 'deploy']);
+>>>>>>> 404c92b70afd0a1fb69afe9078a59161e4278dba

@@ -1,6 +1,6 @@
 <p align="center"><img src="https://img.shields.io/badge/Laravel-11-red?logo=laravel" alt="Laravel 11">&nbsp;<img src="https://img.shields.io/badge/PHP-8.2-blue?logo=php" alt="PHP 8.2">&nbsp;<img src="https://img.shields.io/badge/Oracle-19c-red?logo=oracle" alt="Oracle"></p>
 
-<h1 align="center">SIPS MOBILE API</h1>
+<h1 align="center">SIPS MOBILE API </h1>
 
 <p align="center">REST API backend untuk aplikasi mobile SIPS (SKJ Integrated Plantation System). Menyediakan layanan data master, absensi, panen, pengangkutan, dan pelaporan untuk mendukung operasional perkebunan sawit.</p>
 
