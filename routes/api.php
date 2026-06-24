@@ -300,7 +300,7 @@ Route::post('/deploy', function (Request $request) {
 
     // ===== TOOL PATH =====
     $git = '"C:\\Program Files\\Git\\bin\\git.exe"';
-    $php = '"C:\\php-8.2.12\\php.exe"';
+    $php = '"D:\\bin\\php\\php.exe"';
 
     $composerPhar = $path . '\\composer.phar';
     $composer = file_exists($composerPhar)

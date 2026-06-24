@@ -188,7 +188,7 @@ endpoints:
         name: username
         description: ''
         required: true
-        example: totam
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -198,15 +198,15 @@ endpoints:
         name: password
         description: ''
         required: true
-        example: sunt
+        example: dolor
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      username: totam
-      password: sunt
+      username: et
+      password: dolor
     fileParameters: []
     responses: []
     responseFields: []
@@ -244,7 +244,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer V4eDfEd68haPkZ13abcgv56'
+      - 'Bearer Zabv6fhd4acegDkP61E583V'
     controller: null
     method: null
     route: null
@@ -271,14 +271,14 @@ endpoints:
         name: id
         description: 'ID pengguna.'
         required: true
-        example: 14
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 14
+      id: 9
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -298,7 +298,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 5hDf646VZcb1e3vdPa8Eagk'
+      - 'Bearer 3c8gV664vak1PahE5eZfDbd'
     controller: null
     method: null
     route: null
@@ -329,7 +329,7 @@ endpoints:
         name: current_password
         description: ''
         required: true
-        example: qui
+        example: quo
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -339,22 +339,22 @@ endpoints:
         name: new_password
         description: 'Must be at least 8 characters.'
         required: true
-        example: ljykdcxffluxhbcxefysxfnxehndpozxbtbvncccpwhikiscualfarkxmqmpsiasgowkrxtbrrxctoaooh
+        example: tgxguzfviyooidkyickuipgc
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      current_password: qui
-      new_password: ljykdcxffluxhbcxefysxfnxehndpozxbtbvncccpwhikiscualfarkxmqmpsiasgowkrxtbrrxctoaooh
+      current_password: quo
+      new_password: tgxguzfviyooidkyickuipgc
     fileParameters: []
     responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer dD8vehVZE6k1a5364gaPcfb'
+      - 'Bearer k6cda35gebP1fV86vZDahE4'
     controller: null
     method: null
     route: null
@@ -381,14 +381,14 @@ endpoints:
         name: id
         description: 'ID User.'
         required: true
-        example: 10
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 10
+      id: 13
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -396,7 +396,7 @@ endpoints:
         name: status
         description: ''
         required: true
-        example: 'N'
+        example: 'Y'
         type: string
         enumValues:
           - 'Y'
@@ -405,14 +405,14 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      status: 'N'
+      status: 'Y'
     fileParameters: []
     responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer VkEv5Pceg4Zha638b16dafD'
+      - 'Bearer vD14fc8akdPVb63hg5ZeE6a'
     controller: null
     method: null
     route: null

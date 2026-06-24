@@ -168,7 +168,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer hcV31v45DfPakgbde68ZE6a'
+      - 'Bearer e43VgPva6aZ5k1bDfch68Ed'
     controller: null
     method: null
     route: null
@@ -201,7 +201,7 @@ endpoints:
         name: notph
         description: ''
         required: true
-        example: corporis
+        example: architecto
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -211,7 +211,7 @@ endpoints:
         name: fieldcode
         description: 'The <code>fccode</code> of an existing record in the sips_production.field table.'
         required: true
-        example: quia
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -221,7 +221,7 @@ endpoints:
         name: ancakno
         description: ''
         required: true
-        example: odio
+        example: dolorem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -231,7 +231,7 @@ endpoints:
         name: fcba
         description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
         required: true
-        example: delectus
+        example: quasi
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -241,7 +241,7 @@ endpoints:
         name: afdeling
         description: 'The <code>division</code> of an existing record in the sips_production.field table.'
         required: true
-        example: veritatis
+        example: corporis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -251,7 +251,7 @@ endpoints:
         name: typetph
         description: ''
         required: true
-        example: 6
+        example: 4
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -261,7 +261,7 @@ endpoints:
         name: status
         description: ''
         required: true
-        example: saepe
+        example: vel
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -281,7 +281,7 @@ endpoints:
         name: ha
         description: ''
         required: true
-        example: 0.0
+        example: 40166565.274
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -291,7 +291,7 @@ endpoints:
         name: tahuntanam
         description: ''
         required: false
-        example: 16
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -301,7 +301,7 @@ endpoints:
         name: bjr
         description: ''
         required: false
-        example: 4683.094
+        example: 13.6675774
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -318,23 +318,23 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      notph: corporis
-      fieldcode: quia
-      ancakno: odio
-      fcba: delectus
-      afdeling: veritatis
-      typetph: 6
-      status: saepe
-      ha: 0.0
-      tahuntanam: 16
-      bjr: 4683.094
+      notph: architecto
+      fieldcode: ut
+      ancakno: dolorem
+      fcba: quasi
+      afdeling: corporis
+      typetph: 4
+      status: vel
+      ha: 40166565.274
+      tahuntanam: 8
+      bjr: 13.6675774
     fileParameters: []
     responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer g85E61ckadZ64h3bPfVeaDv'
+      - 'Bearer 6gV3c1PEDk4da68hae5vZbf'
     controller: null
     method: null
     route: null
@@ -388,7 +388,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer a6PhvbcE6ak8g4fe1DZV53d'
+      - 'Bearer DacE5fa6gbk846VhvdZ1P3e'
     controller: null
     method: null
     route: null
@@ -416,14 +416,14 @@ endpoints:
         name: id
         description: 'ID TPH.'
         required: true
-        example: 16
+        example: 19
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 16
+      id: 19
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -431,7 +431,7 @@ endpoints:
         name: notph
         description: ''
         required: true
-        example: ex
+        example: omnis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -441,7 +441,7 @@ endpoints:
         name: fieldcode
         description: 'The <code>fccode</code> of an existing record in the sips_production.field table.'
         required: true
-        example: qui
+        example: aut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -451,7 +451,7 @@ endpoints:
         name: ancakno
         description: ''
         required: true
-        example: perferendis
+        example: odio
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -461,7 +461,7 @@ endpoints:
         name: fcba
         description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
         required: true
-        example: sed
+        example: quisquam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -471,7 +471,7 @@ endpoints:
         name: afdeling
         description: 'The <code>division</code> of an existing record in the sips_production.field table.'
         required: true
-        example: ducimus
+        example: iste
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -481,7 +481,7 @@ endpoints:
         name: typetph
         description: ''
         required: true
-        example: est
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -491,7 +491,7 @@ endpoints:
         name: status
         description: ''
         required: true
-        example: nihil
+        example: non
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -511,7 +511,7 @@ endpoints:
         name: ha
         description: ''
         required: true
-        example: 27.9212505
+        example: 0.647052
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -521,7 +521,7 @@ endpoints:
         name: tahuntanam
         description: ''
         required: false
-        example: 2
+        example: 6
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -531,7 +531,7 @@ endpoints:
         name: bjr
         description: ''
         required: false
-        example: 201.0821
+        example: 1625.51
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -548,23 +548,23 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      notph: ex
-      fieldcode: qui
-      ancakno: perferendis
-      fcba: sed
-      afdeling: ducimus
-      typetph: est
-      status: nihil
-      ha: 27.9212505
-      tahuntanam: 2
-      bjr: 201.0821
+      notph: omnis
+      fieldcode: aut
+      ancakno: odio
+      fcba: quisquam
+      afdeling: iste
+      typetph: ut
+      status: non
+      ha: 0.647052
+      tahuntanam: 6
+      bjr: 1625.51
     fileParameters: []
     responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer e6kP5afDb6V3g48E1cZahdv'
+      - 'Bearer Pec6gVDZbvak5Eaf1h86d43'
     controller: null
     method: null
     route: null
@@ -591,14 +591,14 @@ endpoints:
         name: id
         description: 'ID TPH.'
         required: true
-        example: 11
+        example: 10
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 11
+      id: 10
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -609,7 +609,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer Dd8EbfP6vaaV5kZ36he1g4c'
+      - 'Bearer 1a8V56EZgb3ak4DechvPd6f'
     controller: null
     method: null
     route: null
@@ -770,7 +770,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer aD43Pkc6fvdVg56eaZ8b1hE'
+      - 'Bearer a16Efhvg6e5DZ3abV8dc4Pk'
     controller: null
     method: null
     route: null
@@ -929,7 +929,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer kEcbaafV68eDZgv163hP45d'
+      - 'Bearer 8cehZf36bE6v5DaPg1V4kda'
     controller: null
     method: null
     route: null
@@ -1000,7 +1000,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer hk1DbadvcPg46ZEf8V6ae35'
+      - 'Bearer ZgaekV3D6d5aEvc68Pbfh41'
     controller: null
     method: null
     route: null
@@ -1171,7 +1171,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 38gDv1bP6c4aadEVkf6Zeh5'
+      - 'Bearer PbfvdVhk5ZaE8gD4a6c163e'
     controller: null
     method: null
     route: null
@@ -1242,7 +1242,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 546ek8DZ1EgVbaacfv3dhP6'
+      - 'Bearer eD43ac5ZgfhEd6VP1vbk6a8'
     controller: null
     method: null
     route: null
@@ -1369,7 +1369,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer kh3EDZ85dPaf4eVcg66va1b'
+      - 'Bearer afVD5gd4Zkv6cPeha831bE6'
     controller: null
     method: null
     route: null
@@ -1400,7 +1400,7 @@ endpoints:
         name: fccode
         description: 'The <code>fccode</code> of an existing record in the sips_production.Employee table.'
         required: true
-        example: molestiae
+        example: dolores
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1410,7 +1410,7 @@ endpoints:
         name: fcname
         description: 'The <code>fcname</code> of an existing record in the sips_production.Employee table.'
         required: true
-        example: rerum
+        example: iure
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1420,7 +1420,7 @@ endpoints:
         name: sectionname
         description: 'Must not be greater than 255 characters.'
         required: true
-        example: ada
+        example: ofiwutbtirxu
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1430,7 +1430,7 @@ endpoints:
         name: gangcode
         description: 'Must not be greater than 255 characters.'
         required: true
-        example: ymtovlmref
+        example: xlktnl
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1440,7 +1440,7 @@ endpoints:
         name: fcba
         description: 'The <code>fcba</code> of an existing record in the sips_production.Employee table.'
         required: true
-        example: nam
+        example: sed
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1450,7 +1450,7 @@ endpoints:
         name: noancak
         description: ''
         required: false
-        example: voluptatem
+        example: optio
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1500,20 +1500,20 @@ endpoints:
         name: fr_registered_at
         description: 'Must be a valid date.'
         required: false
-        example: '2026-06-13T10:17:48'
+        example: '2026-06-23T11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
         custom: []
     cleanBodyParameters:
-      fccode: molestiae
-      fcname: rerum
-      sectionname: ada
-      gangcode: ymtovlmref
-      fcba: nam
-      noancak: voluptatem
-      fr_registered_at: '2026-06-13T10:17:48'
+      fccode: dolores
+      fcname: iure
+      sectionname: ofiwutbtirxu
+      gangcode: xlktnl
+      fcba: sed
+      noancak: optio
+      fr_registered_at: '2026-06-23T11:04:28'
     fileParameters:
       photo: null
     responses: []
@@ -1521,7 +1521,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8aacvghZ51k636VE4PbfdeD'
+      - 'Bearer a6bag16P538ZefkE4VcvdDh'
     controller: null
     method: null
     route: null
@@ -1548,14 +1548,14 @@ endpoints:
         name: id
         description: 'ID Karyawan.'
         required: true
-        example: 16
+        example: 13
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 16
+      id: 13
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -1575,7 +1575,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer eZ3ad1b8a646h5kvgfcVDPE'
+      - 'Bearer hZ3eaPVDd6ab1kv8546Efcg'
     controller: null
     method: null
     route: null
@@ -1603,14 +1603,14 @@ endpoints:
         name: id
         description: 'ID Karyawan.'
         required: true
-        example: 6
+        example: 1
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 6
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -1618,7 +1618,7 @@ endpoints:
         name: fccode
         description: 'The <code>fccode</code> of an existing record in the sips_production.Employee table.'
         required: true
-        example: laboriosam
+        example: omnis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1628,7 +1628,7 @@ endpoints:
         name: fcname
         description: 'The <code>fcname</code> of an existing record in the sips_production.Employee table.'
         required: true
-        example: et
+        example: ipsam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1638,7 +1638,7 @@ endpoints:
         name: sectionname
         description: 'Must not be greater than 255 characters.'
         required: true
-        example: wzmppcakgiiyiakjkpo
+        example: zsnrzcbgshqwejsu
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1648,7 +1648,7 @@ endpoints:
         name: gangcode
         description: 'Must not be greater than 255 characters.'
         required: true
-        example: laomoxkpcutfrazii
+        example: fvrjz
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1658,7 +1658,7 @@ endpoints:
         name: fcba
         description: 'The <code>fcba</code> of an existing record in the sips_production.Employee table.'
         required: true
-        example: sed
+        example: voluptatem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1668,7 +1668,7 @@ endpoints:
         name: noancak
         description: ''
         required: true
-        example: tempore
+        example: dolorem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1688,7 +1688,7 @@ endpoints:
         name: fr_registered_at
         description: 'Must be a valid date.'
         required: false
-        example: '2026-06-13T10:17:48'
+        example: '2026-06-23T11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1698,7 +1698,7 @@ endpoints:
         name: aktif
         description: ''
         required: false
-        example: facilis
+        example: labore
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1725,14 +1725,14 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      fccode: laboriosam
-      fcname: et
-      sectionname: wzmppcakgiiyiakjkpo
-      gangcode: laomoxkpcutfrazii
-      fcba: sed
-      noancak: tempore
-      fr_registered_at: '2026-06-13T10:17:48'
-      aktif: facilis
+      fccode: omnis
+      fcname: ipsam
+      sectionname: zsnrzcbgshqwejsu
+      gangcode: fvrjz
+      fcba: voluptatem
+      noancak: dolorem
+      fr_registered_at: '2026-06-23T11:04:28'
+      aktif: labore
     fileParameters:
       photo: null
     responses: []
@@ -1740,7 +1740,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer VZbd3v466hc85kPafe1DEga'
+      - 'Bearer gk6P56ev3Z8dVbahE1afD4c'
     controller: null
     method: null
     route: null
@@ -1767,14 +1767,14 @@ endpoints:
         name: id
         description: 'ID Karyawan.'
         required: true
-        example: 17
+        example: 11
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 17
+      id: 11
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -1785,7 +1785,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer v41Zk86Pafhge3bdDcaV6E5'
+      - 'Bearer hVg6aa8d65fDZ1E3ec4Pvbk'
     controller: null
     method: null
     route: null
@@ -2007,7 +2007,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer v86Z1ba5E4DcP63afVdehgk'
+      - 'Bearer c4Z13aaEef66kVP5d8bhgvD'
     controller: null
     method: null
     route: null
@@ -2038,7 +2038,7 @@ endpoints:
         name: tanggal
         description: 'Must be a valid date in the format <code>Y-m-d</code>.'
         required: true
-        example: '2026-06-13'
+        example: '2026-06-23'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2058,7 +2058,7 @@ endpoints:
         name: kode_karyawan
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: aut
+        example: eos
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2068,7 +2068,7 @@ endpoints:
         name: time_in
         description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
         required: true
-        example: '2026-06-13 10:17:48'
+        example: '2026-06-23 11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2078,7 +2078,7 @@ endpoints:
         name: time_out
         description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
         required: false
-        example: '2026-06-13 10:17:48'
+        example: '2026-06-23 11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2096,7 +2096,7 @@ endpoints:
         custom: []
       location_out:
         name: location_out
-        description: "'location_in' => 'required',."
+        description: ''
         required: false
         example: null
         type: string
@@ -2118,7 +2118,7 @@ endpoints:
         name: total_late_time
         description: 'Must be a valid date in the format <code>H:i</code>.'
         required: false
-        example: '10:17'
+        example: '11:04'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2128,7 +2128,7 @@ endpoints:
         name: go_home_early
         description: 'Must be a valid date in the format <code>H:i</code>.'
         required: false
-        example: '10:17'
+        example: '11:04'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2138,7 +2138,7 @@ endpoints:
         name: attendance_type
         description: ''
         required: false
-        example: ASSISTENSI
+        example: REGULAR
         type: string
         enumValues:
           - REGULAR
@@ -2170,7 +2170,7 @@ endpoints:
         name: fcba
         description: 'The <code>fcba</code> of an existing record in the employee table.'
         required: true
-        example: officia
+        example: a
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2210,7 +2210,7 @@ endpoints:
         name: attendance
         description: ''
         required: true
-        example: OT
+        example: KJ
         type: string
         enumValues:
           - KJ
@@ -2295,16 +2295,16 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      tanggal: '2026-06-13'
-      kode_karyawan: aut
-      time_in: '2026-06-13 10:17:48'
-      time_out: '2026-06-13 10:17:48'
-      total_late_time: '10:17'
-      go_home_early: '10:17'
-      attendance_type: ASSISTENSI
-      fcba: officia
+      tanggal: '2026-06-23'
+      kode_karyawan: eos
+      time_in: '2026-06-23 11:04:28'
+      time_out: '2026-06-23 11:04:28'
+      total_late_time: '11:04'
+      go_home_early: '11:04'
+      attendance_type: REGULAR
+      fcba: a
       mandays: 1
-      attendance: OT
+      attendance: KJ
     fileParameters:
       no_ba_exca: null
       images: null
@@ -2313,7 +2313,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 5V8gdcahk6a6ZfeD4PEb1v3'
+      - 'Bearer EPc3f85eZh6vbaDd46kVa1g'
     controller: null
     method: null
     route: null
@@ -2340,14 +2340,14 @@ endpoints:
         name: id
         description: 'ID Absensi.'
         required: true
-        example: 16
+        example: 18
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 16
+      id: 18
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -2367,7 +2367,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fDva6bePcdh5k8E16ZgV43a'
+      - 'Bearer 15vaV34d8cZDgkhaPebfE66'
     controller: null
     method: null
     route: null
@@ -2395,14 +2395,14 @@ endpoints:
         name: id
         description: 'ID Absensi.'
         required: true
-        example: 19
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 19
+      id: 5
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -2420,7 +2420,7 @@ endpoints:
         name: kode_karyawan
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: fugit
+        example: sed
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2442,7 +2442,7 @@ endpoints:
         name: time_out
         description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
         required: false
-        example: '2026-06-13 10:17:48'
+        example: '2026-06-23 11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2472,7 +2472,7 @@ endpoints:
         name: total_late_time
         description: 'Must be a valid date in the format <code>H:i</code>.'
         required: false
-        example: '10:17'
+        example: '11:04'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2482,7 +2482,7 @@ endpoints:
         name: go_home_early
         description: 'Must be a valid date in the format <code>H:i</code>.'
         required: false
-        example: '10:17'
+        example: '11:04'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2512,7 +2512,7 @@ endpoints:
         name: fcba
         description: 'The <code>fcba</code> of an existing record in the employee table.'
         required: true
-        example: architecto
+        example: eum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2552,7 +2552,7 @@ endpoints:
         name: attendance
         description: ''
         required: true
-        example: MK
+        example: KB
         type: string
         enumValues:
           - KJ
@@ -2627,14 +2627,14 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      kode_karyawan: fugit
+      kode_karyawan: sed
       attendance_type: ASSISTENSI
-      time_out: '2026-06-13 10:17:48'
-      total_late_time: '10:17'
-      go_home_early: '10:17'
-      fcba: architecto
+      time_out: '2026-06-23 11:04:28'
+      total_late_time: '11:04'
+      go_home_early: '11:04'
+      fcba: eum
       mandays: 1
-      attendance: MK
+      attendance: KB
     fileParameters:
       images: null
     responses: []
@@ -2642,7 +2642,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer V6beP1Ef4kD5h3vadZ8ca6g'
+      - 'Bearer 5ackaZf6dPeEv4D68gbV31h'
     controller: null
     method: null
     route: null
@@ -2669,14 +2669,14 @@ endpoints:
         name: id
         description: 'ID Absensi.'
         required: true
-        example: 8
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 8
+      id: 5
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -2698,7 +2698,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer dDE135kZcvag6P4feV8hba6'
+      - 'Bearer d61cZ6Dah3a4PgV5bEf8evk'
     controller: null
     method: null
     route: null
@@ -2725,14 +2725,14 @@ endpoints:
         name: id
         description: 'ID Absensi.'
         required: true
-        example: 16
+        example: 15
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 16
+      id: 15
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -2757,7 +2757,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 6dE46cv8aa3bh5DZg1VkfeP'
+      - 'Bearer gehv5f4aZE6db18V3PDca6k'
     controller: null
     method: null
     route: null
@@ -2922,7 +2922,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer ea6kEvZbhd4agV6c5fD3P81'
+      - 'Bearer 6e86kZvhPbEacDVa154f3dg'
     controller: null
     method: null
     route: null
@@ -2953,7 +2953,7 @@ endpoints:
         name: nodokumen
         description: ''
         required: true
-        example: quasi
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2963,7 +2963,7 @@ endpoints:
         name: tanggal
         description: 'Must be a valid date in the format <code>Y-m-d</code>.'
         required: true
-        example: '2026-06-13'
+        example: '2026-06-23'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2973,7 +2973,7 @@ endpoints:
         name: kode_karyawan_mandor1
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: expedita
+        example: et
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2983,7 +2983,7 @@ endpoints:
         name: kode_karyawan_mandor_panen
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: beatae
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -2993,7 +2993,7 @@ endpoints:
         name: kode_karyawan_kerani
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: illum
+        example: explicabo
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3003,7 +3003,7 @@ endpoints:
         name: kode_karyawan
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: sit
+        example: facere
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3013,7 +3013,7 @@ endpoints:
         name: noancak
         description: ''
         required: true
-        example: nulla
+        example: cupiditate
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3023,7 +3023,7 @@ endpoints:
         name: tph
         description: "'noancak' => 'required|string|exists:tph,ancakno',."
         required: true
-        example: saepe
+        example: corrupti
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3033,7 +3033,7 @@ endpoints:
         name: fieldcode
         description: "'tph' => 'required|string|exists:tph,notph',."
         required: true
-        example: est
+        example: corporis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3043,7 +3043,7 @@ endpoints:
         name: afdeling
         description: "'fieldcode' => 'required|string|exists:tph,fieldcode',."
         required: true
-        example: nobis
+        example: deleniti
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3053,7 +3053,7 @@ endpoints:
         name: fcba
         description: "'afdeling' => 'required|string|exists:tph,afdeling',."
         required: true
-        example: distinctio
+        example: ab
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3063,7 +3063,7 @@ endpoints:
         name: output
         description: "'fcba' => 'required|string|exists:tph,fcba',. Must be at least 0."
         required: true
-        example: 45
+        example: 53
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3073,7 +3073,7 @@ endpoints:
         name: mentah
         description: 'Must be at least 0.'
         required: false
-        example: 15
+        example: 7
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3083,7 +3083,7 @@ endpoints:
         name: overripe
         description: 'Must be at least 0.'
         required: false
-        example: 21
+        example: 77
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3093,7 +3093,7 @@ endpoints:
         name: busuk
         description: 'Must be at least 0.'
         required: false
-        example: 46
+        example: 60
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3103,7 +3103,7 @@ endpoints:
         name: busuk2
         description: 'Must be at least 0.'
         required: false
-        example: 55
+        example: 14
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3113,7 +3113,7 @@ endpoints:
         name: buahkecil
         description: 'Must be at least 0.'
         required: false
-        example: 35
+        example: 79
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3123,7 +3123,7 @@ endpoints:
         name: parteno
         description: 'Must be at least 0.'
         required: false
-        example: 67
+        example: 54
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3133,7 +3133,7 @@ endpoints:
         name: parteno50plus
         description: 'Must be at least 0.'
         required: false
-        example: 33
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3143,7 +3143,7 @@ endpoints:
         name: brondol
         description: 'Must be at least 0.'
         required: false
-        example: 75
+        example: 37
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3153,7 +3153,7 @@ endpoints:
         name: tangkaipanjang
         description: 'Must be at least 0.'
         required: false
-        example: 46
+        example: 83
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -3163,7 +3163,7 @@ endpoints:
         name: alasbrondol
         description: ''
         required: false
-        example: et
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3260,28 +3260,28 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      nodokumen: quasi
-      tanggal: '2026-06-13'
-      kode_karyawan_mandor1: expedita
-      kode_karyawan_mandor_panen: beatae
-      kode_karyawan_kerani: illum
-      kode_karyawan: sit
-      noancak: nulla
-      tph: saepe
-      fieldcode: est
-      afdeling: nobis
-      fcba: distinctio
-      output: 45
-      mentah: 15
-      overripe: 21
-      busuk: 46
-      busuk2: 55
-      buahkecil: 35
-      parteno: 67
-      parteno50plus: 33
-      brondol: 75
-      tangkaipanjang: 46
-      alasbrondol: et
+      nodokumen: et
+      tanggal: '2026-06-23'
+      kode_karyawan_mandor1: et
+      kode_karyawan_mandor_panen: ut
+      kode_karyawan_kerani: explicabo
+      kode_karyawan: facere
+      noancak: cupiditate
+      tph: corrupti
+      fieldcode: corporis
+      afdeling: deleniti
+      fcba: ab
+      output: 53
+      mentah: 7
+      overripe: 77
+      busuk: 60
+      busuk2: 14
+      buahkecil: 79
+      parteno: 54
+      parteno50plus: 9
+      brondol: 37
+      tangkaipanjang: 83
+      alasbrondol: ut
     fileParameters:
       images: null
       no_ba_exca: null
@@ -3290,7 +3290,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer d3gZ4a5P68E1DvVb6ckhfae'
+      - 'Bearer 61E364DaebPakZhvVcgf5d8'
     controller: null
     method: null
     route: null
@@ -3317,14 +3317,14 @@ endpoints:
         name: id
         description: 'ID Panen.'
         required: true
-        example: 9
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 9
+      id: 5
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -3344,7 +3344,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer fheZV18Ebgda3avc4D6P5k6'
+      - 'Bearer ae34b8kE6dgvVZDc1ah5fP6'
     controller: null
     method: null
     route: null
@@ -3372,14 +3372,14 @@ endpoints:
         name: id
         description: 'ID Panen.'
         required: true
-        example: 1
+        example: 12
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 1
+      id: 12
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -3387,7 +3387,7 @@ endpoints:
         name: kode_karyawan_mandor1
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: suscipit
+        example: praesentium
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3397,7 +3397,7 @@ endpoints:
         name: kode_karyawan_mandor_panen
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: excepturi
+        example: ab
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3407,7 +3407,7 @@ endpoints:
         name: kode_karyawan_kerani
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: iste
+        example: dolor
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3430,7 +3430,7 @@ endpoints:
           'fieldcode' => 'required|string|exists:tph,fieldcode',
           'tph' => 'required|string|exists:tph,notph',.
         required: true
-        example: nostrum
+        example: omnis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3440,7 +3440,7 @@ endpoints:
         name: tph
         description: ''
         required: false
-        example: mollitia
+        example: enim
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3450,7 +3450,7 @@ endpoints:
         name: fieldcode
         description: ''
         required: true
-        example: pariatur
+        example: voluptatem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3460,7 +3460,7 @@ endpoints:
         name: afdeling
         description: 'The <code>afdeling</code> of an existing record in the tph table.'
         required: true
-        example: modi
+        example: id
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3470,7 +3470,7 @@ endpoints:
         name: fcba
         description: 'The <code>fcba</code> of an existing record in the tph table.'
         required: true
-        example: saepe
+        example: eos
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3500,7 +3500,7 @@ endpoints:
         name: output
         description: 'Must be at least 0.'
         required: true
-        example: 32
+        example: 6
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3510,7 +3510,7 @@ endpoints:
         name: mentah
         description: 'Must be at least 0.'
         required: false
-        example: 77
+        example: 71
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3520,7 +3520,7 @@ endpoints:
         name: overripe
         description: 'Must be at least 0.'
         required: false
-        example: 10
+        example: 54
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3530,7 +3530,7 @@ endpoints:
         name: busuk
         description: 'Must be at least 0.'
         required: false
-        example: 69
+        example: 10
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3540,7 +3540,7 @@ endpoints:
         name: busuk2
         description: 'Must be at least 0.'
         required: false
-        example: 48
+        example: 67
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3550,7 +3550,7 @@ endpoints:
         name: buahkecil
         description: 'Must be at least 0.'
         required: false
-        example: 55
+        example: 15
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3560,7 +3560,7 @@ endpoints:
         name: parteno
         description: 'Must be at least 0.'
         required: false
-        example: 85
+        example: 34
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3570,7 +3570,7 @@ endpoints:
         name: parteno50plus
         description: 'Must be at least 0.'
         required: false
-        example: 15
+        example: 33
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3580,7 +3580,7 @@ endpoints:
         name: brondol
         description: 'Must be at least 0.'
         required: false
-        example: 28
+        example: 33
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3590,7 +3590,7 @@ endpoints:
         name: tangkaipanjang
         description: 'Must be at least 0.'
         required: false
-        example: 35
+        example: 49
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -3600,7 +3600,7 @@ endpoints:
         name: alasbrondol
         description: ''
         required: false
-        example: qui
+        example: labore
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -3627,26 +3627,26 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      kode_karyawan_mandor1: suscipit
-      kode_karyawan_mandor_panen: excepturi
-      kode_karyawan_kerani: iste
+      kode_karyawan_mandor1: praesentium
+      kode_karyawan_mandor_panen: ab
+      kode_karyawan_kerani: dolor
       kode_karyawan: et
-      noancak: nostrum
-      tph: mollitia
-      fieldcode: pariatur
-      afdeling: modi
-      fcba: saepe
-      output: 32
-      mentah: 77
-      overripe: 10
-      busuk: 69
-      busuk2: 48
-      buahkecil: 55
-      parteno: 85
-      parteno50plus: 15
-      brondol: 28
-      tangkaipanjang: 35
-      alasbrondol: qui
+      noancak: omnis
+      tph: enim
+      fieldcode: voluptatem
+      afdeling: id
+      fcba: eos
+      output: 6
+      mentah: 71
+      overripe: 54
+      busuk: 10
+      busuk2: 67
+      buahkecil: 15
+      parteno: 34
+      parteno50plus: 33
+      brondol: 33
+      tangkaipanjang: 49
+      alasbrondol: labore
     fileParameters:
       no_ba_exca: null
       images: null
@@ -3655,7 +3655,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 3fvckV18heDa6dPa6g5bEZ4'
+      - 'Bearer ha3Z16facV6ekgPE4Db8vd5'
     controller: null
     method: null
     route: null
@@ -3682,14 +3682,14 @@ endpoints:
         name: id
         description: 'ID Panen.'
         required: true
-        example: 10
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 10
+      id: 16
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -3711,7 +3711,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 4E3ZfPvgVcdh1D5b6a6kae8'
+      - 'Bearer 1Eb6fckDe8PVdZg43aa6h5v'
     controller: null
     method: null
     route: null
@@ -3738,14 +3738,14 @@ endpoints:
         name: id
         description: 'ID Harvesting.'
         required: true
-        example: 5
+        example: 6
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 5
+      id: 6
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -3753,7 +3753,7 @@ endpoints:
         name: status_harvesting
         description: ''
         required: true
-        example: Planned
+        example: Approved
         type: string
         enumValues:
           - Planned
@@ -3763,14 +3763,14 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      status_harvesting: Planned
+      status_harvesting: Approved
     fileParameters: []
     responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer ca6864D1Z5Ehavf3bPdgkVe'
+      - 'Bearer aDEdZPbe6a8k1g54h3vV6fc'
     controller: null
     method: null
     route: null
@@ -4116,7 +4116,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer f4d3V6Zcv8EDaP16khbg5ae'
+      - 'Bearer Dg85e63fbEvdaackVZh1P46'
     controller: null
     method: null
     route: null
@@ -4147,7 +4147,7 @@ endpoints:
         name: nopengangkutan
         description: ''
         required: true
-        example: ipsum
+        example: rerum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4157,7 +4157,7 @@ endpoints:
         name: nospb
         description: ''
         required: true
-        example: consequatur
+        example: nobis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4167,7 +4167,7 @@ endpoints:
         name: nodokumen
         description: ''
         required: true
-        example: sunt
+        example: est
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4177,7 +4177,7 @@ endpoints:
         name: tanggal
         description: 'Must be a valid date in the format <code>Y-m-d</code>.'
         required: true
-        example: '2026-06-13'
+        example: '2026-06-23'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4187,7 +4187,7 @@ endpoints:
         name: kode_karyawan_kerani
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: laborum
+        example: voluptatem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4197,7 +4197,7 @@ endpoints:
         name: kode_karyawan_driver
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: error
+        example: ducimus
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4207,7 +4207,7 @@ endpoints:
         name: tkbm1
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: aut
+        example: ut
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4217,7 +4217,7 @@ endpoints:
         name: tkbm2
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: quis
+        example: possimus
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4227,7 +4227,7 @@ endpoints:
         name: tkbm3
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: dolores
+        example: porro
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4237,7 +4237,7 @@ endpoints:
         name: tkbm4
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: ratione
+        example: dolores
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4247,7 +4247,7 @@ endpoints:
         name: tkbm5
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: perspiciatis
+        example: voluptas
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4257,7 +4257,7 @@ endpoints:
         name: type_pengangkutan
         description: ''
         required: true
-        example: 16
+        example: 8
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -4267,7 +4267,7 @@ endpoints:
         name: kode_kendaraan
         description: ''
         required: true
-        example: molestiae
+        example: itaque
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4275,11 +4275,9 @@ endpoints:
         custom: []
       fcba:
         name: fcba
-        description: |-
-          'tph' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,notph',
-          'fieldcode' => 'nullable|required_if:type_pengangkutan,1|string|exists:tph,fieldcode',. This field is required when <code>type_pengangkutan</code> is <code>1</code>.  The <code>fcba</code> of an existing record in the sips_production.field table.
+        description: 'This field is required when <code>type_pengangkutan</code> is <code>1</code>.  The <code>fcba</code> of an existing record in the sips_production.field table.'
         required: false
-        example: aliquid
+        example: facilis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4289,7 +4287,27 @@ endpoints:
         name: afdeling
         description: 'This field is required when <code>type_pengangkutan</code> is <code>1</code>.  The <code>division</code> of an existing record in the sips_production.field table.'
         required: false
-        example: ut
+        example: ipsa
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      fieldcode:
+        name: fieldcode
+        description: 'This field is required when <code>type_pengangkutan</code> is <code>1</code>.'
+        required: false
+        example: harum
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        custom: []
+      tph:
+        name: tph
+        description: 'This field is required when <code>type_pengangkutan</code> is <code>1</code>.'
+        required: false
+        example: reprehenderit
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4299,7 +4317,7 @@ endpoints:
         name: fcba_destination
         description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
         required: false
-        example: in
+        example: debitis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4309,7 +4327,7 @@ endpoints:
         name: afdeling_destination
         description: 'The <code>division</code> of an existing record in the sips_production.field table.'
         required: false
-        example: et
+        example: numquam
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4319,7 +4337,7 @@ endpoints:
         name: pabrik_tujuan
         description: ''
         required: true
-        example: asperiores
+        example: ipsum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4329,7 +4347,7 @@ endpoints:
         name: totaljanjang
         description: ''
         required: true
-        example: 308392885.101
+        example: 37257.3732
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -4339,7 +4357,7 @@ endpoints:
         name: output
         description: ''
         required: true
-        example: 366834.66507
+        example: 95421804.199401
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -4349,7 +4367,7 @@ endpoints:
         name: janjangnormal
         description: ''
         required: true
-        example: 13221614.27604
+        example: 0.0
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -4359,7 +4377,7 @@ endpoints:
         name: brondolan
         description: ''
         required: false
-        example: 8096156.0
+        example: 10635.2683377
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -4369,7 +4387,7 @@ endpoints:
         name: mentah
         description: ''
         required: false
-        example: 0.624160323
+        example: 5.832009
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -4379,7 +4397,7 @@ endpoints:
         name: abnormal
         description: ''
         required: false
-        example: 53822607.51
+        example: 13.0
         type: number
         enumValues: []
         exampleWasSpecified: false
@@ -4389,7 +4407,7 @@ endpoints:
         name: etd
         description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
         required: false
-        example: '2026-06-13 10:17:49'
+        example: '2026-06-23 11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4399,7 +4417,7 @@ endpoints:
         name: eta
         description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
         required: false
-        example: '2026-06-13 10:17:49'
+        example: '2026-06-23 11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4456,32 +4474,34 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      nopengangkutan: ipsum
-      nospb: consequatur
-      nodokumen: sunt
-      tanggal: '2026-06-13'
-      kode_karyawan_kerani: laborum
-      kode_karyawan_driver: error
-      tkbm1: aut
-      tkbm2: quis
-      tkbm3: dolores
-      tkbm4: ratione
-      tkbm5: perspiciatis
-      type_pengangkutan: 16
-      kode_kendaraan: molestiae
-      fcba: aliquid
-      afdeling: ut
-      fcba_destination: in
-      afdeling_destination: et
-      pabrik_tujuan: asperiores
-      totaljanjang: 308392885.101
-      output: 366834.66507
-      janjangnormal: 13221614.27604
-      brondolan: 8096156.0
-      mentah: 0.624160323
-      abnormal: 53822607.51
-      etd: '2026-06-13 10:17:49'
-      eta: '2026-06-13 10:17:49'
+      nopengangkutan: rerum
+      nospb: nobis
+      nodokumen: est
+      tanggal: '2026-06-23'
+      kode_karyawan_kerani: voluptatem
+      kode_karyawan_driver: ducimus
+      tkbm1: ut
+      tkbm2: possimus
+      tkbm3: porro
+      tkbm4: dolores
+      tkbm5: voluptas
+      type_pengangkutan: 8
+      kode_kendaraan: itaque
+      fcba: facilis
+      afdeling: ipsa
+      fieldcode: harum
+      tph: reprehenderit
+      fcba_destination: debitis
+      afdeling_destination: numquam
+      pabrik_tujuan: ipsum
+      totaljanjang: 37257.3732
+      output: 95421804.199401
+      janjangnormal: 0.0
+      brondolan: 10635.2683377
+      mentah: 5.832009
+      abnormal: 13.0
+      etd: '2026-06-23 11:04:28'
+      eta: '2026-06-23 11:04:28'
     fileParameters:
       images: null
       no_ba_exca: null
@@ -4490,7 +4510,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer d864EkVahf6evPgZca135bD'
+      - 'Bearer 8D5Z3c6kPVbag6Eevh1fda4'
     controller: null
     method: null
     route: null
@@ -4517,14 +4537,14 @@ endpoints:
         name: id
         description: 'ID Pengangkutan.'
         required: true
-        example: 13
+        example: 17
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 13
+      id: 17
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -4544,7 +4564,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 51vchke6V6aP3fDbZg4Ed8a'
+      - 'Bearer EDPaev83ZhV5k46bf61cgad'
     controller: null
     method: null
     route: null
@@ -4572,14 +4592,14 @@ endpoints:
         name: id
         description: 'ID Pengangkutan.'
         required: true
-        example: 1
+        example: 15
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 1
+      id: 15
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -4587,7 +4607,7 @@ endpoints:
         name: kode_karyawan_kerani
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: in
+        example: blanditiis
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4597,7 +4617,7 @@ endpoints:
         name: kode_karyawan_driver
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: est
+        example: vero
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4607,7 +4627,7 @@ endpoints:
         name: tkbm1
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: true
-        example: placeat
+        example: cum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4617,7 +4637,7 @@ endpoints:
         name: tkbm2
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: ullam
+        example: quidem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4627,7 +4647,7 @@ endpoints:
         name: tkbm3
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: voluptatem
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4637,7 +4657,7 @@ endpoints:
         name: tkbm4
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: ipsa
+        example: qui
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4647,7 +4667,7 @@ endpoints:
         name: tkbm5
         description: 'The <code>fccode</code> of an existing record in the employee table.'
         required: false
-        example: sequi
+        example: tempore
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4657,7 +4677,7 @@ endpoints:
         name: type_pengangkutan
         description: ''
         required: true
-        example: 7
+        example: 16
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -4667,7 +4687,7 @@ endpoints:
         name: kode_kendaraan
         description: ''
         required: true
-        example: non
+        example: nihil
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4677,7 +4697,7 @@ endpoints:
         name: tph
         description: 'The <code>notph</code> of an existing record in the tph table.'
         required: true
-        example: et
+        example: consequatur
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4687,7 +4707,7 @@ endpoints:
         name: fieldcode
         description: 'The <code>fieldcode</code> of an existing record in the tph table.'
         required: true
-        example: exercitationem
+        example: sed
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4697,7 +4717,7 @@ endpoints:
         name: fcba
         description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
         required: true
-        example: dignissimos
+        example: tempore
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4707,7 +4727,7 @@ endpoints:
         name: afdeling
         description: 'The <code>division</code> of an existing record in the sips_production.field table.'
         required: true
-        example: sed
+        example: dolor
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4717,7 +4737,7 @@ endpoints:
         name: fcba_destination
         description: 'The <code>fcba</code> of an existing record in the sips_production.field table.'
         required: false
-        example: error
+        example: voluptatem
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4727,7 +4747,7 @@ endpoints:
         name: afdeling_destination
         description: 'The <code>division</code> of an existing record in the sips_production.field table.'
         required: false
-        example: in
+        example: illo
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4737,7 +4757,7 @@ endpoints:
         name: pabrik_tujuan
         description: ''
         required: true
-        example: est
+        example: ea
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4747,7 +4767,7 @@ endpoints:
         name: totaljanjang
         description: ''
         required: true
-        example: 13
+        example: 15
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -4757,7 +4777,7 @@ endpoints:
         name: output
         description: ''
         required: true
-        example: 12
+        example: 4
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -4767,7 +4787,7 @@ endpoints:
         name: janjangnormal
         description: ''
         required: true
-        example: 15
+        example: 11
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -4777,7 +4797,7 @@ endpoints:
         name: brondolan
         description: ''
         required: false
-        example: 13
+        example: 5
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -4787,7 +4807,7 @@ endpoints:
         name: mentah
         description: ''
         required: false
-        example: 15
+        example: 19
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -4797,7 +4817,7 @@ endpoints:
         name: abnormal
         description: ''
         required: false
-        example: 1
+        example: 12
         type: integer
         enumValues: []
         exampleWasSpecified: false
@@ -4807,7 +4827,7 @@ endpoints:
         name: eta
         description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
         required: false
-        example: '2026-06-13 10:17:49'
+        example: '2026-06-23 11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4817,7 +4837,7 @@ endpoints:
         name: etd
         description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
         required: false
-        example: '2026-06-13 10:17:49'
+        example: '2026-06-23 11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -4854,30 +4874,30 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      kode_karyawan_kerani: in
-      kode_karyawan_driver: est
-      tkbm1: placeat
-      tkbm2: ullam
-      tkbm3: voluptatem
-      tkbm4: ipsa
-      tkbm5: sequi
-      type_pengangkutan: 7
-      kode_kendaraan: non
-      tph: et
-      fieldcode: exercitationem
-      fcba: dignissimos
-      afdeling: sed
-      fcba_destination: error
-      afdeling_destination: in
-      pabrik_tujuan: est
-      totaljanjang: 13
-      output: 12
-      janjangnormal: 15
-      brondolan: 13
-      mentah: 15
-      abnormal: 1
-      eta: '2026-06-13 10:17:49'
-      etd: '2026-06-13 10:17:49'
+      kode_karyawan_kerani: blanditiis
+      kode_karyawan_driver: vero
+      tkbm1: cum
+      tkbm2: quidem
+      tkbm3: qui
+      tkbm4: qui
+      tkbm5: tempore
+      type_pengangkutan: 16
+      kode_kendaraan: nihil
+      tph: consequatur
+      fieldcode: sed
+      fcba: tempore
+      afdeling: dolor
+      fcba_destination: voluptatem
+      afdeling_destination: illo
+      pabrik_tujuan: ea
+      totaljanjang: 15
+      output: 4
+      janjangnormal: 11
+      brondolan: 5
+      mentah: 19
+      abnormal: 12
+      eta: '2026-06-23 11:04:28'
+      etd: '2026-06-23 11:04:28'
     fileParameters:
       images: null
       no_ba_exca: null
@@ -4886,7 +4906,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer h1c63PZ5Efv64dVakbaDeg8'
+      - 'Bearer 85hcP4f1EZa63aVgevDbkd6'
     controller: null
     method: null
     route: null
@@ -4913,14 +4933,14 @@ endpoints:
         name: id
         description: 'ID Pengangkutan.'
         required: true
-        example: 11
+        example: 9
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 11
+      id: 9
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -4942,7 +4962,7 @@ endpoints:
     auth:
       - headers
       - Authorization
-      - 'Bearer 8k14dh66ecf3abgZVPEa5Dv'
+      - 'Bearer ED15Zaca6PbvVf6eh843gdk'
     controller: null
     method: null
     route: null
@@ -4969,14 +4989,14 @@ endpoints:
         name: id
         description: 'ID Pengangkutan.'
         required: true
-        example: 2
+        example: 12
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 2
+      id: 12
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -4984,7 +5004,7 @@ endpoints:
         name: status_pengangkutan
         description: ''
         required: true
-        example: Planned
+        example: Approved
         type: string
         enumValues:
           - Planned
@@ -4994,14 +5014,14 @@ endpoints:
         nullable: false
         custom: []
     cleanBodyParameters:
-      status_pengangkutan: Planned
+      status_pengangkutan: Approved
     fileParameters: []
     responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer 6V53eh1PEcb86aZvfa4gDdk'
+      - 'Bearer 56VEe6dZav84hkgDP1c3baf'
     controller: null
     method: null
     route: null
@@ -5028,14 +5048,14 @@ endpoints:
         name: id
         description: 'ID Pengangkutan.'
         required: true
-        example: 5
+        example: 20
         type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanUrlParameters:
-      id: 5
+      id: 20
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
@@ -5043,7 +5063,7 @@ endpoints:
         name: spbno
         description: ''
         required: true
-        example: ut
+        example: molestias
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -5053,22 +5073,22 @@ endpoints:
         name: etd
         description: 'Must be a valid date in the format <code>Y-m-d H:i:s</code>.'
         required: true
-        example: '2026-06-13 10:17:49'
+        example: '2026-06-23 11:04:28'
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: false
         custom: []
     cleanBodyParameters:
-      spbno: ut
-      etd: '2026-06-13 10:17:49'
+      spbno: molestias
+      etd: '2026-06-23 11:04:28'
     fileParameters: []
     responses: []
     responseFields: []
     auth:
       - headers
       - Authorization
-      - 'Bearer VEgk8avfZa6ebc3dPD5h164'
+      - 'Bearer 4ce3E86a16dPfZv5bVkaDhg'
     controller: null
     method: null
     route: null

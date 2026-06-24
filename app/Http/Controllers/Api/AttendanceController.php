@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Services\StorageService;
 
 /**
  * @group Apps
@@ -326,24 +327,43 @@ class AttendanceController extends Controller
 
         try {
             // Inisialisasi variabel path image (default null jika tidak ada file)
+            $storage = app(StorageService::class);
             $imagePath = null;
 
-            // Jika ada file image yang diunggah
             if ($request->hasFile("images")) {
                 $fcbaSlug = Str::slug(strtolower($request->fcba ?? "unknown"));
                 $tanggal = $request->tanggal
                     ? Carbon::parse($request->tanggal)
                     : Carbon::now();
                 $folderPath =
-                    "file/attendance/images/$fcbaSlug/" .
+                    "file/attendance/images/" .
+                    $fcbaSlug .
+                    "/" .
                     $tanggal->format("Y/m/d");
-                $imagePath = $this->optimizeAndSaveImage(
+
+                // Simpan dulu ke PROD lokal (optimized)
+                $relativePath = $this->optimizeAndSaveImage(
                     $request->file("images"),
                     $folderPath,
                 );
-            }
+                $localAbsPath = public_path($relativePath);
 
-            $imagePath = $imagePath ? asset($imagePath) : null;
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev(
+                        $localAbsPath,
+                        $relativePath,
+                    );
+
+                    if ($devUrl) {
+                        $imagePath = $devUrl; // URL mengarah ke DEV
+                        @unlink($localAbsPath); // hapus dari PROD karena sudah di DEV
+                    } else {
+                        $imagePath = asset($relativePath); // DEV gagal, sementara di PROD
+                    }
+                } else {
+                    $imagePath = asset($relativePath); // DEV offline, sementara di PROD
+                }
+            }
 
             // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
             $baExcaPath = null;
@@ -386,7 +406,7 @@ class AttendanceController extends Controller
             $datas = Attendance::create([
                 "TANGGAL" => $request->tanggal,
                 "KODE_KARYAWAN_MANDOR" =>
-                $request->kode_karyawan_mandor ??
+                    $request->kode_karyawan_mandor ??
                     optional($idkode_karyawan_mandor)->idkaryawan,
                 "KODE_KARYAWAN" => $request->kode_karyawan,
                 "TIME_IN" => $request->time_in,
@@ -435,7 +455,7 @@ class AttendanceController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                    "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                        "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -582,22 +602,41 @@ class AttendanceController extends Controller
                 );
             }
 
-            $imagePath = $datas->images; // Default gunakan gambar lama
+            $storage = app(StorageService::class);
+            $imagePath = $datas->images; // default: pakai gambar lama
 
-            // Jika ada file image yang diunggah
-            if (!empty($request->hasFile("images"))) {
+            if ($request->hasFile("images")) {
                 $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
                 $tanggal = $datas->tanggal
                     ? Carbon::parse($datas->tanggal)
                     : Carbon::now();
                 $folderPath =
-                    "file/attendance/images/$fcbaSlug/" .
+                    "file/attendance/images/" .
+                    $fcbaSlug .
+                    "/" .
                     $tanggal->format("Y/m/d");
-                $imagePath = $this->optimizeAndSaveImage(
+
+                $relativePath = $this->optimizeAndSaveImage(
                     $request->file("images"),
                     $folderPath,
                 );
-                $imagePath = asset($imagePath);
+                $localAbsPath = public_path($relativePath);
+
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev(
+                        $localAbsPath,
+                        $relativePath,
+                    );
+
+                    if ($devUrl) {
+                        $imagePath = $devUrl;
+                        @unlink($localAbsPath);
+                    } else {
+                        $imagePath = asset($relativePath);
+                    }
+                } else {
+                    $imagePath = asset($relativePath);
+                }
             }
 
             // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
@@ -836,7 +875,7 @@ class AttendanceController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                    "Terjadi kesalahan saat mengupdate status absensi.",
+                        "Terjadi kesalahan saat mengupdate status absensi.",
                     "error" => $e->getMessage(),
                 ],
                 500,

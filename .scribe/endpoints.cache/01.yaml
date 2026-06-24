@@ -28,7 +28,7 @@ endpoints:
         name: app_name
         description: ''
         required: true
-        example: autem
+        example: eum
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -55,7 +55,7 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      app_name: autem
+      app_name: eum
       platform: android
       version: 1.0.0
     fileParameters: []
@@ -108,7 +108,7 @@ endpoints:
         name: app_name
         description: ''
         required: true
-        example: aut
+        example: fugit
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -175,7 +175,7 @@ endpoints:
         nullable: true
         custom: []
     cleanBodyParameters:
-      app_name: aut
+      app_name: fugit
       platform: android
       version: 1.0.0
       force_update: false
@@ -237,7 +237,7 @@ endpoints:
     responses:
       -
         status: 200
-        content: '{"success":true,"data":[{"id":3,"version":"2.6.1","file_name":"GeoLens_v2.6.1_release_arm64-v8a.apk","file_path":"http:\/\/dev.skj.my.id:82\/FILES\/GeoLens_v2.6.1_release_arm64-v8a.apk","file_size":142130813,"file_extension":"apk","uploaded_by":"SKJ_HOJ","created_at":"2026-05-25T07:07:33.000000Z","updated_at":"2026-05-25T07:07:33.000000Z","platform":"Android","min_version":"2.6.0","force_update":false,"changelog":"\u2022 Akses Login Universal: Sekarang seluruh pengguna dengan status aktif dapat masuk ke aplikasi tanpa batasan level tertentu.\n\u2022 Perbaikan Dark Mode: Perbaikan beberapa tampilan yang belum Dark Mode.","app_name":"geolens"},{"id":2,"version":"2.6.0","file_name":"GeoLens_v2.6.0_release_arm64-v8a.apk","file_path":"http:\/\/dev.skj.my.id:82\/FILES\/GeoLens_v2.6.0_release_arm64-v8a.apk","file_size":142130813,"file_extension":"apk","uploaded_by":"SKJ_HOJ","created_at":"2026-05-25T04:57:36.000000Z","updated_at":"2026-05-25T04:57:36.000000Z","platform":"Android","min_version":"2.6.0","force_update":false,"changelog":"\u2022 Penambahan halaman Login\n\u2022 Tombol Kembali yang Lebih Mudah\n\u2022 Tampilan Layar Lebih Bersih Modern\n\u2022 Deteksi Objek Lebih Cepat\n\u2022 Ikon Dinamis pada Peta\n\u2022 Perbaikan Menu Peta\n\u2022 Ukuran Aplikasi Lebih Ringan\n\u2022 Sinkronisasi Data di Background\n\u2022 Notifikasi Progress Sinkronisasi\n\u2022 Kompas Detail yang Lebih Nyaman\n\u2022 Memperbaiki masalah gambar pecah pada peta saat HP diputar ke posisi landscape\n\u2022 Pembaruan Logo Aplikasi\n\u2022 Menu Informasi Aplikasi\n\u2022 Fitur Cek Pembaruan\n\u2022 Peningkatan Fitur Foto Deteksi\n\u2022 Menambahkan Label Blok pada Menu GIS\n\u2022 Redesain Dashboard Home\n\u2022 Daftar Prioritas Blok\n\u2022 Menu Detail Panen Terpisah\n\u2022 Fitur Urut Data (Sorting) Status\n\u2022 Navigasi Swipe Antar Menu\n\u2022 Dukungan Mode Gelap (Dark Mode)\n\u2022 Peningkatan Visual Navigasi\n\u2022 Pewarnaan Blok Berdasarkan Wilayah","app_name":"geolens"},{"id":1,"version":"1.0.675-675","file_name":"SipsMobile-debug-1.0.675-675.apk","file_path":"http:\/\/dev.skj.my.id:82\/FILES\/SipsMobile-debug-1.0.675-675.apk","file_size":61728476,"file_extension":"apk","uploaded_by":"SKJ_HOJ","created_at":"2026-05-24T11:29:14.000000Z","updated_at":"2026-05-24T11:29:14.000000Z","platform":"Android","min_version":"1.0.0","force_update":false,"changelog":"- Improvement pada pembuatan nomor spb, menggunakan format baru\n- Check scanner absensi, cegah absen diri sendiri","app_name":"sipsmobile"}]}'
+        content: '{"success":true,"data":[{"id":3,"version":"2.6.1","file_name":"GeoLens_v2.6.1_release_arm64-v8a.apk","file_path":"http:\/\/app.skj.my.id:82\/FILES\/GeoLens_v2.6.1_release_arm64-v8a.apk","file_size":142130813,"file_extension":"apk","uploaded_by":"SKJ_HOJ","created_at":"2026-05-25T07:07:33.000000Z","updated_at":"2026-05-25T07:07:33.000000Z","platform":"Android","min_version":"2.6.0","force_update":false,"changelog":"\u2022 Akses Login Universal: Sekarang seluruh pengguna dengan status aktif dapat masuk ke aplikasi tanpa batasan level tertentu.\n\u2022 Perbaikan Dark Mode: Perbaikan beberapa tampilan yang belum Dark Mode.","app_name":"geolens"},{"id":2,"version":"2.6.0","file_name":"GeoLens_v2.6.0_release_arm64-v8a.apk","file_path":"http:\/\/app.skj.my.id:82\/FILES\/GeoLens_v2.6.0_release_arm64-v8a.apk","file_size":142130813,"file_extension":"apk","uploaded_by":"SKJ_HOJ","created_at":"2026-05-25T04:57:36.000000Z","updated_at":"2026-05-25T04:57:36.000000Z","platform":"Android","min_version":"2.6.0","force_update":false,"changelog":"\u2022 Penambahan halaman Login\n\u2022 Tombol Kembali yang Lebih Mudah\n\u2022 Tampilan Layar Lebih Bersih Modern\n\u2022 Deteksi Objek Lebih Cepat\n\u2022 Ikon Dinamis pada Peta\n\u2022 Perbaikan Menu Peta\n\u2022 Ukuran Aplikasi Lebih Ringan\n\u2022 Sinkronisasi Data di Background\n\u2022 Notifikasi Progress Sinkronisasi\n\u2022 Kompas Detail yang Lebih Nyaman\n\u2022 Memperbaiki masalah gambar pecah pada peta saat HP diputar ke posisi landscape\n\u2022 Pembaruan Logo Aplikasi\n\u2022 Menu Informasi Aplikasi\n\u2022 Fitur Cek Pembaruan\n\u2022 Peningkatan Fitur Foto Deteksi\n\u2022 Menambahkan Label Blok pada Menu GIS\n\u2022 Redesain Dashboard Home\n\u2022 Daftar Prioritas Blok\n\u2022 Menu Detail Panen Terpisah\n\u2022 Fitur Urut Data (Sorting) Status\n\u2022 Navigasi Swipe Antar Menu\n\u2022 Dukungan Mode Gelap (Dark Mode)\n\u2022 Peningkatan Visual Navigasi\n\u2022 Pewarnaan Blok Berdasarkan Wilayah","app_name":"geolens"},{"id":1,"version":"1.0.675-675","file_name":"SipsMobile-debug-1.0.675-675.apk","file_path":"http:\/\/app.skj.my.id:82\/FILES\/SipsMobile-debug-1.0.675-675.apk","file_size":61728476,"file_extension":"apk","uploaded_by":"SKJ_HOJ","created_at":"2026-05-24T11:29:14.000000Z","updated_at":"2026-05-24T11:29:14.000000Z","platform":"Android","min_version":"1.0.0","force_update":false,"changelog":"- Improvement pada pembuatan nomor spb, menggunakan format baru\n- Check scanner absensi, cegah absen diri sendiri","app_name":"sipsmobile"}]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json

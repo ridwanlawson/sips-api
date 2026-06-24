@@ -127,4 +127,7 @@ return [
     'deploy_secret' => env('DEPLOY_SECRET'),
     'deploy_branch' => env('DEPLOY_BRANCH'),
     'deploy_path'   => env('DEPLOY_PATH'),
+    'dev_server_url'       => env('DEV_SERVER_URL', ''),
+    'dev_server_timeout'   => env('DEV_SERVER_TIMEOUT', 5),
+    'internal_sync_token'  => env('INTERNAL_SYNC_TOKEN', ''),
 ];

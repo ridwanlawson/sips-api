@@ -3,7 +3,7 @@
 SIPS API untuk Mobile dan Frontend
 
 <aside>
-    <strong>Base URL</strong>: <code>http://dev.skj.my.id:82</code>
+    <strong>Base URL</strong>: <code>http://app.skj.my.id:82</code>
 </aside>
 
 Dokumentasi ini bertujuan untuk memberikan semua informasi yang Anda butuhkan untuk menggunakan dengan API kami.
