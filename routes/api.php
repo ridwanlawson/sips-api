@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\AncakController;
 use App\Http\Controllers\Api\AppUploadController;
 use App\Http\Controllers\Api\MapController;
+use App\Http\Controllers\Internal\InternalFileController;
 
 Route::post("/register", [AuthController::class, "register"])
     ->middleware("throttle:3,1")
@@ -242,3 +243,8 @@ Route::middleware([
 Route::post("/deploy", [ApiLogController::class, "deploy"]);
 
 Route::get("/health", [ApiLogController::class, "health"]);
+
+Route::post("/internal/receive-file", [
+    InternalFileController::class,
+    "receive",
+])->middleware("internal.token");

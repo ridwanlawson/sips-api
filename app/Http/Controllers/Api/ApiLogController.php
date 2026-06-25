@@ -180,7 +180,7 @@ class ApiLogController extends Controller
     {
         return response()->json([
             "status" => "ok",
-            "server" => config("app.env"),
+            "server" => config("app.server_role"),
             "time" => now()->toIso8601String(),
         ]);
     }

@@ -9,7 +9,6 @@ use App\Http\Resources\AllResource;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-// use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\User;
@@ -25,68 +24,31 @@ use App\Services\StorageService;
 class AttendanceController extends Controller
 {
     use \App\Traits\ImageOptimizerTrait;
+
+    // -------------------------------------------------------------------------
+    // INDEX
+    // -------------------------------------------------------------------------
+
     /**
      * Memanggil data Absensi dari SIPS Mobile.
      *
-     * API ini digunakan untuk memanggil data ABSENSI secara keseluruhan.
-     * Tetapi jika ingin melakukan filter pada data yang dipanggil,
-     * buatlah parameter pada Url berdasarkan _**Query Parameter**_. data ini diurutkan berdasarkan Bisnis Unit, Tanggal terbaru, Afdeling dan Kode Karyawan
-     *
-     * @queryParam tanggal string Optional. Filter Absensi berdasarkan tanggal. Harus dalam format YYYY-MM-DD. Example: 2025-08-17
-     * @queryParam tanggal_end string Optional. Filter Absensi berdasarkan rentang tanggal. Harus dalam format YYYY-MM-DD. Example: 2025-08-20
-     * @queryParam kode_karyawan_mandor string Optional. Filter Absensi berdasarkan kode_karyawan_mandor. Example: 06-851012-151218-0079
-     * @queryParam kode_karyawan string Optional. Filter Absensi berdasarkan kode_karyawan. Example: 06-031014-231025-0438
-     * @queryParam fcba string Optional. Filter Absensi berdasarkan fcba. Example: MTE
-     * @queryParam afdeling string Optional. Filter Absensi berdasarkan afdeling. Example: AFD-01
-     * @queryParam gang string Optional. Filter Absensi berdasarkan gang. Example: PN011
-     * @queryParam attendance string Optional. Filter Absensi berdasarkan attendance. Example: KJ
-     * @queryParam status_attendance string Optional. Filter Absensi berdasarkan status kehadiran salah satu dari Planned, AuthorizedOnProgress, Approved, Reject. Example: Planned
-     * @queryParam attendance_type string Optional. Filter Absensi berdasarkan type kehadiran salah satu dari REGULAR, ASSISTENSI. Example: REGULAR
-     * @queryParam fcba_destination string Optional. Filter Absensi berdasarkan fcba_destination. Example: MRE
-     * @queryParam section_destination string Optional. Filter Absensi berdasarkan section_destination. Example: AFD-01
-     * @queryParam kemandoran string Optional. Filter Absensi berdasarkan kemandoran. Example: MD011
-     *
-     * @response 200 scenario="success" {
-     *  "success": true,
-     *  "message": "List Data Absensi",
-     *  "data": [
-     *      {
-     *          "id": "25",
-     *          "tanggal": "2024-12-19 00:00:00",
-     *          "time_in": "2024-12-19 06:00:31",
-     *          "location_in": "2024-12-19 06:00:31",
-     *          "time_out": "2024-12-19 17:44:31",
-     *          "location_out": "2024-12-19 17:44:31",
-     *          "kode_karyawan_mandor": "06-851012-151218-0079",
-     *          "namamandor": "SAMSUL",
-     *          "kode_karyawan": "06-031014-231025-0438",
-     *          "namakaryawan": "HENDRIKUS KLAU SERAN",
-     *          "pengancakan": "MTE",
-     *          "total_late_time": "01:11",
-     *          "go_home_early": "00:10",
-     *          "attendance_type": "REGULAR",
-     *          "exception_case": "",
-     *          "no_ba_exca": "",
-     *          "fcba": "MTE",
-     *          "section": "AFD-01",
-     *          "gang": "PN011",
-     *          "attendance": "KJ",
-     *          "mandays": 0.82,
-     *          "status_attendance": "Planned",
-     *          "fcba_destination": "MRE",
-     *          "section_destination": "AFD-01",
-     *          "kemandoran": "MD011",
-     *          "image": "",
-     *          "id_device": "",
-     *          "mac_address": ""
-     *      }
-     *  ]
-     * }
+     * @queryParam tanggal string Optional. Format YYYY-MM-DD. Example: 2025-08-17
+     * @queryParam tanggal_end string Optional. Format YYYY-MM-DD. Example: 2025-08-20
+     * @queryParam kode_karyawan_mandor string Optional. Example: 06-851012-151218-0079
+     * @queryParam kode_karyawan string Optional. Example: 06-031014-231025-0438
+     * @queryParam fcba string Optional. Example: MTE
+     * @queryParam afdeling string Optional. Example: AFD-01
+     * @queryParam gang string Optional. Example: PN011
+     * @queryParam attendance string Optional. Example: KJ
+     * @queryParam status_attendance string Optional. Planned|AuthorizedOnProgress|Approved|Reject. Example: Planned
+     * @queryParam attendance_type string Optional. REGULAR|ASSISTENSI. Example: REGULAR
+     * @queryParam fcba_destination string Optional. Example: MRE
+     * @queryParam section_destination string Optional. Example: AFD-01
+     * @queryParam kemandoran string Optional. Example: MD011
      */
     public function index(Request $request)
     {
         try {
-            // Ambil parameter dari query string
             $tanggal = $request->query("tanggal");
             $tanggalEnd = $request->query("tanggal_end");
             $kode_karyawan_mandor = $request->query("kode_karyawan_mandor");
@@ -102,167 +64,130 @@ class AttendanceController extends Controller
             $kemandoran = $request->query("kemandoran");
 
             $query = "
-            select
-                ATTENDANCE.ID,
-                ATTENDANCE.TANGGAL,
-                ATTENDANCE.TIME_IN,
-                ATTENDANCE.TIME_OUT,
-                ATTENDANCE.LOCATION_IN,
-                ATTENDANCE.LOCATION_OUT,
-                ATTENDANCE.KODE_KARYAWAN_MANDOR,
-                MANDOR.FCNAME NAMAMANDOR,
-                ATTENDANCE.KODE_KARYAWAN,
-                KARYAWAN.FCNAME NAMAKARYAWAN,
-                ATTENDANCE.PENGANCAKAN,
-                ATTENDANCE.TOTAL_LATE_TIME,
-                ATTENDANCE.GO_HOME_EARLY,
-                ATTENDANCE.ATTENDANCE_TYPE,
-                ATTENDANCE.EXCEPTION_CASE,
-                ATTENDANCE.NO_BA_EXCA,
-                ATTENDANCE.FCBA,
-                ATTENDANCE.SECTION,
-                ATTENDANCE.GANG,
-                ATTENDANCE.ATTENDANCE,
-                NVL(
-                    TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM
-                        TO_CHAR(ATTENDANCE.MANDAYS, 'FM9999990D9999')
-                    )),
-                    0
-                ) AS MANDAYS,
-                ATTENDANCE.STATUS_ATTENDANCE,
-                ATTENDANCE.FCBA_DESTINATION,
-                ATTENDANCE.SECTION_DESTINATION,
-                ATTENDANCE.KEMANDORAN,
-                ATTENDANCE.IMAGES,
-                ATTENDANCE.ID_DEVICE,
-                ATTENDANCE.MAC_ADDRESS,
-                ATTENDANCE.CREATED_AT,
-                ATTENDANCE.CREATED_BY
-            from
-                SIPSMOBILE.ATTENDANCE
-            inner join
-                SIPSMOBILE.EMPLOYEE KARYAWAN
-                on ATTENDANCE.KODE_KARYAWAN = KARYAWAN.FCCODE
-                and ATTENDANCE.FCBA = KARYAWAN.FCBA
-            left join
-                SIPSMOBILE.EMPLOYEE MANDOR
-                on ATTENDANCE.KODE_KARYAWAN_MANDOR = MANDOR.FCCODE
-                and ATTENDANCE.FCBA = MANDOR.FCBA
-            where
-                ATTENDANCE.DELETED_AT IS NULL
-        ";
+                SELECT
+                    ATTENDANCE.ID,
+                    ATTENDANCE.TANGGAL,
+                    ATTENDANCE.TIME_IN,
+                    ATTENDANCE.TIME_OUT,
+                    ATTENDANCE.LOCATION_IN,
+                    ATTENDANCE.LOCATION_OUT,
+                    ATTENDANCE.KODE_KARYAWAN_MANDOR,
+                    MANDOR.FCNAME NAMAMANDOR,
+                    ATTENDANCE.KODE_KARYAWAN,
+                    KARYAWAN.FCNAME NAMAKARYAWAN,
+                    ATTENDANCE.PENGANCAKAN,
+                    ATTENDANCE.TOTAL_LATE_TIME,
+                    ATTENDANCE.GO_HOME_EARLY,
+                    ATTENDANCE.ATTENDANCE_TYPE,
+                    ATTENDANCE.EXCEPTION_CASE,
+                    ATTENDANCE.NO_BA_EXCA,
+                    ATTENDANCE.FCBA,
+                    ATTENDANCE.SECTION,
+                    ATTENDANCE.GANG,
+                    ATTENDANCE.ATTENDANCE,
+                    NVL(
+                        TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM
+                            TO_CHAR(ATTENDANCE.MANDAYS, 'FM9999990D9999')
+                        )),
+                        0
+                    ) AS MANDAYS,
+                    ATTENDANCE.STATUS_ATTENDANCE,
+                    ATTENDANCE.FCBA_DESTINATION,
+                    ATTENDANCE.SECTION_DESTINATION,
+                    ATTENDANCE.KEMANDORAN,
+                    ATTENDANCE.IMAGES,
+                    ATTENDANCE.ID_DEVICE,
+                    ATTENDANCE.MAC_ADDRESS,
+                    ATTENDANCE.CREATED_AT,
+                    ATTENDANCE.CREATED_BY
+                FROM SIPSMOBILE.ATTENDANCE
+                INNER JOIN SIPSMOBILE.EMPLOYEE KARYAWAN
+                    ON ATTENDANCE.KODE_KARYAWAN = KARYAWAN.FCCODE
+                    AND ATTENDANCE.FCBA = KARYAWAN.FCBA
+                LEFT JOIN SIPSMOBILE.EMPLOYEE MANDOR
+                    ON ATTENDANCE.KODE_KARYAWAN_MANDOR = MANDOR.FCCODE
+                    AND ATTENDANCE.FCBA = MANDOR.FCBA
+                WHERE ATTENDANCE.DELETED_AT IS NULL
+            ";
 
-            // Parameter binding
             $bindings = [];
 
-            /**
-             * LOGIKA FILTER TANGGAL:
-             * - Jika tanggal & tanggal_end diisi -> rentang tanggal (BETWEEN)
-             * - Jika hanya tanggal diisi        -> = tanggal
-             * - Jika hanya tanggal_end diisi    -> = tanggal_end
-             * - Jika dua-duanya kosong          -> tidak ada filter tanggal
-             */
             if ($tanggal && $tanggalEnd) {
-                // Optional: jaga-jaga kalau user kebalik isi (tanggal > tanggalEnd)
-                $startDate = $tanggal;
-                $endDate = $tanggalEnd;
-
-                if ($startDate > $endDate) {
-                    $startDate = $tanggalEnd;
-                    $endDate = $tanggal;
-                }
-
+                $startDate = $tanggal <= $tanggalEnd ? $tanggal : $tanggalEnd;
+                $endDate = $tanggal <= $tanggalEnd ? $tanggalEnd : $tanggal;
                 $query .=
-                    " and TRUNC(ATTENDANCE.TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                    " AND TRUNC(ATTENDANCE.TANGGAL) BETWEEN TO_DATE(:tanggal, 'YYYY-MM-DD') AND TO_DATE(:tanggal_end, 'YYYY-MM-DD')";
                 $bindings["tanggal"] = $startDate;
                 $bindings["tanggal_end"] = $endDate;
             } elseif ($tanggal) {
                 $query .=
-                    " and TRUNC(ATTENDANCE.TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
+                    " AND TRUNC(ATTENDANCE.TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD')";
                 $bindings["tanggal"] = $tanggal;
             } elseif ($tanggalEnd) {
                 $query .=
-                    " and TRUNC(ATTENDANCE.TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                    " AND TRUNC(ATTENDANCE.TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD')";
                 $bindings["tanggal_end"] = $tanggalEnd;
             }
 
             if ($kode_karyawan_mandor) {
                 $query .=
-                    " and ATTENDANCE.KODE_KARYAWAN_MANDOR = :kode_karyawan_mandor";
+                    " AND ATTENDANCE.KODE_KARYAWAN_MANDOR = :kode_karyawan_mandor";
                 $bindings["kode_karyawan_mandor"] = $kode_karyawan_mandor;
             }
-
             if ($kode_karyawan) {
-                $query .= " and ATTENDANCE.KODE_KARYAWAN = :kode_karyawan";
+                $query .= " AND ATTENDANCE.KODE_KARYAWAN = :kode_karyawan";
                 $bindings["kode_karyawan"] = $kode_karyawan;
             }
-
             if ($fcba) {
-                $query .= " and ATTENDANCE.FCBA = :fcba";
+                $query .= " AND ATTENDANCE.FCBA = :fcba";
                 $bindings["fcba"] = $fcba;
             }
-
             if ($afdeling) {
-                $query .= " and ATTENDANCE.SECTION = :afdeling";
+                $query .= " AND ATTENDANCE.SECTION = :afdeling";
                 $bindings["afdeling"] = $afdeling;
             }
-
             if ($gang) {
-                $query .= " and ATTENDANCE.GANG = :gang";
+                $query .= " AND ATTENDANCE.GANG = :gang";
                 $bindings["gang"] = $gang;
             }
-
             if ($attendance) {
-                $query .= " and ATTENDANCE.ATTENDANCE = :attendance";
+                $query .= " AND ATTENDANCE.ATTENDANCE = :attendance";
                 $bindings["attendance"] = $attendance;
             }
-
             if ($status_attendance) {
                 $query .=
-                    " and ATTENDANCE.STATUS_ATTENDANCE = :status_attendance";
+                    " AND ATTENDANCE.STATUS_ATTENDANCE = :status_attendance";
                 $bindings["status_attendance"] = $status_attendance;
             }
-
             if ($fcba_destination) {
                 $query .=
-                    " and ATTENDANCE.FCBA_DESTINATION = :fcba_destination";
+                    " AND ATTENDANCE.FCBA_DESTINATION = :fcba_destination";
                 $bindings["fcba_destination"] = $fcba_destination;
             }
-
             if ($section_destination) {
                 $query .=
-                    " and ATTENDANCE.SECTION_DESTINATION = :section_destination";
+                    " AND ATTENDANCE.SECTION_DESTINATION = :section_destination";
                 $bindings["section_destination"] = $section_destination;
             }
-
             if ($attendance_type) {
-                $query .= " and ATTENDANCE.ATTENDANCE_TYPE = :attendance_type";
+                $query .= " AND ATTENDANCE.ATTENDANCE_TYPE = :attendance_type";
                 $bindings["attendance_type"] = $attendance_type;
             }
-
-            if ($attendance_type) {
-                $query .= " and ATTENDANCE.ATTENDANCE_TYPE = :attendance_type";
-                $bindings["attendance_type"] = $attendance_type;
-            }
-
             if ($kemandoran) {
-                $query .= " and ATTENDANCE.KEMANDORAN = :kemandoran";
+                $query .= " AND ATTENDANCE.KEMANDORAN = :kemandoran";
                 $bindings["kemandoran"] = $kemandoran;
             }
 
-            // Tambahkan bagian akhir query
             $query .= "
-            order by
-                ATTENDANCE.FCBA,
-                ATTENDANCE.TANGGAL DESC,
-                KARYAWAN.SECTIONNAME,
-                ATTENDANCE.KODE_KARYAWAN
-        ";
+                ORDER BY
+                    ATTENDANCE.FCBA,
+                    ATTENDANCE.TANGGAL DESC,
+                    KARYAWAN.SECTIONNAME,
+                    ATTENDANCE.KODE_KARYAWAN
+            ";
 
-            // Jalankan query
             $datas = DB::connection("oracle")->select($query, $bindings);
 
-            // Jika data kosong
             if (empty($datas)) {
                 return response()->json(
                     [
@@ -276,10 +201,6 @@ class AttendanceController extends Controller
 
             return new AllResource(true, "List Data Absensi", $datas);
         } catch (\Exception $e) {
-            // Log::error('Error mengambil data absensi (index)', [
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -291,12 +212,15 @@ class AttendanceController extends Controller
         }
     }
 
+    // -------------------------------------------------------------------------
+    // STORE
+    // -------------------------------------------------------------------------
+
     /**
      * Menyimpan data Absensi ke dalam database SIPS Mobile.
      */
     public function store(Request $request)
     {
-        // Validasi inputan
         $request->validate([
             "tanggal" => "required|date_format:Y-m-d",
             "kode_karyawan_mandor" => "nullable|exists:employee,fccode",
@@ -326,28 +250,19 @@ class AttendanceController extends Controller
         ]);
 
         try {
-            // Inisialisasi variabel path image (default null jika tidak ada file)
             $storage = app(StorageService::class);
-            $isOnline = $storage->isDevOnline();
 
-            \Log::info("DEV status", [
-                "is_online" => $isOnline,
-                "dev_url" => config("app.dev_server_url"),
-            ]);
+            $fcbaSlug = Str::slug(strtolower($request->fcba ?? "unknown"));
+            $tanggal = $request->tanggal
+                ? Carbon::parse($request->tanggal)
+                : Carbon::now();
+            $datePath = $tanggal->format("Y/m/d");
+
+            // --- IMAGES ---
             $imagePath = null;
 
             if ($request->hasFile("images")) {
-                $fcbaSlug = Str::slug(strtolower($request->fcba ?? "unknown"));
-                $tanggal = $request->tanggal
-                    ? Carbon::parse($request->tanggal)
-                    : Carbon::now();
-                $folderPath =
-                    "file/attendance/images/" .
-                    $fcbaSlug .
-                    "/" .
-                    $tanggal->format("Y/m/d");
-
-                // Simpan dulu ke PROD lokal (optimized)
+                $folderPath = "file/attendance/images/{$fcbaSlug}/{$datePath}";
                 $relativePath = $this->optimizeAndSaveImage(
                     $request->file("images"),
                     $folderPath,
@@ -359,61 +274,41 @@ class AttendanceController extends Controller
                         $localAbsPath,
                         $relativePath,
                     );
-
                     if ($devUrl) {
-                        $imagePath = $devUrl; // URL mengarah ke DEV
-                        @unlink($localAbsPath); // hapus dari PROD karena sudah di DEV
+                        $imagePath = $devUrl;
+                        @unlink($localAbsPath);
                     } else {
-                        $imagePath = asset($relativePath); // DEV gagal, sementara di PROD
+                        $imagePath = asset($relativePath);
                     }
                 } else {
-                    $imagePath = asset($relativePath); // DEV offline, sementara di PROD
+                    $imagePath = asset($relativePath);
                 }
             }
 
-            // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
+            // --- NO_BA_EXCA ---
             $baExcaPath = null;
 
-            // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
-                $baExca = $request->file("no_ba_exca");
-                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+                $baFile = $request->file("no_ba_exca");
+                $baFileName = time() . "_" . $baFile->getClientOriginalName();
+                $relativePath = "file/attendance/files/{$fcbaSlug}/{$datePath}/{$baFileName}";
 
-                $fcbaSlug = Str::slug(strtolower($request->fcba ?? "unknown"));
-                $tanggal = $request->tanggal
-                    ? Carbon::parse($request->tanggal)
-                    : Carbon::now();
-                $year = $tanggal->format("Y");
-                $month = $tanggal->format("m");
-                $day = $tanggal->format("d");
-
-                $relativePath = "file/attendance/files/$fcbaSlug/$year/$month/$day";
-                $destinationPath = public_path($relativePath);
-
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0777, true);
-                }
-
-                $baExca->move($destinationPath, $baExcaName);
-                $baExcaPath = $relativePath . "/" . $baExcaName;
+                $baExcaPath = $storage->storeFile($baFile, $relativePath);
             }
 
-            $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
+            // --- Cari mandor ---
+            $idkode_karyawan_mandor = User::where("STATUS", "Y")
+                ->where("FCBA", $request->fcba)
+                ->where("AFDELING", $request->section)
+                ->where("GANGCODE", $request->kemandoran)
+                ->where("LEVEL", "MDP")
+                ->value("IDKARYAWAN");
 
-            $kode_karyawan_mandor = User::where("STATUS", "=", "Y")
-                ->select("IDKARYAWAN")
-                ->where("FCBA", "=", $request->fcba)
-                ->where("AFDELING", "=", $request->section)
-                ->where("GANGCODE", "=", $request->kemandoran)
-                ->where("LEVEL", "=", "MDP");
-            $idkode_karyawan_mandor = $kode_karyawan_mandor->first();
-
-            // Simpan data absensi ke dalam database
+            // --- Simpan ke DB ---
             $datas = Attendance::create([
                 "TANGGAL" => $request->tanggal,
                 "KODE_KARYAWAN_MANDOR" =>
-                    $request->kode_karyawan_mandor ??
-                    optional($idkode_karyawan_mandor)->idkaryawan,
+                    $request->kode_karyawan_mandor ?? $idkode_karyawan_mandor,
                 "KODE_KARYAWAN" => $request->kode_karyawan,
                 "TIME_IN" => $request->time_in,
                 "TIME_OUT" => $request->time_out,
@@ -436,27 +331,16 @@ class AttendanceController extends Controller
                 "KEMANDORAN" => $request->kemandoran,
                 "ID_DEVICE" => $request->id_device,
                 "MAC_ADDRESS" => $request->mac_address,
-                "IMAGES" => $imagePath, // Simpan path image jika ada
-                "CREATED_BY" => Auth::user()->username, // Asumsi Anda menggunakan autentikasi untuk menyimpan user yang membuat data
+                "IMAGES" => $imagePath,
+                "CREATED_BY" => Auth::user()->username,
             ]);
 
-            // Kembalikan respons dengan data yang baru saja disimpan
-            // Log::info('Absensi berhasil ditambahkan (store)', [
-            //     'id' => $datas->id,
-            //     'kode_karyawan' => $request->kode_karyawan,
-            //     'created_by' => Auth::user()->username,
-            // ]);
             return new AllResource(
                 true,
                 "Data Absensi berhasil ditambahkan.",
                 $datas,
             );
         } catch (\Exception $e) {
-            // Log::error('Error menyimpan data absensi (store)', [
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            //     'request' => $request->all(),
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -469,17 +353,20 @@ class AttendanceController extends Controller
         }
     }
 
+    // -------------------------------------------------------------------------
+    // SHOW
+    // -------------------------------------------------------------------------
+
     /**
-     * Menampilkan data Absensi berdasarkan id Absensi dari SIPS Mobile.
+     * Menampilkan data Absensi berdasarkan id.
      *
      * @urlParam id integer required ID Absensi.
      */
     public function show(string $id)
     {
         try {
-            // Query untuk mengambil detail data berdasarkan ID
             $query = "
-                select
+                SELECT
                     ATTENDANCE.ID,
                     ATTENDANCE.TANGGAL,
                     ATTENDANCE.TIME_IN,
@@ -502,7 +389,7 @@ class AttendanceController extends Controller
                     ATTENDANCE.ATTENDANCE,
                     NVL(TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM
                         TO_CHAR(ATTENDANCE.MANDAYS, 'FM9999990D9999')
-                    )),0) AS MANDAYS,
+                    )), 0) AS MANDAYS,
                     ATTENDANCE.STATUS_ATTENDANCE,
                     ATTENDANCE.FCBA_DESTINATION,
                     ATTENDANCE.SECTION_DESTINATION,
@@ -512,26 +399,18 @@ class AttendanceController extends Controller
                     ATTENDANCE.MAC_ADDRESS,
                     ATTENDANCE.CREATED_AT,
                     ATTENDANCE.CREATED_BY
-                from
-                    SIPSMOBILE.ATTENDANCE
-                inner join
-                    SIPSMOBILE.EMPLOYEE KARYAWAN
-                on
-                    ATTENDANCE.KODE_KARYAWAN = KARYAWAN.FCCODE
-                    and ATTENDANCE.FCBA = KARYAWAN.FCBA
-                left join
-                    SIPSMOBILE.EMPLOYEE MANDOR
-                on
-                    ATTENDANCE.KODE_KARYAWAN_MANDOR = MANDOR.FCCODE
-                    and ATTENDANCE.FCBA = MANDOR.FCBA
-                where
-                    ATTENDANCE.ID = :id
+                FROM SIPSMOBILE.ATTENDANCE
+                INNER JOIN SIPSMOBILE.EMPLOYEE KARYAWAN
+                    ON ATTENDANCE.KODE_KARYAWAN = KARYAWAN.FCCODE
+                    AND ATTENDANCE.FCBA = KARYAWAN.FCBA
+                LEFT JOIN SIPSMOBILE.EMPLOYEE MANDOR
+                    ON ATTENDANCE.KODE_KARYAWAN_MANDOR = MANDOR.FCCODE
+                    AND ATTENDANCE.FCBA = MANDOR.FCBA
+                WHERE ATTENDANCE.ID = :id
             ";
 
-            // Jalankan query
             $data = DB::connection("oracle")->selectOne($query, ["id" => $id]);
 
-            // Jika data tidak ditemukan
             if (!$data) {
                 return response()->json(
                     [
@@ -542,14 +421,8 @@ class AttendanceController extends Controller
                 );
             }
 
-            // Jika data ditemukan, kembalikan data
             return new AllResource(true, "Detail Data Absensi", $data);
         } catch (\Exception $e) {
-            // Log::error('Error mengambil data absensi (show)', [
-            //     'id' => $id,
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -561,14 +434,17 @@ class AttendanceController extends Controller
         }
     }
 
+    // -------------------------------------------------------------------------
+    // UPDATE
+    // -------------------------------------------------------------------------
+
     /**
-     * Mengubah data Absensi berdasarkan id Absensi.
+     * Mengubah data Absensi berdasarkan id.
      *
      * @urlParam id integer required ID Absensi.
      */
     public function update(Request $request, string $id)
     {
-        // Validasi input
         $validated = $request->validate([
             "kode_karyawan_mandor" => "nullable|exists:employee,fccode",
             "kode_karyawan" => "required|string|exists:employee,fccode",
@@ -579,7 +455,7 @@ class AttendanceController extends Controller
             "total_late_time" => "nullable|date_format:H:i",
             "go_home_early" => "nullable|date_format:H:i",
             "exception_case" => "nullable",
-            "no_ba_exca" => "nullable",
+            "no_ba_exca" => "nullable|file|mimes:pdf|max:2048",
             "fcba" => "required|string|exists:employee,fcba",
             "section" => "nullable|exists:employee,sectionname",
             "gang" => "nullable|exists:employee,gangcode",
@@ -594,34 +470,21 @@ class AttendanceController extends Controller
         ]);
 
         try {
-            // Cari data berdasarkan ID
             $datas = Attendance::findOrFail($id);
 
-            // Jika data tidak ditemukan
-            if (!$datas) {
-                return response()->json(
-                    [
-                        "success" => false,
-                        "message" => "Absensi tidak ditemukan",
-                    ],
-                    404,
-                );
-            }
-
             $storage = app(StorageService::class);
-            $imagePath = $datas->images; // default: pakai gambar lama
+
+            $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
+            $tanggal = $datas->tanggal
+                ? Carbon::parse($datas->tanggal)
+                : Carbon::now();
+            $datePath = $tanggal->format("Y/m/d");
+
+            // --- IMAGES ---
+            $imagePath = $datas->images;
 
             if ($request->hasFile("images")) {
-                $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
-                $tanggal = $datas->tanggal
-                    ? Carbon::parse($datas->tanggal)
-                    : Carbon::now();
-                $folderPath =
-                    "file/attendance/images/" .
-                    $fcbaSlug .
-                    "/" .
-                    $tanggal->format("Y/m/d");
-
+                $folderPath = "file/attendance/images/{$fcbaSlug}/{$datePath}";
                 $relativePath = $this->optimizeAndSaveImage(
                     $request->file("images"),
                     $folderPath,
@@ -633,7 +496,6 @@ class AttendanceController extends Controller
                         $localAbsPath,
                         $relativePath,
                     );
-
                     if ($devUrl) {
                         $imagePath = $devUrl;
                         @unlink($localAbsPath);
@@ -645,133 +507,106 @@ class AttendanceController extends Controller
                 }
             }
 
-            // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
+            // --- NO_BA_EXCA ---
             $baExcaPath = null;
 
-            // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
-                $baExca = $request->file("no_ba_exca");
-                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+                $baFile = $request->file("no_ba_exca");
+                $baFileName = time() . "_" . $baFile->getClientOriginalName();
+                $relativePath = "file/attendance/files/{$fcbaSlug}/{$datePath}/{$baFileName}";
 
-                $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
-                $tanggal = $datas->tanggal
-                    ? Carbon::parse($datas->tanggal)
-                    : Carbon::now();
-                $year = $tanggal->format("Y");
-                $month = $tanggal->format("m");
-                $day = $tanggal->format("d");
-
-                $relativePath = "file/attendance/files/$fcbaSlug/$year/$month/$day";
-                $destinationPath = public_path($relativePath);
-
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0777, true);
-                }
-
-                $baExca->move($destinationPath, $baExcaName);
-                $baExcaPath = $relativePath . "/" . $baExcaName;
-                $baExcaPath = asset($baExcaPath);
+                $baExcaPath = $storage->storeFile($baFile, $relativePath);
             }
 
-            // Menyusun data untuk update
+            // --- Build update ---
             $updateData = [
-                $validated["kode_karyawan_mandor"] ?? null, // 1
-                $validated["kode_karyawan"] ?? null, // 2
-                $validated["attendance_type"] ?? null, // 3
-                $validated["time_out"] ?? null, // 4
-                $validated["location_out"] ?? null, // 5
-                $validated["pengancakan"] ?? null, // 6
-                $validated["total_late_time"] ?? null, // 7
-                $validated["go_home_early"] ?? null, // 8
-                $validated["exception_case"] ?? null, // 9
-                $validated["fcba"] ?? null, // 10
-                $validated["section"] ?? null, // 11
-                $validated["gang"] ?? null, // 12
-                $validated["mandays"] ?? null, // 13
-                $validated["attendance"] ?? null, // 14
-                $validated["fcba_destination"] ?? null, // 15
-                $validated["section_destination"] ?? null, // 16
-                $validated["kemandoran"] ?? null, // 17
-                $validated["id_device"] ?? null, // 18
-                $validated["mac_address"] ?? null, // 19
-                $imagePath, // 20
-                Auth::user()->username, // 21
-                $id, // (ID untuk WHERE)
+                $validated["kode_karyawan_mandor"] ?? null,
+                $validated["kode_karyawan"] ?? null,
+                $validated["attendance_type"] ?? null,
+                $validated["time_out"] ?? null,
+                $validated["location_out"] ?? null,
+                $validated["pengancakan"] ?? null,
+                $validated["total_late_time"] ?? null,
+                $validated["go_home_early"] ?? null,
+                $validated["exception_case"] ?? null,
+                $validated["fcba"] ?? null,
+                $validated["section"] ?? null,
+                $validated["gang"] ?? null,
+                $validated["mandays"] ?? null,
+                $validated["attendance"] ?? null,
+                $validated["fcba_destination"] ?? null,
+                $validated["section_destination"] ?? null,
+                $validated["kemandoran"] ?? null,
+                $validated["id_device"] ?? null,
+                $validated["mac_address"] ?? null,
+                $imagePath,
+                Auth::user()->username,
+                $id,
             ];
 
-            // Build dynamic SET clause
-            $setClause = "
-                \"KODE_KARYAWAN_MANDOR\" = ?,
-                \"KODE_KARYAWAN\" = ?,
-                \"ATTENDANCE_TYPE\" = ?,
-                \"TIME_OUT\" = ?,
-                \"LOCATION_OUT\" = ?,
-                \"PENGANCAKAN\" = ?,
-                \"TOTAL_LATE_TIME\" = ?,
-                \"GO_HOME_EARLY\" = ?,
-                \"EXCEPTION_CASE\" = ?,
-                \"FCBA\" = ?,
-                \"SECTION\" = ?,
-                \"GANG\" = ?,
-                \"MANDAYS\" = ?,
-                \"ATTENDANCE\" = ?,
-                \"FCBA_DESTINATION\" = ?,
-                \"SECTION_DESTINATION\" = ?,
-                \"KEMANDORAN\" = ?,
-                \"ID_DEVICE\" = ?,
-                \"MAC_ADDRESS\" = ?,
-                \"IMAGES\" = ?,
-                \"UPDATED_BY\" = ?,
-                \"UPDATED_AT\" = SYSDATE
-            ";
+            $setClause = '
+                "KODE_KARYAWAN_MANDOR" = ?,
+                "KODE_KARYAWAN"        = ?,
+                "ATTENDANCE_TYPE"      = ?,
+                "TIME_OUT"             = ?,
+                "LOCATION_OUT"         = ?,
+                "PENGANCAKAN"          = ?,
+                "TOTAL_LATE_TIME"      = ?,
+                "GO_HOME_EARLY"        = ?,
+                "EXCEPTION_CASE"       = ?,
+                "FCBA"                 = ?,
+                "SECTION"              = ?,
+                "GANG"                 = ?,
+                "MANDAYS"              = ?,
+                "ATTENDANCE"           = ?,
+                "FCBA_DESTINATION"     = ?,
+                "SECTION_DESTINATION"  = ?,
+                "KEMANDORAN"           = ?,
+                "ID_DEVICE"            = ?,
+                "MAC_ADDRESS"          = ?,
+                "IMAGES"               = ?,
+                "UPDATED_BY"           = ?,
+                "UPDATED_AT"           = SYSDATE
+            ';
 
-            // Add NO_BA_EXCA to update only if file was uploaded
             if ($baExcaPath !== null) {
-                $setClause = "
-                    \"KODE_KARYAWAN_MANDOR\" = ?,
-                    \"KODE_KARYAWAN\" = ?,
-                    \"ATTENDANCE_TYPE\" = ?,
-                    \"TIME_OUT\" = ?,
-                    \"LOCATION_OUT\" = ?,
-                    \"PENGANCAKAN\" = ?,
-                    \"TOTAL_LATE_TIME\" = ?,
-                    \"GO_HOME_EARLY\" = ?,
-                    \"EXCEPTION_CASE\" = ?,
-                    \"NO_BA_EXCA\" = ?,
-                    \"FCBA\" = ?,
-                    \"SECTION\" = ?,
-                    \"GANG\" = ?,
-                    \"MANDAYS\" = ?,
-                    \"ATTENDANCE\" = ?,
-                    \"FCBA_DESTINATION\" = ?,
-                    \"SECTION_DESTINATION\" = ?,
-                    \"KEMANDORAN\" = ?,
-                    \"ID_DEVICE\" = ?,
-                    \"MAC_ADDRESS\" = ?,
-                    \"IMAGES\" = ?,
-                    \"UPDATED_BY\" = ?,
-                    \"UPDATED_AT\" = SYSDATE
-                ";
-                // Insert baExcaPath at position 10
+                $setClause = '
+                    "KODE_KARYAWAN_MANDOR" = ?,
+                    "KODE_KARYAWAN"        = ?,
+                    "ATTENDANCE_TYPE"      = ?,
+                    "TIME_OUT"             = ?,
+                    "LOCATION_OUT"         = ?,
+                    "PENGANCAKAN"          = ?,
+                    "TOTAL_LATE_TIME"      = ?,
+                    "GO_HOME_EARLY"        = ?,
+                    "EXCEPTION_CASE"       = ?,
+                    "NO_BA_EXCA"           = ?,
+                    "FCBA"                 = ?,
+                    "SECTION"              = ?,
+                    "GANG"                 = ?,
+                    "MANDAYS"              = ?,
+                    "ATTENDANCE"           = ?,
+                    "FCBA_DESTINATION"     = ?,
+                    "SECTION_DESTINATION"  = ?,
+                    "KEMANDORAN"           = ?,
+                    "ID_DEVICE"            = ?,
+                    "MAC_ADDRESS"          = ?,
+                    "IMAGES"               = ?,
+                    "UPDATED_BY"           = ?,
+                    "UPDATED_AT"           = SYSDATE
+                ';
                 array_splice($updateData, 9, 0, [$baExcaPath]);
             }
 
-            // Update menggunakan query manual
             DB::update(
-                "UPDATE \"SIPSMOBILE\".\"ATTENDANCE\"
-                SET " .
+                'UPDATE "SIPSMOBILE"."ATTENDANCE" SET ' .
                     $setClause .
-                    "
-                WHERE \"ID\" = ?",
+                    ' WHERE "ID" = ?',
                 $updateData,
             );
+
             $datas = Attendance::findOrFail($id);
 
-            // Berhasil diupdate
-            // Log::info('Absensi berhasil diperbarui (update)', [
-            //     'id' => $id,
-            //     'updated_by' => Auth::user()->username,
-            // ]);
             return response()->json(
                 [
                     "success" => true,
@@ -781,9 +616,6 @@ class AttendanceController extends Controller
                 200,
             );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // Log::warning('Absensi tidak ditemukan (update)', [
-            //     'id' => $id,
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -792,11 +624,6 @@ class AttendanceController extends Controller
                 404,
             );
         } catch (\Illuminate\Database\QueryException $e) {
-            // Log::error('Error QueryException saat update absensi', [
-            //     'id' => $id,
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -806,11 +633,6 @@ class AttendanceController extends Controller
                 500,
             );
         } catch (\Exception $e) {
-            // Log::error('Error Exception saat update absensi', [
-            //     'id' => $id,
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -822,36 +644,33 @@ class AttendanceController extends Controller
         }
     }
 
+    // -------------------------------------------------------------------------
+    // UPDATE STATUS
+    // -------------------------------------------------------------------------
+
     /**
-     * Approved atau Reject status_absensi (STATUS_ATTENDANCE) berdasarkan id Absensi.
+     * Approved atau Reject status_attendance berdasarkan id.
      *
      * @urlParam id integer required ID Absensi.
      */
     public function updateStatus(Request $request, string $id)
     {
-        // Validasi input status yang diizinkan
         $validated = $request->validate([
             "status_attendance" => "required|string|in:Planned,Reject,Approved",
         ]);
 
         try {
-            // Cari data berdasarkan ID
-            $datas = Attendance::findOrFail($id);
+            Attendance::findOrFail($id);
 
-            // Update status menggunakan query manual (konsisten dengan update lain)
             DB::update(
-                "UPDATE \"SIPSMOBILE\".\"ATTENDANCE\" \n SET \"STATUS_ATTENDANCE\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n                WHERE \"ID\" = ?",
+                'UPDATE "SIPSMOBILE"."ATTENDANCE"
+                 SET "STATUS_ATTENDANCE" = ?, "UPDATED_BY" = ?, "UPDATED_AT" = SYSDATE
+                 WHERE "ID" = ?',
                 [$validated["status_attendance"], Auth::user()->username, $id],
             );
 
-            // Ambil kembali data yang sudah diupdate
             $datas = Attendance::findOrFail($id);
 
-            // Log::info('Status absensi berhasil diperbarui (updateStatus)', [
-            //     'id' => $id,
-            //     'status_attendance' => $validated['status_attendance'],
-            //     'updated_by' => Auth::user()->username,
-            // ]);
             return response()->json(
                 [
                     "success" => true,
@@ -861,9 +680,6 @@ class AttendanceController extends Controller
                 200,
             );
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // Log::warning('Absensi tidak ditemukan (updateStatus)', [
-            //     'id' => $id,
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -872,11 +688,6 @@ class AttendanceController extends Controller
                 404,
             );
         } catch (\Illuminate\Database\QueryException $e) {
-            // Log::error('Error QueryException saat updateStatus absensi', [
-            //     'id' => $id,
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -887,11 +698,6 @@ class AttendanceController extends Controller
                 500,
             );
         } catch (\Exception $e) {
-            // Log::error('Error Exception saat updateStatus absensi', [
-            //     'id' => $id,
-            //     'message' => $e->getMessage(),
-            //     'trace' => $e->getTraceAsString(),
-            // ]);
             return response()->json(
                 [
                     "success" => false,
@@ -903,62 +709,45 @@ class AttendanceController extends Controller
         }
     }
 
+    // -------------------------------------------------------------------------
+    // DESTROY
+    // -------------------------------------------------------------------------
+
     /**
-     * Menghapus data Absensi berdasarkan id Absensi.
+     * Menghapus data Absensi berdasarkan id.
      *
      * @urlParam id integer required ID Absensi.
      */
     public function destroy(Request $request, string $id)
     {
-        $validated = $request->validate([
+        $request->validate([
             "ba_deleted" => "required|file|mimes:pdf|max:2048",
         ]);
 
         try {
             $datas = Attendance::findOrFail($id);
 
-            $baExcaPath = null;
+            $storage = app(StorageService::class);
+
+            $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
+            $tanggal = $datas->tanggal
+                ? Carbon::parse($datas->tanggal)
+                : Carbon::now();
+            $datePath = $tanggal->format("Y/m/d");
+
+            // --- BA DELETED ---
+            $baDeletedPath = null;
 
             if ($request->hasFile("ba_deleted")) {
-                $baExca = $request->file("ba_deleted");
-                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+                $baFile = $request->file("ba_deleted");
+                $baFileName = time() . "_" . $baFile->getClientOriginalName();
+                $relativePath = "file/attendance/files/{$fcbaSlug}/{$datePath}/{$baFileName}";
 
-                // ✅ ambil FCBA dari database
-                $fcba = strtolower($datas->fcba ?? "unknown");
-
-                // optional: biar aman dari spasi & karakter aneh
-                $fcba = Str::slug($fcba); // contoh: "Plant A" -> "plant-a"
-
-                // ✅ ambil tanggal dari data attendance (misal kolom: tanggal)
-                $tanggal = $datas->tanggal
-                    ? Carbon::parse($datas->tanggal)
-                    : Carbon::now();
-
-                $year = $tanggal->format("Y");
-                $month = $tanggal->format("m");
-                $day = $tanggal->format("d");
-
-                $filePath = "file/attendance/files/$fcba/$year/$month/$day";
-
-                // ✅ path folder dinamis
-                $destinationPath = public_path($filePath);
-
-                // ✅ buat folder jika belum ada
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0777, true);
-                }
-
-                // ✅ simpan file
-                $baExca->move($destinationPath, $baExcaName);
-
-                // ✅ path untuk database
-                $relativePath = $filePath . "/" . $baExcaName;
-                $baExcaPath = asset($relativePath);
+                $baDeletedPath = $storage->storeFile($baFile, $relativePath);
             }
 
-            // isi metadata delete
             $datas->deleted_by = Auth::user()->username ?? null;
-            $datas->deleted_attachment = $baExcaPath;
+            $datas->deleted_attachment = $baDeletedPath;
             $datas->save();
 
             $datas->delete();
