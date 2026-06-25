@@ -328,6 +328,12 @@ class AttendanceController extends Controller
         try {
             // Inisialisasi variabel path image (default null jika tidak ada file)
             $storage = app(StorageService::class);
+            $isOnline = $storage->isDevOnline();
+
+            \Log::info("DEV status", [
+                "is_online" => $isOnline,
+                "dev_url" => config("app.dev_server_url"),
+            ]);
             $imagePath = null;
 
             if ($request->hasFile("images")) {

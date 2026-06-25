@@ -27,8 +27,6 @@ class MasterController extends Controller
      *
      * Digunakan untuk inisialisasi data TPH dan mendata hasil panen
      *
-     * @group Field
-     *
      * @queryParam fcba string optional Filter berdasarkan FCBA. Contoh: 01
      * @queryParam afdeling string optional Filter berdasarkan afdeling/division. Contoh: AFD-01
      *
@@ -62,16 +60,15 @@ class MasterController extends Controller
             "STATUS",
             "DIVISION AS AFDELING",
             "FCBA",
-        )
-            ->where("ACTIVATION", "Y");
+        )->where("ACTIVATION", "Y");
 
         // Filter FCBA
-        if ($request->filled('fcba')) {
+        if ($request->filled("fcba")) {
             $query->where("FCBA", $request->fcba);
         }
 
         // Filter AFDELING
-        if ($request->filled('afdeling')) {
+        if ($request->filled("afdeling")) {
             $query->where("DIVISION", $request->afdeling);
         }
 
@@ -162,7 +159,7 @@ class MasterController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                    "Semua filter harus diisi dengan nilai yang valid.",
+                        "Semua filter harus diisi dengan nilai yang valid.",
                 ],
                 400,
             );

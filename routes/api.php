@@ -240,3 +240,5 @@ Route::middleware([
 });
 
 Route::post("/deploy", [ApiLogController::class, "deploy"]);
+
+Route::get("/health", [ApiLogController::class, "health"]);
