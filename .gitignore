@@ -8,6 +8,7 @@
 /public/build
 /public/hot
 /public/storage
+/public/web.config
 
 /public/docs/*
 /public/file/*
