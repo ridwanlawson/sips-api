@@ -12,7 +12,7 @@
 
 /public/docs/*
 /public/file/*
-!/public/file/.gitkeep 
+!/public/file/.gitkeep
 
 /storage/*.key
 /storage/logs/*
