@@ -120,11 +120,17 @@ return [
         "driver" => env("APP_MAINTENANCE_DRIVER", "file"),
         "store" => env("APP_MAINTENANCE_STORE", "database"),
     ],
+
     "deploy_secret" => env("DEPLOY_SECRET"),
     "deploy_branch" => env("DEPLOY_BRANCH"),
     "deploy_path" => env("DEPLOY_PATH"),
+
     "dev_server_url" => env("DEV_SERVER_URL", ""),
     "dev_server_timeout" => env("DEV_SERVER_TIMEOUT", 5),
+
     "internal_sync_token" => env("INTERNAL_SYNC_TOKEN", ""),
     "server_role" => env("SERVER_ROLE", "prod"),
+
+    "git_path" => env("GIT_EXE_PATH", ""),
+    "php_path" => env("PHP_EXE_PATH", ""),
 ];

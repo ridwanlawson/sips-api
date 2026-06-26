@@ -103,8 +103,8 @@ class ApiLogController extends Controller
         }
 
         // ===== TOOL PATH =====
-        $git = '"C:\\Program Files\\Git\\bin\\git.exe"';
-        $php = '"C:\\php-8.2.12\\php.exe"';
+        $git = '"' . str_replace('/', '\\', config('app.git_path')) . '"';
+        $php = '"' . str_replace('/', '\\', config('app.php_path')) . '"';
 
         $composerPhar = $path . "\\composer.phar";
         $composer = file_exists($composerPhar)
