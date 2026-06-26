@@ -8,10 +8,11 @@
 /public/build
 /public/hot
 /public/storage
+/public/web.config
 
 /public/docs/*
 /public/file/*
-!/public/file/.gitkeep 
+!/public/file/.gitkeep
 
 /storage/*.key
 /storage/logs/*
