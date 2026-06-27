@@ -18,7 +18,6 @@ use App\Http\Controllers\Api\MapController;
 use App\Http\Controllers\Internal\InternalFileController;
 
 Route::post("/register", [AuthController::class, "register"])
-    ->middleware("throttle:3,1")
     ->name("auth.register");
 Route::post("/login", [AuthController::class, "login"])
     ->middleware("throttle:3,1")
