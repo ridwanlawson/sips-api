@@ -120,6 +120,8 @@ class HarvestingController extends Controller
                     HARVESTING.PARTENO50PLUS,
                     HARVESTING.STATUS_ASSISTENSI,
                     HARVESTING.STATUS_HARVESTING,
+                    HARVESTING.FCBA_DESTINATION,
+                    HARVESTING.AFDELING_DESTINATION,
                     HARVESTING.KEMANDORAN,
                     HARVESTING.IMAGES,
                     HARVESTING.NO_BA_EXCA,
@@ -318,15 +320,12 @@ class HarvestingController extends Controller
             "kode_karyawan_kerani" => "nullable|string|exists:employee,fccode",
             "kode_karyawan" => "required|string|exists:employee,fccode",
             "noancak" => "required|string",
-            // 'noancak' => 'required|string|exists:tph,ancakno',
             "tph" => "required|string",
-            // 'tph' => 'required|string|exists:tph,notph',
             "fieldcode" => "required|string",
-            // 'fieldcode' => 'required|string|exists:tph,fieldcode',
             "afdeling" => "required|string",
-            // 'afdeling' => 'required|string|exists:tph,afdeling',
             "fcba" => "required|string",
-            // 'fcba' => 'required|string|exists:tph,fcba',
+            "afdeling_destination" => "nullable|string|exists:tph,afdeling",
+            "fcba_destination" => "nullable|string|exists:tph,fcba",
             "output" => "required|integer|min:0",
             "mentah" => "nullable|integer|min:0",
             "overripe" => "nullable|integer|min:0",
@@ -427,6 +426,8 @@ class HarvestingController extends Controller
                 "KEMANDORAN" => $request->kemandoran,
                 "STATUS_ASSISTENSI" => $request->status_assistensi,
                 "STATUS_HARVESTING" => "Planned",
+                "AFDELING_DESTINATION" => $request->afdeling_destination,
+                "FCBA_DESTINATION" => $request->fcba_destination,
                 "LOCATION" => $request->location,
                 "IMAGES" => $imagePath, // Simpan path image jika ada
                 "EXCEPTION_CASE" => $request->exception_case,
@@ -522,6 +523,8 @@ class HarvestingController extends Controller
                     HARVESTING.KEMANDORAN,
                     HARVESTING.STATUS_ASSISTENSI,
                     HARVESTING.STATUS_HARVESTING,
+                    HARVESTING.AFDELING_DESTINATION,
+                    HARVESTING.FCBA_DESTINATION,
                     HARVESTING.IMAGES,
                     HARVESTING.EXCEPTION_CASE,
                     HARVESTING.NO_BA_EXCA,
@@ -641,14 +644,13 @@ class HarvestingController extends Controller
                 "nullable|string|exists:employee,fccode",
             "kode_karyawan_kerani" => "nullable|string|exists:employee,fccode",
             "kode_karyawan" => "required|string|exists:employee,fccode",
-            // 'noancak' => 'required|string|exists:tph,ancakno',
-            // 'fieldcode' => 'required|string|exists:tph,fieldcode',
-            // 'tph' => 'required|string|exists:tph,notph',
             "noancak" => "required|string",
             "tph" => "nullable|string",
             "fieldcode" => "required|string",
             "afdeling" => "required|string|exists:tph,afdeling",
             "fcba" => "required|string|exists:tph,fcba",
+            "afdeling_destination" => "nullable|string|exists:tph,afdeling",
+            "fcba_destination" => "nullable|string|exists:tph,fcba",
             "exception_case" => "nullable",
             "no_ba_exca" => "nullable|file|mimes:pdf|max:2048",
             "output" => "required|numeric|min:0",
@@ -662,7 +664,7 @@ class HarvestingController extends Controller
             "brondol" => "nullable|numeric|min:0",
             "tangkaipanjang" => "nullable|numeric|min:0",
             "alasbrondol" => "nullable|string",
-            // 'kemandoran' => 'nullable|exists:users,gangcode',
+            "kemandoran" => "nullable|exists:users,gangcode",
             "status_assistensi" => "nullable",
             "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
         ]);
@@ -752,9 +754,11 @@ class HarvestingController extends Controller
                 $validated["alasbrondol"] ?? "N", // 20
                 $validated["kemandoran"], // 22
                 $validated["status_assistensi"] ?? null, // 21
-                $imagePath, // 23
-                Auth::user()->username, // 24
-                $validated["exception_case"] ?? null, // 25
+                $validated["afdeling_destination"] ?? null, // 22
+                $validated["fcba_destination"] ?? null, // 23
+                $imagePath, // 24
+                Auth::user()->username, // 25
+                $validated["exception_case"] ?? null, // 26
                 $id, // (ID untuk WHERE)
             ];
 
@@ -782,6 +786,8 @@ class HarvestingController extends Controller
                 \"ALASBRONDOL\" = ?,
                 \"KEMANDORAN\" = ?,
                 \"STATUS_ASSISTENSI\" = ?,
+                \"AFDELING_DESTINATION\" = ?,
+                \"FCBA_DESTINATION\" = ?,
                 \"IMAGES\" = ?,
                 \"UPDATED_BY\" = ?,
                 \"UPDATED_AT\" = SYSDATE,
@@ -813,6 +819,8 @@ class HarvestingController extends Controller
                     \"ALASBRONDOL\" = ?,
                     \"KEMANDORAN\" = ?,
                     \"STATUS_ASSISTENSI\" = ?,
+                    \"AFDELING_DESTINATION\" = ?,
+                    \"FCBA_DESTINATION\" = ?,
                     \"IMAGES\" = ?,
                     \"UPDATED_BY\" = ?,
                     \"UPDATED_AT\" = SYSDATE,
