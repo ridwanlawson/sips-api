@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Internal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+/**
+ * @hideFromAPIDocumentation
+ */
 class InternalFileController extends Controller
 {
     public function receive(Request $request)
