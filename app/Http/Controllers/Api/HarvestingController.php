@@ -108,6 +108,7 @@ class HarvestingController extends Controller
                     HARVESTING.FCBA,
                     HARVESTING.AFDELING,
                     HARVESTING.OUTPUT,
+                    HARVESTING.OUTPUT_AI,
                     HARVESTING.MENTAH,
                     HARVESTING.OVERRIPE,
                     HARVESTING.BUSUK,
@@ -327,6 +328,7 @@ class HarvestingController extends Controller
             "afdeling_destination" => "nullable|string|exists:tph,afdeling",
             "fcba_destination" => "nullable|string|exists:tph,fcba",
             "output" => "required|integer|min:0",
+            "output_ai" => "nullable|integer|min:0",
             "mentah" => "nullable|integer|min:0",
             "overripe" => "nullable|integer|min:0",
             "busuk" => "nullable|integer|min:0",
@@ -413,6 +415,7 @@ class HarvestingController extends Controller
                 "AFDELING" => $request->afdeling,
                 "FCBA" => $request->fcba,
                 "OUTPUT" => $request->output,
+                "OUTPUT_AI" => $request->output_ai,
                 "MENTAH" => $request->mentah,
                 "OVERRIPE" => $request->overripe,
                 "BUSUK" => $request->busuk,
@@ -510,6 +513,7 @@ class HarvestingController extends Controller
                     HARVESTING.FCBA,
                     HARVESTING.FIELDCODE,
                     HARVESTING.OUTPUT,
+                    HARVESTING.OUTPUT_AI,
                     HARVESTING.MENTAH,
                     HARVESTING.OVERRIPE,
                     HARVESTING.BUSUK,
@@ -654,6 +658,7 @@ class HarvestingController extends Controller
             "exception_case" => "nullable",
             "no_ba_exca" => "nullable|file|mimes:pdf|max:2048",
             "output" => "required|numeric|min:0",
+            "output_ai" => "nullable|integer|min:0",
             "mentah" => "nullable|numeric|min:0",
             "overripe" => "nullable|numeric|min:0",
             "busuk" => "nullable|numeric|min:0",
@@ -742,23 +747,24 @@ class HarvestingController extends Controller
                 $validated["afdeling"], // 8
                 $validated["fcba"], // 9
                 $validated["output"], // 10
-                $validated["mentah"] ?? null, // 11
-                $validated["overripe"] ?? null, // 12
-                $validated["busuk"] ?? null, // 13
-                $validated["busuk2"] ?? null, // 14
-                $validated["buahkecil"] ?? null, // 15
-                $validated["parteno"] ?? null, // 16
-                $validated["parteno50plus"] ?? null, // 17
+                $validated["output_ai"] ?? null, // 11
+                $validated["mentah"] ?? null, // 12
+                $validated["overripe"] ?? null, // 13
+                $validated["busuk"] ?? null, // 14
+                $validated["busuk2"] ?? null, // 15
+                $validated["buahkecil"] ?? null, // 16
+                $validated["parteno"] ?? null, // 17
+                $validated["parteno50plus"] ?? null, // 18
                 $validated["brondol"] ?? null, // 19
-                $validated["tangkaipanjang"] ?? null, // 18
-                $validated["alasbrondol"] ?? "N", // 20
+                $validated["tangkaipanjang"] ?? null, // 20
+                $validated["alasbrondol"] ?? "N", // 21
                 $validated["kemandoran"], // 22
-                $validated["status_assistensi"] ?? null, // 21
-                $validated["afdeling_destination"] ?? null, // 22
-                $validated["fcba_destination"] ?? null, // 23
-                $imagePath, // 24
-                Auth::user()->username, // 25
-                $validated["exception_case"] ?? null, // 26
+                $validated["status_assistensi"] ?? null, // 23
+                $validated["afdeling_destination"] ?? null, // 24
+                $validated["fcba_destination"] ?? null, // 25
+                $imagePath, // 26
+                Auth::user()->username, // 27
+                $validated["exception_case"] ?? null, // 28
                 $id, // (ID untuk WHERE)
             ];
 
@@ -774,6 +780,7 @@ class HarvestingController extends Controller
                 \"AFDELING\" = ?,
                 \"FCBA\" = ?,
                 \"OUTPUT\" = ?,
+                \"OUTPUT_AI\" = ?,
                 \"MENTAH\" = ?,
                 \"OVERRIPE\" = ?,
                 \"BUSUK\" = ?,
@@ -807,6 +814,7 @@ class HarvestingController extends Controller
                     \"AFDELING\" = ?,
                     \"FCBA\" = ?,
                     \"OUTPUT\" = ?,
+                    \"OUTPUT_AI\" = ?,
                     \"MENTAH\" = ?,
                     \"OVERRIPE\" = ?,
                     \"BUSUK\" = ?,

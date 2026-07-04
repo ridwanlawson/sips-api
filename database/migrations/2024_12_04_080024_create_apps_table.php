@@ -88,6 +88,7 @@ return new class extends Migration {
             $table->string("tph", 15)->nullable();
             $table->string("fieldcode", 15)->nullable();
             $table->integer("output");
+            $table->integer("output_ai");
             $table->integer("mentah");
             $table->integer("overripe");
             $table->integer("busuk");

@@ -23,6 +23,7 @@ class Harvesting extends Model
         "TPH",
         "FIELDCODE",
         "OUTPUT",
+        "OUTPUT_AI",
         "MENTAH",
         "OVERRIPE",
         "BUSUK",
