@@ -901,7 +901,9 @@ class PengangkutanController extends Controller
                     \"NO_BA_EXCA\" = ?
                 ";
                 // Insert baExcaPath at position 26
-                array_splice($updateData, 22, 0, [$baExcaPath]);
+                array_splice($updateData, count($updateData) - 1, 0, [
+                    $baExcaPath,
+                ]);
             }
 
             // Update menggunakan query manual

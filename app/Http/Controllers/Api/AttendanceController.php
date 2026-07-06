@@ -595,7 +595,9 @@ class AttendanceController extends Controller
                     "UPDATED_BY"           = ?,
                     "UPDATED_AT"           = SYSDATE
                 ';
-                array_splice($updateData, 9, 0, [$baExcaPath]);
+                array_splice($updateData, count($updateData) - 1, 0, [
+                    $baExcaPath,
+                ]);
             }
 
             DB::update(
