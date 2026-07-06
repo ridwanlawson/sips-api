@@ -10,6 +10,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\StorageService;
 
 /**
  * @group Apps
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\DB;
  */
 class EmployeeController extends Controller
 {
+    use \App\Traits\ImageOptimizerTrait;
     /**
      * Memanggil data karyawan dari SIPS Mobile.
      *
@@ -134,13 +136,29 @@ class EmployeeController extends Controller
 
             // Jika ada file image yang diunggah
             if ($request->hasFile('photo')) {
-                $image = $request->file('photo');
-                $imageName = time() . '_' . $image->getClientOriginalName();
-                $image->move(public_path('file/employee_photo'), $imageName); // Simpan di public/employee_photo
-                $imagePath = 'file/employee_photo/' . $imageName; // Path yang disimpan di database
-            }
+                $storage = app(StorageService::class);
+                $folderPath = "file/employee_photo";
+                $relativePath = $this->optimizeAndSaveImage(
+                    $request->file("photo"),
+                    $folderPath,
+                );
+                $localAbsPath = public_path($relativePath);
 
-            $imagePath = $imagePath ? asset($imagePath) : null;
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev(
+                        $localAbsPath,
+                        $relativePath,
+                    );
+                    if ($devUrl) {
+                        $imagePath = $devUrl;
+                        @unlink($localAbsPath);
+                    } else {
+                        $imagePath = asset($relativePath);
+                    }
+                } else {
+                    $imagePath = asset($relativePath);
+                }
+            }
 
             $validated['photo'] = $imagePath;
             $validated['created_by'] = Auth::user()->username;
@@ -222,11 +240,29 @@ class EmployeeController extends Controller
 
             // Jika ada file image yang diunggah
             if (!empty($request->hasFile('photo'))) {
-                $image = $request->file('photo');
-                $imageName = time() . '_' . $image->getClientOriginalName();
-                $image->move(public_path('file/employee_photo'), $imageName); // Simpan di public/employee_photo
-                $imagePath = 'file/employee_photo/' . $imageName; // Path yang disimpan di database
-                $imagePath = $imagePath ? asset($imagePath) : null;
+                $storage = app(StorageService::class);
+                $folderPath = "file/employee_photo";
+                $relativePath = $this->optimizeAndSaveImage(
+                    $request->file("photo"),
+                    $folderPath,
+                );
+                $localAbsPath = public_path($relativePath);
+
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev(
+                        $localAbsPath,
+                        $relativePath,
+                    );
+                    if ($devUrl) {
+                        $imagePath = $devUrl;
+                        @unlink($localAbsPath);
+                    } else {
+                        $imagePath = asset($relativePath);
+                    }
+                } else {
+                    $imagePath = asset($relativePath);
+                }
+
                 $validated['photo'] = $imagePath;
             }
 

@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use App\Http\Resources\AllResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\StorageService;
 
 /**
  * @group Auth
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\DB;
  */
 class AuthController extends Controller
 {
+    use \App\Traits\ImageOptimizerTrait;
     /**
      * Register User
      * @unauthenticated
@@ -58,13 +60,29 @@ class AuthController extends Controller
 
         // Jika ada file photo yang diunggah
         if ($request->hasFile("photo")) {
-            $photo = $request->file("photo");
-            $photoName = time() . "_" . $photo->getClientOriginalName();
-            $photo->move(public_path("file/profile_photos"), $photoName); // Simpan di public/profile_photos
-            $photoPath = "file/profile_photos/" . $photoName; // Path yang disimpan di database
-        }
+            $storage = app(StorageService::class);
+            $folderPath = "file/profile_photos";
+            $relativePath = $this->optimizeAndSaveImage(
+                $request->file("photo"),
+                $folderPath,
+            );
+            $localAbsPath = public_path($relativePath);
 
-        $photoPath = $photoPath ? asset($photoPath) : null;
+            if ($storage->isDevOnline()) {
+                $devUrl = $storage->uploadToDev(
+                    $localAbsPath,
+                    $relativePath,
+                );
+                if ($devUrl) {
+                    $photoPath = $devUrl;
+                    @unlink($localAbsPath);
+                } else {
+                    $photoPath = asset($relativePath);
+                }
+            } else {
+                $photoPath = asset($relativePath);
+            }
+        }
 
         $emp = null;
         if ($request->filled("idkaryawan")) {

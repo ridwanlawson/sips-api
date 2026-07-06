@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Services\StorageService;
 
 /**
  * @group Apps
@@ -459,49 +460,53 @@ class PengangkutanController extends Controller
 
             // Jika ada file image yang diunggah
             if ($request->hasFile("images")) {
+                $storage = app(StorageService::class);
                 $fcbaSlug = Str::slug(strtolower($effectiveFcba ?? "unknown"));
                 $tanggal = $request->tanggal
                     ? Carbon::parse($request->tanggal)
                     : Carbon::now();
-                $folderPath =
-                    "file/pengangkutan/images/$fcbaSlug/" .
-                    $tanggal->format("Y/m/d");
-                $imagePath = $this->optimizeAndSaveImage(
+                $datePath = $tanggal->format("Y/m/d");
+                $folderPath = "file/pengangkutan/images/{$fcbaSlug}/{$datePath}";
+                $relativePath = $this->optimizeAndSaveImage(
                     $request->file("images"),
                     $folderPath,
                 );
-            }
+                $localAbsPath = public_path($relativePath);
 
-            $imagePath = $imagePath ? asset($imagePath) : null;
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev(
+                        $localAbsPath,
+                        $relativePath,
+                    );
+                    if ($devUrl) {
+                        $imagePath = $devUrl;
+                        @unlink($localAbsPath);
+                    } else {
+                        $imagePath = asset($relativePath);
+                    }
+                } else {
+                    $imagePath = asset($relativePath);
+                }
+            }
 
             // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
             $baExcaPath = null;
 
             // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
-                $baExca = $request->file("no_ba_exca");
-                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+                $storage = app(StorageService::class);
+                $baFile = $request->file("no_ba_exca");
+                $baFileName = time() . "_" . $baFile->getClientOriginalName();
 
                 $fcbaSlug = Str::slug(strtolower($effectiveFcba ?? "unknown"));
                 $tanggal = $request->tanggal
                     ? Carbon::parse($request->tanggal)
                     : Carbon::now();
-                $year = $tanggal->format("Y");
-                $month = $tanggal->format("m");
-                $day = $tanggal->format("d");
+                $datePath = $tanggal->format("Y/m/d");
+                $relativePath = "file/pengangkutan/files/{$fcbaSlug}/{$datePath}/{$baFileName}";
 
-                $relativePath = "file/pengangkutan/files/$fcbaSlug/$year/$month/$day";
-                $destinationPath = public_path($relativePath);
-
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0777, true);
-                }
-
-                $baExca->move($destinationPath, $baExcaName);
-                $baExcaPath = $relativePath . "/" . $baExcaName;
+                $baExcaPath = $storage->storeFile($baFile, $relativePath);
             }
-
-            $baExcaPath = $baExcaPath ? asset($baExcaPath) : null;
 
             // Simpan data Pengangkutan ke dalam database
             $datas = Pengangkutan::create([
@@ -750,18 +755,33 @@ class PengangkutanController extends Controller
 
             // Jika ada file image yang diunggah
             if (!empty($request->hasFile("images"))) {
+                $storage = app(StorageService::class);
                 $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
                 $tanggal = $datas->tanggal
                     ? Carbon::parse($datas->tanggal)
                     : Carbon::now();
-                $folderPath =
-                    "file/pengangkutan/images/$fcbaSlug/" .
-                    $tanggal->format("Y/m/d");
-                $imagePath = $this->optimizeAndSaveImage(
+                $datePath = $tanggal->format("Y/m/d");
+                $folderPath = "file/pengangkutan/images/{$fcbaSlug}/{$datePath}";
+                $relativePath = $this->optimizeAndSaveImage(
                     $request->file("images"),
                     $folderPath,
                 );
-                $imagePath = asset($imagePath);
+                $localAbsPath = public_path($relativePath);
+
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev(
+                        $localAbsPath,
+                        $relativePath,
+                    );
+                    if ($devUrl) {
+                        $imagePath = $devUrl;
+                        @unlink($localAbsPath);
+                    } else {
+                        $imagePath = asset($relativePath);
+                    }
+                } else {
+                    $imagePath = asset($relativePath);
+                }
             }
 
             // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
@@ -769,27 +789,18 @@ class PengangkutanController extends Controller
 
             // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
-                $baExca = $request->file("no_ba_exca");
-                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+                $storage = app(StorageService::class);
+                $baFile = $request->file("no_ba_exca");
+                $baFileName = time() . "_" . $baFile->getClientOriginalName();
 
                 $fcbaSlug = Str::slug(strtolower($datas->fcba ?? "unknown"));
                 $tanggal = $datas->tanggal
                     ? Carbon::parse($datas->tanggal)
                     : Carbon::now();
-                $year = $tanggal->format("Y");
-                $month = $tanggal->format("m");
-                $day = $tanggal->format("d");
+                $datePath = $tanggal->format("Y/m/d");
+                $relativePath = "file/pengangkutan/files/{$fcbaSlug}/{$datePath}/{$baFileName}";
 
-                $relativePath = "file/pengangkutan/files/$fcbaSlug/$year/$month/$day";
-                $destinationPath = public_path($relativePath);
-
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0777, true);
-                }
-
-                $baExca->move($destinationPath, $baExcaName);
-                $baExcaPath = $relativePath . "/" . $baExcaName;
-                $baExcaPath = asset($baExcaPath);
+                $baExcaPath = $storage->storeFile($baFile, $relativePath);
             }
 
             // Menyusun data untuk update
@@ -1098,40 +1109,18 @@ class PengangkutanController extends Controller
             $baExcaPath = null;
 
             if ($request->hasFile("ba_deleted")) {
-                $baExca = $request->file("ba_deleted");
-                $baExcaName = time() . "_" . $baExca->getClientOriginalName();
+                $storage = app(StorageService::class);
+                $baFile = $request->file("ba_deleted");
+                $baFileName = time() . "_" . $baFile->getClientOriginalName();
 
-                // ✅ ambil FCBA dari database
-                $fcba = strtolower($datas->fcba ?? "unknown");
-
-                // optional: biar aman dari spasi & karakter aneh
-                $fcba = Str::slug($fcba); // contoh: "Plant A" -> "plant-a"
-
-                // ✅ ambil tanggal dari data Pengangkutan (misal kolom: tanggal)
+                $fcba = Str::slug(strtolower($datas->fcba ?? "unknown"));
                 $tanggal = $datas->tanggal
                     ? Carbon::parse($datas->tanggal)
                     : Carbon::now();
+                $datePath = $tanggal->format("Y/m/d");
+                $relativePath = "file/pengangkutan/files/{$fcba}/{$datePath}/{$baFileName}";
 
-                $year = $tanggal->format("Y");
-                $month = $tanggal->format("m");
-                $day = $tanggal->format("d");
-
-                $filePath = "file/pengangkutan/files/$fcba/$year/$month/$day";
-
-                // ✅ path folder dinamis
-                $destinationPath = public_path($filePath);
-
-                // ✅ buat folder jika belum ada
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0777, true);
-                }
-
-                // ✅ simpan file
-                $baExca->move($destinationPath, $baExcaName);
-
-                // ✅ path untuk database
-                $relativePath = $filePath . "/" . $baExcaName;
-                $baExcaPath = asset($relativePath);
+                $baExcaPath = $storage->storeFile($baFile, $relativePath);
             }
 
             // isi metadata delete
