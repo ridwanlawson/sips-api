@@ -728,7 +728,7 @@ class HarvestingController extends Controller
             }
 
             // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
-            $baExcaPath = null;
+            $baExcaPath = $datas->no_ba_exca;
 
             // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
@@ -776,10 +776,10 @@ class HarvestingController extends Controller
                 $imagePath, // 26
                 Auth::user()->username, // 27
                 $validated["exception_case"] ?? null, // 28
+                $baExcaPath, // 29
                 $id, // (ID untuk WHERE)
             ];
 
-            // Build dynamic SET clause
             $setClause = "
                 \"KODE_KARYAWAN_MANDOR1\" = ?,
                 \"KODE_KARYAWAN_MANDOR_PANEN\" = ?,
@@ -809,48 +809,9 @@ class HarvestingController extends Controller
                 \"IMAGES\" = ?,
                 \"UPDATED_BY\" = ?,
                 \"UPDATED_AT\" = SYSDATE,
-                \"EXCEPTION_CASE\" = ?
+                \"EXCEPTION_CASE\" = ?,
+                \"NO_BA_EXCA\" = ?
             ";
-
-            // Add NO_BA_EXCA to update only if file was uploaded
-            if ($baExcaPath !== null) {
-                $setClause = "
-                    \"KODE_KARYAWAN_MANDOR1\" = ?,
-                    \"KODE_KARYAWAN_MANDOR_PANEN\" = ?,
-                    \"KODE_KARYAWAN_KERANI\" = ?,
-                    \"KODE_KARYAWAN\" = ?,
-                    \"NOANCAK\" = ?,
-                    \"TPH\" = ?,
-                    \"FIELDCODE\" = ?,
-                    \"AFDELING\" = ?,
-                    \"FCBA\" = ?,
-                    \"OUTPUT\" = ?,
-                    \"OUTPUT_AI\" = ?,
-                    \"MENTAH\" = ?,
-                    \"OVERRIPE\" = ?,
-                    \"BUSUK\" = ?,
-                    \"BUSUK2\" = ?,
-                    \"BUAHKECIL\" = ?,
-                    \"PARTENO\" = ?,
-                    \"PARTENO50PLUS\" = ?,
-                    \"BRONDOL\" = ?,
-                    \"TANGKAIPANJANG\" = ?,
-                    \"ALASBRONDOL\" = ?,
-                    \"KEMANDORAN\" = ?,
-                    \"STATUS_ASSISTENSI\" = ?,
-                    \"AFDELING_DESTINATION\" = ?,
-                    \"FCBA_DESTINATION\" = ?,
-                    \"IMAGES\" = ?,
-                    \"UPDATED_BY\" = ?,
-                    \"UPDATED_AT\" = SYSDATE,
-                    \"EXCEPTION_CASE\" = ?,
-                    \"NO_BA_EXCA\" = ?
-                ";
-                // Insert baExcaPath at position 26
-                array_splice($updateData, count($updateData) - 1, 0, [
-                    $baExcaPath,
-                ]);
-            }
 
             // Update menggunakan query manual
             DB::update(
