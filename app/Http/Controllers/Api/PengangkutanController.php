@@ -785,7 +785,7 @@ class PengangkutanController extends Controller
             }
 
             // Inisialisasi variabel path ba_exca (default null jika tidak ada file)
-            $baExcaPath = null;
+            $baExcaPath = $datas->no_ba_exca;
 
             // Jika ada file no_ba_exca yang diunggah
             if ($request->hasFile("no_ba_exca")) {
@@ -832,44 +832,11 @@ class PengangkutanController extends Controller
                 $imagePath, // 25
                 Auth::user()->username, // 26
                 $validated["exception_case"] ?? null, // 27
+                $baExcaPath, //28
                 $id, // (ID untuk WHERE)
             ];
 
-            // Build dynamic SET clause
             $setClause = "
-                \"KODE_KARYAWAN_KERANI\" = ?,
-                \"KODE_KARYAWAN_DRIVER\" = ?,
-                \"TKBM1\" = ?,
-                \"TKBM2\" = ?,
-                \"TKBM3\" = ?,
-                \"TKBM4\" = ?,
-                \"TKBM5\" = ?,
-                \"TYPE_PENGANGKUTAN\" = ?,
-                \"KODE_KENDARAAN\" = ?,
-                \"TPH\" = ?,
-                \"FIELDCODE\" = ?,
-                \"FCBA\" = ?,
-                \"AFDELING\" = ?,
-                \"FCBA_DESTINATION\" = ?,
-                \"AFDELING_DESTINATION\" = ?,
-                \"PABRIK_TUJUAN\" = ?,
-                \"TOTALJANJANG\" = ?,
-                \"OUTPUT\" = ?,
-                \"JANJANGNORMAL\" = ?,
-                \"BRONDOLAN\" = ?,
-                \"MENTAH\" = ?,
-                \"ABNORMAL\" = ?,
-                \"ETA\" = ?,
-                \"ETD\" = ?,
-                \"IMAGES\" = ?,
-                \"UPDATED_BY\" = ?,
-                \"UPDATED_AT\" = SYSDATE,
-                \"EXCEPTION_CASE\" = ?
-            ";
-
-            // Add NO_BA_EXCA to update only if file was uploaded
-            if ($baExcaPath !== null) {
-                $setClause = "
                     \"KODE_KARYAWAN_KERANI\" = ?,
                     \"KODE_KARYAWAN_DRIVER\" = ?,
                     \"TKBM1\" = ?,
@@ -900,11 +867,6 @@ class PengangkutanController extends Controller
                     \"EXCEPTION_CASE\" = ?
                     \"NO_BA_EXCA\" = ?
                 ";
-                // Insert baExcaPath at position 26
-                array_splice($updateData, count($updateData) - 1, 0, [
-                    $baExcaPath,
-                ]);
-            }
 
             // Update menggunakan query manual
             DB::update(
