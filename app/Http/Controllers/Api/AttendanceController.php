@@ -508,7 +508,7 @@ class AttendanceController extends Controller
             }
 
             // --- NO_BA_EXCA ---
-            $baExcaPath = null;
+            $baExcaPath = $datas->no_ba_exca;
 
             if ($request->hasFile("no_ba_exca")) {
                 $baFile = $request->file("no_ba_exca");
@@ -529,6 +529,7 @@ class AttendanceController extends Controller
                 $validated["total_late_time"] ?? null,
                 $validated["go_home_early"] ?? null,
                 $validated["exception_case"] ?? null,
+                $baExcaPath,
                 $validated["fcba"] ?? null,
                 $validated["section"] ?? null,
                 $validated["gang"] ?? null,
@@ -554,6 +555,7 @@ class AttendanceController extends Controller
                 "TOTAL_LATE_TIME"      = ?,
                 "GO_HOME_EARLY"        = ?,
                 "EXCEPTION_CASE"       = ?,
+                "NO_BA_EXCA"           = ?,
                 "FCBA"                 = ?,
                 "SECTION"              = ?,
                 "GANG"                 = ?,
@@ -568,37 +570,6 @@ class AttendanceController extends Controller
                 "UPDATED_BY"           = ?,
                 "UPDATED_AT"           = SYSDATE
             ';
-
-            if ($baExcaPath !== null) {
-                $setClause = '
-                    "KODE_KARYAWAN_MANDOR" = ?,
-                    "KODE_KARYAWAN"        = ?,
-                    "ATTENDANCE_TYPE"      = ?,
-                    "TIME_OUT"             = ?,
-                    "LOCATION_OUT"         = ?,
-                    "PENGANCAKAN"          = ?,
-                    "TOTAL_LATE_TIME"      = ?,
-                    "GO_HOME_EARLY"        = ?,
-                    "EXCEPTION_CASE"       = ?,
-                    "NO_BA_EXCA"           = ?,
-                    "FCBA"                 = ?,
-                    "SECTION"              = ?,
-                    "GANG"                 = ?,
-                    "MANDAYS"              = ?,
-                    "ATTENDANCE"           = ?,
-                    "FCBA_DESTINATION"     = ?,
-                    "SECTION_DESTINATION"  = ?,
-                    "KEMANDORAN"           = ?,
-                    "ID_DEVICE"            = ?,
-                    "MAC_ADDRESS"          = ?,
-                    "IMAGES"               = ?,
-                    "UPDATED_BY"           = ?,
-                    "UPDATED_AT"           = SYSDATE
-                ';
-                array_splice($updateData, count($updateData) - 1, 0, [
-                    $baExcaPath,
-                ]);
-            }
 
             DB::update(
                 'UPDATE "SIPSMOBILE"."ATTENDANCE" SET ' .
