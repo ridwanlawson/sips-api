@@ -864,7 +864,7 @@ class PengangkutanController extends Controller
                     \"IMAGES\" = ?,
                     \"UPDATED_BY\" = ?,
                     \"UPDATED_AT\" = SYSDATE,
-                    \"EXCEPTION_CASE\" = ?
+                    \"EXCEPTION_CASE\" = ?,
                     \"NO_BA_EXCA\" = ?
                 ";
 
