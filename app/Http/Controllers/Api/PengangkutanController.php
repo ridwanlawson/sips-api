@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Pengangkutan;
 use Illuminate\Http\Request;
+use App\Models\Karyawan;
 use App\Http\Resources\AllResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -431,9 +432,10 @@ class PengangkutanController extends Controller
         ]);
 
         try {
-            $user = Auth::user();
-            $userFcba = $user->fcba;
-            $userAfdeling = $user->afdeling;
+            $karyawanKerani = Karyawan::select('fcba', 'afdeling')
+                ->firstWhere('fccode', $request->kode_karyawan_kerani);
+            $userFcba = $karyawanKerani->fcba;
+            $userAfdeling = $karyawanKerani->afdeling;
 
             $requestFcba = $request->fcba;
             $requestAfdeling = $request->afdeling;
