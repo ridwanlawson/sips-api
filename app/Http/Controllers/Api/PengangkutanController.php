@@ -435,7 +435,7 @@ class PengangkutanController extends Controller
             $karyawanKerani = Karyawan::select('fcba', 'sectionname')
                 ->firstWhere('fccode', $request->kode_karyawan_kerani);
             $userFcba = $karyawanKerani->fcba;
-            $userAfdeling = $karyawanKerani->afdeling;
+            $userAfdeling = $karyawanKerani->sectionname;
 
             $requestFcba = $request->fcba;
             $requestAfdeling = $request->afdeling;
