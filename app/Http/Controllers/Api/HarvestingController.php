@@ -677,6 +677,7 @@ class HarvestingController extends Controller
             "kemandoran" => "nullable|exists:users,gangcode",
             "status_assistensi" => "nullable",
             "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
+            "card_id" => "nullable",
         ]);
 
         try {
@@ -773,10 +774,11 @@ class HarvestingController extends Controller
                 $validated["status_assistensi"] ?? null, // 23
                 $validated["afdeling_destination"] ?? null, // 24
                 $validated["fcba_destination"] ?? null, // 25
-                $imagePath, // 26
-                Auth::user()->username, // 27
-                $validated["exception_case"] ?? null, // 28
-                $baExcaPath, // 29
+                $validated["card_id"] ?? null, // 26
+                $imagePath, // 27
+                Auth::user()->username, // 28
+                $validated["exception_case"] ?? null, // 29
+                $baExcaPath, // 30
                 $id, // (ID untuk WHERE)
             ];
 
@@ -806,6 +808,7 @@ class HarvestingController extends Controller
                 \"STATUS_ASSISTENSI\" = ?,
                 \"AFDELING_DESTINATION\" = ?,
                 \"FCBA_DESTINATION\" = ?,
+                \"CARD_ID\" = ?,
                 \"IMAGES\" = ?,
                 \"UPDATED_BY\" = ?,
                 \"UPDATED_AT\" = SYSDATE,
