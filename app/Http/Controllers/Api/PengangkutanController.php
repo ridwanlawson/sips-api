@@ -736,6 +736,7 @@ class PengangkutanController extends Controller
             "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
             "exception_case" => "nullable",
             "no_ba_exca" => "nullable|file|mimes:pdf|max:2048",
+            "card_id" => "nullable",
         ]);
 
         try {
@@ -831,10 +832,11 @@ class PengangkutanController extends Controller
                 $validated["abnormal"] ?? null, // 22
                 $validated["eta"] ?? null, // 23
                 $validated["etd"] ?? null, // 24
-                $imagePath, // 25
-                Auth::user()->username, // 26
-                $validated["exception_case"] ?? null, // 27
-                $baExcaPath, //28
+                $validated["card_id"] ?? null, // 25
+                $imagePath, // 26
+                Auth::user()->username, // 27
+                $validated["exception_case"] ?? null, // 28
+                $baExcaPath, // 29
                 $id, // (ID untuk WHERE)
             ];
 
@@ -863,6 +865,7 @@ class PengangkutanController extends Controller
                     \"ABNORMAL\" = ?,
                     \"ETA\" = ?,
                     \"ETD\" = ?,
+                    \"CARD_ID\" = ?,
                     \"IMAGES\" = ?,
                     \"UPDATED_BY\" = ?,
                     \"UPDATED_AT\" = SYSDATE,
