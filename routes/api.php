@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\AncakController;
 use App\Http\Controllers\Api\AppUploadController;
 use App\Http\Controllers\Api\MapController;
+use App\Http\Controllers\Api\NfcCardController;
 use App\Http\Controllers\Internal\InternalFileController;
 
 Route::post("/register", [AuthController::class, "register"])
@@ -227,6 +228,11 @@ Route::middleware([
         // Devices API
         Route::apiResource("devices", DeviceController::class)->parameters([
             "devices" => "id",
+        ]);
+
+        // NFC Cards API
+        Route::apiResource("nfc", NfcCardController::class)->parameters([
+            "nfc" => "id",
         ]);
     });
 
