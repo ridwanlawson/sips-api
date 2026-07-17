@@ -65,64 +65,64 @@ class ReportController extends Controller
             $status = $request->query("status");
 
             $query = "
+            SELECT
+                *
+            FROM
+                (
                 SELECT
-                    *
+                    h.ID,
+                    h.NODOKUMEN,
+                    h.TANGGAL,
+                    h.TPH,
+                    h.FIELDCODE BLOK,
+                    h.AFDELING,
+                    h.FCBA,
+                    NVL(SUM(h.OUTPUT) - (SUM(h.BUSUK) + SUM(h.BUSUK2) + SUM(h.PARTENO50PLUS)), 0) JJG,
+                    NVL(SUM(p.OUTPUT), 0) JJG_ANGKUT,
+                    CASE
+                        WHEN SUM(p.OUTPUT) IS NULL THEN 'BELUM'
+                        WHEN SUM(p.OUTPUT) IS NOT NULL
+                        AND ((SUM(h.OUTPUT) - (SUM(h.BUSUK) + SUM(h.BUSUK2) + SUM(h.PARTENO50PLUS))) - SUM(p.OUTPUT)) <> 0 THEN 'SELISIH'
+                        ELSE 'SELESAI'
+                    END STATUS,
+                    CASE
+                        WHEN SUM(p.OUTPUT) IS NULL THEN 'BELUM DIANGKUT'
+                        WHEN SUM(p.OUTPUT) IS NOT NULL
+                        AND ((SUM(h.OUTPUT) - (SUM(h.BUSUK) + SUM(h.BUSUK2) + SUM(h.PARTENO50PLUS))) - SUM(p.OUTPUT)) <> 0 THEN 'SELISIH : ' || ((SUM(h.OUTPUT) - (SUM(h.BUSUK) + SUM(h.BUSUK2) + SUM(h.PARTENO50PLUS))) - SUM(p.OUTPUT)) || ' JJG'
+                        ELSE 'SELESAI DIANGKUT'
+                    END INFORMASI
                 FROM
-                    (
+                    SIPSMOBILE.HARVESTING h
+                LEFT JOIN SIPSMOBILE.TPH t ON
+                    h.TPH = t.NOTPH
+                    AND h.FIELDCODE = t.FIELDCODE
+                    AND h.AFDELING = t.AFDELING
+                    AND h.FCBA = t.FCBA
+                LEFT JOIN SIPSMOBILE.EMPLOYEE e ON
+                    h.KODE_KARYAWAN = e.FCCODE
+                LEFT JOIN (
                     SELECT
-                        h.ID,
-                        h.NODOKUMEN,
-                        h.TANGGAL,
-                        h.TPH,
-                        h.FIELDCODE BLOK,
-                        h.AFDELING,
-                        h.FCBA,
-                        NVL(SUM(h.OUTPUT), 0) JJG,
-                        NVL(SUM(p.OUTPUT), 0) JJG_ANGKUT,
-                        CASE
-                            WHEN SUM(p.OUTPUT) IS NULL THEN 'BELUM'
-                            WHEN SUM(p.OUTPUT) IS NOT NULL
-                            AND (SUM(h.OUTPUT) - SUM(p.OUTPUT)) <> 0 THEN 'SELISIH'
-                            ELSE 'SELESAI'
-                        END STATUS,
-                        CASE
-                            WHEN SUM(p.OUTPUT) IS NULL THEN 'BELUM DIANGKUT'
-                            WHEN SUM(p.OUTPUT) IS NOT NULL
-                            AND (SUM(h.OUTPUT) - SUM(p.OUTPUT)) <> 0 THEN 'SELISIH : ' || (SUM(h.OUTPUT) - SUM(p.OUTPUT)) || ' JJG'
-                            ELSE 'SELESAI DIANGKUT'
-                        END INFORMASI
+                        NODOKUMEN,
+                        SUM(OUTPUT) OUTPUT
                     FROM
-                        SIPSMOBILE.HARVESTING h
-                    LEFT JOIN SIPSMOBILE.TPH t ON
-                        h.TPH = t.NOTPH
-                        AND h.FIELDCODE = t.FIELDCODE
-                        AND h.AFDELING = t.AFDELING
-                        AND h.FCBA = t.FCBA
-                    LEFT JOIN SIPSMOBILE.EMPLOYEE e ON
-                        h.KODE_KARYAWAN = e.FCCODE
-                    LEFT JOIN (
-                        SELECT
-                            NODOKUMEN,
-                            SUM(OUTPUT) OUTPUT
-                        FROM
-                            SIPSMOBILE.PENGANGKUTAN p
-                        GROUP BY
-                            NODOKUMEN) p ON
-                        h.NODOKUMEN = p.NODOKUMEN
+                        SIPSMOBILE.PENGANGKUTAN p
                     GROUP BY
-                        h.ID,
-                        h.NODOKUMEN,
-                        h.TANGGAL,
-                        h.TPH,
-                        h.FIELDCODE,
-                        h.AFDELING,
-                        h.FCBA,
-                        h.KODE_KARYAWAN,
-                        e.FCNAME,
-                        h.OUTPUT
-                    ) DATA
-                WHERE
-                    NODOKUMEN IS NOT NULL
+                        NODOKUMEN) p ON
+                    h.NODOKUMEN = p.NODOKUMEN
+                GROUP BY
+                    h.ID,
+                    h.NODOKUMEN,
+                    h.TANGGAL,
+                    h.TPH,
+                    h.FIELDCODE,
+                    h.AFDELING,
+                    h.FCBA,
+                    h.KODE_KARYAWAN,
+                    e.FCNAME,
+                    h.OUTPUT
+                ) DATA
+            WHERE
+                NODOKUMEN IS NOT NULL
             ";
 
             $bindings = [];
