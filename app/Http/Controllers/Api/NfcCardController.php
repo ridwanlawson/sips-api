@@ -22,14 +22,19 @@ class NfcCardController extends Controller
     /**
      * Memanggil data NFC Card.
      *
-     * @queryParam q string Optional. Search berdasarkan uid, card_id, ownership, fcba, atau afdeling. Example: NFC-001
-     * @queryParam per_page integer Optional. Jumlah data per halaman. Default: 15. Example: 10
+     * API ini digunakan untuk memanggil data NFC Card secara keseluruhan. Secara default hanya menampilkan kartu aktif (status Y).
+     * Untuk melihat kartu yang dinonaktifkan, gunakan parameter status=N.
+     *
+     * @queryParam fcba string Optional. Filter berdasarkan fcba. Example: MTE
+     * @queryParam afdeling string Optional. Filter berdasarkan afdeling. Example: AFD-01
+     * @queryParam status string Optional. Filter berdasarkan status (Y/N). Default: Y. Example: N
+     * @queryParam ownership string Optional. Filter berdasarkan kepemilikan. Example: Perusahaan
+     * @queryParam card_id string Optional. Filter berdasarkan card id. Example: CARD-001
      *
      * @response 200 scenario="success" {
      *  "success": true,
      *  "message": "List Data NFC Card",
-     *  "data": [...],
-     *  "meta": {"current_page": 1, ...}
+     *  "data": [...]
      * }
      */
     public function index(Request $request)
@@ -37,19 +42,42 @@ class NfcCardController extends Controller
         try {
             $query = NfcCard::query();
 
-            if ($search = $request->query('q')) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('uid', 'like', "%{$search}%")
-                        ->orWhere('card_id', 'like', "%{$search}%")
-                        ->orWhere('ownership', 'like', "%{$search}%")
-                        ->orWhere('fcba', 'like', "%{$search}%")
-                        ->orWhere('afdeling', 'like', "%{$search}%");
-                });
+            // Filter berdasarkan fcba
+            if ($fcba = $request->query('fcba')) {
+                $query->where('fcba', '=', $fcba);
             }
 
-            $perPage = (int) $request->query('per_page', 15);
+            // Filter berdasarkan afdeling
+            if ($afdeling = $request->query('afdeling')) {
+                $query->where('afdeling', '=', $afdeling);
+            }
 
-            $data = $query->orderBy('id', 'desc')->paginate($perPage);
+            // Filter berdasarkan status - default Y
+            if ($status = $request->query('status')) {
+                $query->where('status', '=', $status);
+            } else {
+                $query->where('status', '=', 'Y');
+            }
+
+            // Filter berdasarkan ownership
+            if ($ownership = $request->query('ownership')) {
+                $query->where('ownership', '=', $ownership);
+            }
+
+            // Filter berdasarkan card_id
+            if ($cardId = $request->query('card_id')) {
+                $query->where('card_id', '=', $cardId);
+            }
+
+            $data = $query->orderBy('id', 'desc')->get();
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data tidak ditemukan.',
+                    'data' => []
+                ], 404);
+            }
 
             return new AllResource(true, 'List Data NFC Card', $data);
         } catch (\Exception $e) {
