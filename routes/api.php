@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\AncakController;
 use App\Http\Controllers\Api\AppUploadController;
 use App\Http\Controllers\Api\MapController;
 use App\Http\Controllers\Api\NfcCardController;
+use App\Http\Controllers\Api\FeatureSettingController;
 use App\Http\Controllers\Internal\InternalFileController;
 
 Route::post("/register", [AuthController::class, "register"])
@@ -233,6 +234,15 @@ Route::middleware([
         // NFC Cards API
         Route::apiResource("nfc", NfcCardController::class)->parameters([
             "nfc" => "id",
+        ]);
+
+        // Feature Settings API
+        Route::get("features/check", [
+            FeatureSettingController::class,
+            "checkStatus",
+        ])->name("settings.features.check");
+        Route::apiResource("features", FeatureSettingController::class)->parameters([
+            "features" => "id",
         ]);
     });
 
