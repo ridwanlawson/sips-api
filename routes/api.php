@@ -56,6 +56,14 @@ Route::middleware([
         AuthController::class,
         "changePassword",
     ])->name("auth.password.change");
+    Route::put("/user/profile", [
+        AuthController::class,
+        "updateProfile",
+    ])->name("user.profile.update");
+    Route::post("/user/photo", [
+        AuthController::class,
+        "updatePhoto",
+    ])->name("user.photo.update");
     Route::patch("user/{id}/status", [
         AuthController::class,
         "updateStatus",

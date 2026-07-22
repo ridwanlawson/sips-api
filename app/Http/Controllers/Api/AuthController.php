@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\QueryException;
 use App\Http\Resources\AllResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -292,6 +293,166 @@ class AuthController extends Controller
             "message" => "User retrieved successfully",
             "data" => $user,
         ]);
+    }
+
+    /**
+     * Update Profile User yang sedang login.
+     *
+     * Mengubah data profile pengguna yang sedang login.
+     * Field yang bisa diubah: fullname, email, phone, afdeling, gangcode, level, position.
+     *
+     * @bodyParam fullname string optional Nama lengkap. Max: 100. Example: John Doe
+     * @bodyParam email string optional Email. Harus unik (kecuali milik sendiri). Example: john@contoh.com
+     * @bodyParam phone string optional Nomor telepon. 9–20 digit. Example: 08123456789
+     * @bodyParam afdeling string optional Kode afdeling. Example: AFD-04
+     * @bodyParam gangcode string optional Kode gang. Example: PN011
+     * @bodyParam level string optional Level pengguna. Example: KRP
+     * @bodyParam position string optional Jabatan. Example: KR.PANEN
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "Profile berhasil diperbarui.",
+     *  "data": {...}
+     * }
+     */
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'fullname' => 'sometimes|nullable|max:100',
+            'email' => 'sometimes|nullable|email|max:100|unique:users,email,' . Auth::id(),
+            'phone' => 'sometimes|nullable|digits_between:9,20',
+            'afdeling' => 'sometimes|nullable|max:20',
+            'gangcode' => 'sometimes|nullable|max:20',
+            'level' => 'sometimes|nullable|max:10',
+            'position' => 'sometimes|nullable|max:50',
+        ]);
+
+        try {
+            $user = Auth::user();
+            $data = [];
+
+            if ($request->filled('fullname')) {
+                $data['fullname'] = strtoupper($request->fullname);
+            }
+            if ($request->filled('email')) {
+                $data['email'] = $request->email;
+            }
+            if ($request->filled('phone')) {
+                $data['phone'] = $request->phone;
+            }
+            if ($request->filled('afdeling')) {
+                $data['afdeling'] = strtoupper($request->afdeling);
+            }
+            if ($request->filled('gangcode')) {
+                $data['gangcode'] = strtoupper($request->gangcode);
+            }
+            if ($request->filled('level')) {
+                $data['level'] = strtoupper($request->level);
+            }
+            if ($request->filled('position')) {
+                $data['position'] = strtoupper($request->position);
+            }
+
+            if (empty($data)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data yang dikirim untuk diperbarui.',
+                ], 422);
+            }
+
+            $data['updated_by'] = $user->username;
+
+            $user->update($data);
+
+            return new AllResource(true, 'Profile berhasil diperbarui.', $user->fresh());
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan database.',
+                'error' => $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada sistem.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Ganti Photo Profile User yang sedang login.
+     *
+     * Upload foto profile baru. Format: jpg, jpeg, png. Max: 2MB.
+     *
+     * @bodyParam photo file required File gambar JPG/PNG. Max: 2MB
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "Photo profile berhasil diperbarui.",
+     *  "data": {...}
+     * }
+     */
+    public function updatePhoto(Request $request)
+    {
+        $request->validate([
+            'photo' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        try {
+            $user = Auth::user();
+
+            $storage = app(StorageService::class);
+            $folderPath = 'file/profile_photos';
+            $relativePath = $this->optimizeAndSaveImage(
+                $request->file('photo'),
+                $folderPath,
+            );
+            $localAbsPath = public_path($relativePath);
+
+            $photoPath = null;
+            if ($storage->isDevOnline()) {
+                $devUrl = $storage->uploadToDev(
+                    $localAbsPath,
+                    $relativePath,
+                );
+                if ($devUrl) {
+                    $photoPath = $devUrl;
+                    @unlink($localAbsPath);
+                } else {
+                    $photoPath = asset($relativePath);
+                }
+            } else {
+                $photoPath = asset($relativePath);
+            }
+
+            // Hapus foto lama jika ada dan tersimpan di lokal
+            if ($user->photo && $storage->isStoredOnProd($user->photo)) {
+                $oldPath = public_path($storage->urlToRelativePath($user->photo));
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+
+            $user->update([
+                'photo' => $photoPath,
+                'updated_by' => $user->username,
+            ]);
+
+            return new AllResource(true, 'Photo profile berhasil diperbarui.', $user->fresh());
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan database.',
+                'error' => $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupload photo.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
