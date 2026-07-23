@@ -25,6 +25,11 @@ Route::post("/login", [AuthController::class, "login"])
     ->middleware("throttle:3,1")
     ->name("auth.login");
 
+Route::get("/sips-karyawans", [
+    MasterController::class,
+    "karyawan",
+])->name("master.karyawan");
+
 // Public routes untuk App Update (tanpa auth agar bisa langsung diakses dari browser/mobile)
 Route::post("/app-update/check", [
     AppUploadController::class,
@@ -76,10 +81,6 @@ Route::middleware([
         Route::get("/sips-fields", [MasterController::class, "field"])->name(
             "master.field",
         );
-        Route::get("/sips-karyawans", [
-            MasterController::class,
-            "karyawan",
-        ])->name("master.karyawan");
         Route::get("/sips-karyawans-kemandoran", [
             MasterController::class,
             "karyawanKemandoran",
