@@ -38,7 +38,7 @@ class UserController extends Controller
 
         //create post
         $datas = User::create([
-            'username'  => $request->username, 
+            'username'  => $request->username,
             'fullname'  => $request->fullname,
             'fcba'      => $request->fcba,
             'afdeling'  => $request->afdeling,

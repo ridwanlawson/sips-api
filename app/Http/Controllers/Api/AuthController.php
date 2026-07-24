@@ -52,6 +52,7 @@ class AuthController extends Controller
             "gangcode" => "nullable|max:20",
             "level" => 'nullable|max:10|regex:/^\S+$/',
             "position" => 'nullable|max:50|regex:/^\S+$/',
+            "bantu" => "nullable|max:20",
             "photo" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
             "idkaryawan" => "nullable|exists:sips_production.employee,fccode",
         ]);
@@ -193,6 +194,7 @@ class AuthController extends Controller
             "level" => $finalLevel, // ← pakai variable baru
             "position" => $finalPosition, // ← pakai variable baru
             "idkaryawan" => $request->idkaryawan,
+            "bantu" => $request->bantu,
             "photo" => $photoPath,
         ]);
 

@@ -37,6 +37,7 @@ return new class extends Migration
             $table->string('position', 50)->nullable();
             $table->string('photo')->nullable();
             $table->string('status')->nullable();
+            $table->string('bantu', 5)->nullable();
             $table->string('updated_by')->nullable();
             $table->rememberToken();
             $table->timestamps();

@@ -36,6 +36,7 @@ class User extends Authenticatable
         'photo',
         'idkaryawan',
         'status',
+        'bantu',
     ];
 
     /**
