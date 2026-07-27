@@ -33,7 +33,7 @@ class Harvesting extends Model
         "BRONDOL",
         "ALASBRONDOL",
         "TANGKAIPANJANG",
-        "STATUS_ASSISTENSI",
+        "STATUS_DOCKET",
         "STATUS_HARVESTING",
         "IMAGES",
         "AFDELING",

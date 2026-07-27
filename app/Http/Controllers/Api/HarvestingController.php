@@ -120,7 +120,7 @@ class HarvestingController extends Controller
                     HARVESTING.TANGKAIPANJANG,
                     HARVESTING.PARTENO,
                     HARVESTING.PARTENO50PLUS,
-                    HARVESTING.STATUS_ASSISTENSI,
+                    HARVESTING.STATUS_DOCKET,
                     HARVESTING.STATUS_HARVESTING,
                     HARVESTING.FCBA_DESTINATION,
                     HARVESTING.AFDELING_DESTINATION,
@@ -340,7 +340,7 @@ class HarvestingController extends Controller
             "brondol" => "nullable|integer|min:0",
             "tangkaipanjang" => "nullable|integer|min:0",
             "alasbrondol" => "nullable|string",
-            "status_assistensi" => "nullable",
+            "status_docket" => "nullable",
             "kemandoran" => "nullable|exists:users,gangcode",
             "location" => "nullable",
             "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
@@ -432,7 +432,7 @@ class HarvestingController extends Controller
                 "TANGKAIPANJANG" => $request->tangkaipanjang,
                 "ALASBRONDOL" => $request->alasbrondol ?? "N",
                 "KEMANDORAN" => $request->kemandoran,
-                "STATUS_ASSISTENSI" => $request->status_assistensi,
+                "STATUS_DOCKET" => $request->status_docket,
                 "STATUS_HARVESTING" => "Planned",
                 "AFDELING_DESTINATION" => $request->afdeling_destination,
                 "FCBA_DESTINATION" => $request->fcba_destination,
@@ -530,7 +530,7 @@ class HarvestingController extends Controller
                     HARVESTING.PARTENO,
                     HARVESTING.PARTENO50PLUS,
                     HARVESTING.KEMANDORAN,
-                    HARVESTING.STATUS_ASSISTENSI,
+                    HARVESTING.STATUS_DOCKET,
                     HARVESTING.STATUS_HARVESTING,
                     HARVESTING.AFDELING_DESTINATION,
                     HARVESTING.FCBA_DESTINATION,
@@ -675,7 +675,7 @@ class HarvestingController extends Controller
             "tangkaipanjang" => "nullable|numeric|min:0",
             "alasbrondol" => "nullable|string",
             "kemandoran" => "nullable|exists:users,gangcode",
-            "status_assistensi" => "nullable",
+            "status_docket" => "nullable",
             "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
             "card_id" => "nullable",
         ]);
@@ -771,7 +771,7 @@ class HarvestingController extends Controller
                 $validated["tangkaipanjang"] ?? null, // 20
                 $validated["alasbrondol"] ?? "N", // 21
                 $validated["kemandoran"], // 22
-                $validated["status_assistensi"] ?? null, // 23
+                $validated["status_docket"] ?? null, // 23
                 $validated["afdeling_destination"] ?? null, // 24
                 $validated["fcba_destination"] ?? null, // 25
                 $validated["card_id"] ?? null, // 26
@@ -805,7 +805,7 @@ class HarvestingController extends Controller
                 \"TANGKAIPANJANG\" = ?,
                 \"ALASBRONDOL\" = ?,
                 \"KEMANDORAN\" = ?,
-                \"STATUS_ASSISTENSI\" = ?,
+                \"STATUS_DOCKET\" = ?,
                 \"AFDELING_DESTINATION\" = ?,
                 \"FCBA_DESTINATION\" = ?,
                 \"CARD_ID\" = ?,

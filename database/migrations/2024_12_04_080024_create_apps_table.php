@@ -99,7 +99,7 @@ return new class extends Migration {
             $table->integer("brondol");
             $table->integer("alasbrondol");
             $table->integer("tangkaipanjang");
-            $table->string("status_assistensi", 50)->nullable();
+            $table->string("status_docket", 50)->nullable();
             $table->string("images")->nullable();
             $table->string("afdeling", 20);
             $table->string("fcba", 10);
@@ -114,6 +114,8 @@ return new class extends Migration {
             $table->string("no_ba_exca")->nullable();
             $table->string("created_by")->nullable();
             $table->string("updated_by")->nullable();
+            $table->string("deleted_by")->nullable();
+            $table->string("deleted_attachment")->nullable();
             $table->timestamps();
         });
 
