@@ -38,7 +38,8 @@ class HarvestingController extends Controller
      * @queryParam kode_karyawan string Optional. Filter Panen berdasarkan kode karyawan. Example: 06-031014-231025-0438
      * @queryParam fcba string Optional. Filter Panen berdasarkan bisnis unit. Example: MTE
      * @queryParam afdeling string Optional. Filter Panen berdasarkan afdeling. Example: AFD-01
-     * @queryParam tph string Optional. Filter Panen berdasarkan TPH. Example: TPH-101
+     * @queryParam tph string Optional. Filter Panen berdasarkan TPH. Example: 12
+     * @queryParam fieldcode string Optional. Filter Panen berdasarkan fieldcode. Example: F31
      * @queryParam kemandoran string Optional. Filter Panen berdasarkan kemandoran. Example: MD011
      *
      * @response 200 scenario="success" {
