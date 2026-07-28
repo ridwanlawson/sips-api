@@ -85,6 +85,7 @@ class HarvestingController extends Controller
             $kode_karyawan = $request->query("kode_karyawan");
             $fcba = $request->query("fcba");
             $afdeling = $request->query("afdeling");
+            $fieldcode = $request->query("fieldcode");
             $tph = $request->query("tph");
             $status_harvesting = $request->query("status_harvesting");
             $kemandoran = $request->query("kemandoran");
@@ -209,6 +210,11 @@ class HarvestingController extends Controller
             if ($tph) {
                 $query .= " AND HARVESTING.TPH = :tph";
                 $bindings["tph"] = $tph;
+            }
+
+            if ($fieldcode) {
+                $query .= " AND HARVESTING.FIELDCODE = :fieldcode";
+                $bindings["fieldcode"] = $fieldcode;
             }
 
             if ($afdeling) {
