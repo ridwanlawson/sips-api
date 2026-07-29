@@ -41,38 +41,59 @@ class HarvestingController extends Controller
      * @queryParam tph string Optional. Filter Panen berdasarkan TPH. Example: 12
      * @queryParam fieldcode string Optional. Filter Panen berdasarkan fieldcode. Example: F31
      * @queryParam kemandoran string Optional. Filter Panen berdasarkan kemandoran. Example: MD011
+     * @queryParam status_pengangkutan string Optional. Filter Panen berdasarkan status pengangkutan (BELUM, TERANGKUT, SELISIH). Example: SELISIH
      *
      * @response 200 scenario="success" {
      *  "success": true,
      *  "message": "List Data Panen",
      *  "data": [
-     *      {
-     *          "id": "1",
-     *          "nodokumen": "SKJ-HOF/MTE/25/01/0001",
-     *          "tanggal": "2024-12-19",
-     *          "kode_karyawan": "06-031014-231025-0438",
-     *          "nama_karyawan": "HENDRIKUS KLAU SERAN",
-     *          "fcba": "MTE",
-     *          "afdeling": "AFD-01",
-     *          "tph": "TPH-101",
-     *          "fieldcode": "A12",
-     *          "output": "150",
-     *          "mentah": "5",
-     *          "overripe": "3",
-     *          "busuk": "2",
-     *          "busuk2": "0",
-     *          "buahkecil": "1",
-     *          "brondol": "8",
-     *          "alasbrondol": "0",
-     *          "tangkai_panjang": "0",
-     *          "kemandoran": "MD011",
-     *          "images": "",
-     *          "exception_case": "",
-     *          "no_ba_exca": "",
-     *          "id_device": "Xiaomi",
-     *          "status_harvesting": "Planned",
-     *          "card_id": "NFC 1234567890"
-     *      }
+     *     {
+     *       "id": 188800,
+     *       "nodokumen": "PTE/AFD-03C/R10-10A/280726/0083",
+     *       "tanggal": "2026-07-28 00:00:00.000",
+     *       "kode_karyawan_mandor1": null,
+     *       "nama_karyawan_mandor1": null,
+     *       "kode_karyawan_mandor_panen": null,
+     *       "nama_karyawan_mandor_panen": null,
+     *       "kode_karyawan_kerani": null,
+     *       "nama_karyawan_kerani": null,
+     *       "kode_karyawan": "08-880701-240610-0366",
+     *       "nama_karyawan": "DIONISIUS LIGI",
+     *       "noancak": "10A",
+     *       "tph": "127",
+     *       "fieldcode": "R10",
+     *       "fcba": "PTE",
+     *       "afdeling": "AFD-03",
+     *       "output": 19,
+     *       "output_ai": 0,
+     *       "mentah": 0,
+     *       "overripe": 0,
+     *       "busuk": 0,
+     *       "busuk2": 0,
+     *       "parteno50plus": 0,
+     *       "output_pgkn": 17,
+     *       "sisa_pgkn": 2,
+     *       "parteno": 0,
+     *       "buahkecil": 3,
+     *       "brondol": 5,
+     *       "alasbrondol": "N",
+     *       "tangkaipanjang": 0,
+     *       "status_docket": null,
+     *       "status_harvesting": "Planned",
+     *       "fcba_destination": null,
+     *       "afdeling_destination": null,
+     *       "kemandoran": "MD033",
+     *       "images": "http://dev.skj.my.id:82/file/harvesting/images/pte/2026/07/28/1785224232_PTE_AFD_03C_R10_10A_280726_0083_photo.jpg",
+     *       "no_ba_exca": null,
+     *       "exception_case": null,
+     *       "id_device": null,
+     *       "location": "2.21924097,117.95803304",
+     *       "card_id": "PTE03-187",
+     *       "created_at": "2026-07-28 14:37:13.000",
+     *       "created_by": "wawan",
+     *       "status_pengangkutan": "SELISIH",
+     *       "info_status_pengangkutan": "SELISIH PENGANGKUTAN 2 JJG"
+     *     }
      *  ]
      * }
      */
@@ -89,80 +110,15 @@ class HarvestingController extends Controller
             $fieldcode = $request->query("fieldcode");
             $tph = $request->query("tph");
             $status_harvesting = $request->query("status_harvesting");
+            $status_pengangkutan = $request->query("status_pengangkutan");
             $kemandoran = $request->query("kemandoran");
 
             $query = "
                 SELECT
-                    DISTINCT
-                    HARVESTING.ID,
-                    HARVESTING.NODOKUMEN,
-                    HARVESTING.TANGGAL,
-                    HARVESTING.KODE_KARYAWAN_MANDOR1,
-                    MANDOR1.FCNAME AS NAMA_KARYAWAN_MANDOR1,
-                    HARVESTING.KODE_KARYAWAN_MANDOR_PANEN,
-                    MANDOR_PANEN.FCNAME AS NAMA_KARYAWAN_MANDOR_PANEN,
-                    HARVESTING.KODE_KARYAWAN_KERANI,
-                    KERANI.FCNAME AS NAMA_KARYAWAN_KERANI,
-                    HARVESTING.KODE_KARYAWAN,
-                    KARYAWAN.FCNAME AS NAMA_KARYAWAN,
-                    HARVESTING.NOANCAK,
-                    HARVESTING.TPH,
-                    HARVESTING.FIELDCODE,
-                    HARVESTING.FCBA,
-                    HARVESTING.AFDELING,
-                    HARVESTING.OUTPUT,
-                    HARVESTING.OUTPUT_AI,
-                    HARVESTING.MENTAH,
-                    HARVESTING.OVERRIPE,
-                    HARVESTING.BUSUK,
-                    HARVESTING.BUSUK2,
-                    HARVESTING.BUAHKECIL,
-                    HARVESTING.BRONDOL,
-                    HARVESTING.ALASBRONDOL,
-                    HARVESTING.TANGKAIPANJANG,
-                    HARVESTING.PARTENO,
-                    HARVESTING.PARTENO50PLUS,
-                    HARVESTING.STATUS_DOCKET,
-                    HARVESTING.STATUS_HARVESTING,
-                    HARVESTING.FCBA_DESTINATION,
-                    HARVESTING.AFDELING_DESTINATION,
-                    HARVESTING.KEMANDORAN,
-                    HARVESTING.IMAGES,
-                    HARVESTING.NO_BA_EXCA,
-                    HARVESTING.EXCEPTION_CASE,
-                    HARVESTING.ID_DEVICE,
-                    HARVESTING.LOCATION,
-                    HARVESTING.CARD_ID,
-                    HARVESTING.CREATED_AT,
-                    HARVESTING.CREATED_BY
+                    *
                 FROM
-                    SIPSMOBILE.HARVESTING
-                LEFT JOIN
-                    SIPSMOBILE.TPH
-                ON
-                    HARVESTING.TPH = TPH.NOTPH
-                    AND HARVESTING.FIELDCODE = TPH.FIELDCODE
-                    AND HARVESTING.NOANCAK = TPH.ANCAKNO
-                    AND HARVESTING.AFDELING = TPH.AFDELING
-                    AND HARVESTING.FCBA = TPH.FCBA
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE MANDOR1
-                ON
-                    HARVESTING.KODE_KARYAWAN_MANDOR1 = MANDOR1.FCCODE
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE MANDOR_PANEN
-                ON
-                    HARVESTING.KODE_KARYAWAN_MANDOR_PANEN = MANDOR_PANEN.FCCODE
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE KERANI
-                ON
-                    HARVESTING.KODE_KARYAWAN_KERANI = KERANI.FCCODE
-                INNER JOIN
-                    SIPSMOBILE.EMPLOYEE KARYAWAN
-                ON
-                    HARVESTING.KODE_KARYAWAN = KARYAWAN.FCCODE
-                WHERE
-                    HARVESTING.DELETED_AT IS NULL
+                    SIPSMOBILE.V_DATA_PANEN
+                WHERE 1=1
             ";
 
             $bindings = [];
@@ -190,63 +146,69 @@ class HarvestingController extends Controller
                 }
 
                 $query .=
-                    " and TRUNC(HARVESTING.TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                    " and TRUNC(TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
                 $bindings["tanggal"] = $startDate;
                 $bindings["tanggal_end"] = $endDate;
             } elseif ($tanggal) {
                 $query .=
-                    " and TRUNC(HARVESTING.TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
+                    " and TRUNC(TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
                 $bindings["tanggal"] = $tanggal;
             } elseif ($tanggalEnd) {
                 $query .=
-                    " and TRUNC(HARVESTING.TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                    " and TRUNC(TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
                 $bindings["tanggal_end"] = $tanggalEnd;
             }
 
             if ($kode_karyawan) {
-                $query .= " AND HARVESTING.KODE_KARYAWAN = :kode_karyawan";
+                $query .= " AND KODE_KARYAWAN = :kode_karyawan";
                 $bindings["kode_karyawan"] = $kode_karyawan;
             }
 
             if ($tph) {
-                $query .= " AND HARVESTING.TPH = :tph";
+                $query .= " AND TPH = :tph";
                 $bindings["tph"] = $tph;
             }
 
             if ($fieldcode) {
-                $query .= " AND HARVESTING.FIELDCODE = :fieldcode";
+                $query .= " AND FIELDCODE = :fieldcode";
                 $bindings["fieldcode"] = $fieldcode;
             }
 
             if ($afdeling) {
-                $query .= " AND HARVESTING.AFDELING = :afdeling";
+                $query .= " AND AFDELING = :afdeling";
                 $bindings["afdeling"] = $afdeling;
             }
 
             if ($fcba) {
-                $query .= " AND HARVESTING.FCBA = :fcba";
+                $query .= " AND FCBA = :fcba";
                 $bindings["fcba"] = $fcba;
             }
 
             if ($status_harvesting) {
                 $query .=
-                    " AND HARVESTING.STATUS_HARVESTING = :status_harvesting";
+                    " AND STATUS_HARVESTING = :status_harvesting";
                 $bindings["status_harvesting"] = $status_harvesting;
             }
 
+            if ($status_pengangkutan) {
+                $query .=
+                    " AND STATUS_PENGANGKUTAN = :status_pengangkutan";
+                $bindings["status_pengangkutan"] = $status_pengangkutan;
+            }
+
             if ($kemandoran) {
-                $query .= " AND HARVESTING.KEMANDORAN = :kemandoran";
+                $query .= " AND KEMANDORAN = :kemandoran";
                 $bindings["kemandoran"] = $kemandoran;
             }
 
             // Tambahkan bagian akhir query
             $query .= "
                 ORDER BY
-                    HARVESTING.FCBA,
-                    HARVESTING.TANGGAL DESC,
-                    HARVESTING.AFDELING,
-                    HARVESTING.FIELDCODE,
-                    HARVESTING.KODE_KARYAWAN
+                    FCBA,
+                    TANGGAL DESC,
+                    AFDELING,
+                    FIELDCODE,
+                    KODE_KARYAWAN
             ";
 
             // Jalankan query
