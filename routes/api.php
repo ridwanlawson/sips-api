@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\PengangkutanController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\JsonBackupController;
 use App\Http\Controllers\Api\ApiLogController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\AncakController;
@@ -232,6 +233,13 @@ Route::middleware([
             UploadController::class,
             "open_lhm_data",
         ])->name("upload.open.lhm.data");
+    });
+
+    Route::prefix("backup")->group(function () {
+        Route::post("/json", [JsonBackupController::class, "upload"])->name("backup.json");
+        Route::get("/json", [JsonBackupController::class, "index"])->name("backup.json.index");
+        Route::get("/json/{id}/download", [JsonBackupController::class, "download"])->name("backup.json.download");
+        Route::delete("/json/{id}", [JsonBackupController::class, "destroy"])->name("backup.json.destroy");
     });
 
     Route::prefix("settings")->group(function () {

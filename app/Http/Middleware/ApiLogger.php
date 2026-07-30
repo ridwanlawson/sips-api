@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
 use App\Models\ApiLog;
+use Closure;
 use Illuminate\Http\Request;
 
 class ApiLogger
@@ -12,15 +12,15 @@ class ApiLogger
     {
         // Process the request
         $response = $next($request);
-        
+
         // Get real IP address
-        $ip = $request->header('x-forwarded-for') ?? 
-              $request->header('x-real-ip') ?? 
+        $ip = $request->header('x-forwarded-for') ??
+              $request->header('x-real-ip') ??
               $request->ip();
 
         // Log the API call
         try {
-            
+
             $requestData = [
                 'query' => $request->query(), // GET parameters
                 'body' => $request->except(['password']), // POST/PUT data
@@ -33,13 +33,13 @@ class ApiLogger
                 'method' => $request->method(),
                 'endpoint' => $request->path(),
                 'request_data' => $requestData,
-                'response_code' => $response->status(),
+                'response_code' => method_exists($response, 'status') ? $response->status() : $response->getStatusCode(),
                 'ip_address' => $ip,
                 'user_agent' => $request->userAgent(),
             ]);
         } catch (\Exception $e) {
             // Log error silently
-            \Log::error('API Logger Error: ' . $e->getMessage());
+            \Log::error('API Logger Error: '.$e->getMessage());
         }
 
         return $response;
