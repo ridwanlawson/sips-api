@@ -215,7 +215,7 @@ class PengangkutanController extends Controller
                 LEFT JOIN
                     IPLASPROD.VEHICLE KENDARAAN
                 ON
-                    PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE
+                    PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE AND KENDARAAN.ACTIVATION = 'Y'
                 WHERE
                     PENGANGKUTAN.DELETED_AT IS NULL
             ";
