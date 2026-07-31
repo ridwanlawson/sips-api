@@ -136,88 +136,10 @@ class PengangkutanController extends Controller
 
             $query = "
                 SELECT
-                    DISTINCT
-                    PENGANGKUTAN.ID,
-                    PENGANGKUTAN.NOPENGANGKUTAN,
-                    PENGANGKUTAN.NOSPB,
-                    PENGANGKUTAN.NODOKUMEN,
-                    PENGANGKUTAN.TANGGAL,
-                    PENGANGKUTAN.KODE_KARYAWAN_KERANI,
-                    KERANI.FCNAME AS NAMA_KARYAWAN_KERANI,
-                    PENGANGKUTAN.KODE_KARYAWAN_DRIVER,
-                    DRIVER.FCNAME AS NAMA_KARYAWAN_DRIVER,
-                    PENGANGKUTAN.TKBM1,
-                    TKBM1.FCNAME AS NAMA_TKBM1,
-                    PENGANGKUTAN.TKBM2,
-                    TKBM2.FCNAME AS NAMA_TKBM2,
-                    PENGANGKUTAN.TKBM3,
-                    TKBM3.FCNAME AS NAMA_TKBM3,
-                    PENGANGKUTAN.TKBM4,
-                    TKBM4.FCNAME AS NAMA_TKBM4,
-                    PENGANGKUTAN.TKBM5,
-                    TKBM5.FCNAME AS NAMA_TKBM5,
-                    PENGANGKUTAN.KODE_KENDARAAN,
-                    PENGANGKUTAN.TYPE_PENGANGKUTAN,
-                    KENDARAAN.FCNAME NAMA_KENDARAAN,
-                    PENGANGKUTAN.FCBA,
-                    PENGANGKUTAN.PABRIK_TUJUAN,
-                    PENGANGKUTAN.AFDELING,
-                    PENGANGKUTAN.TPH,
-                    PENGANGKUTAN.FIELDCODE,
-                    PENGANGKUTAN.TOTALJANJANG,
-                    PENGANGKUTAN.OUTPUT,
-                    PENGANGKUTAN.JANJANGNORMAL,
-                    PENGANGKUTAN.BRONDOLAN,
-                    PENGANGKUTAN.MENTAH,
-                    PENGANGKUTAN.ABNORMAL,
-                    PENGANGKUTAN.ETD,
-                    PENGANGKUTAN.ETA,
-                    PENGANGKUTAN.STATUS_PENGANGKUTAN,
-                    PENGANGKUTAN.IMAGES,
-                    PENGANGKUTAN.NO_BA_EXCA,
-                    PENGANGKUTAN.EXCEPTION_CASE,
-                    PENGANGKUTAN.CARD_ID,
-                    PENGANGKUTAN.FLAG,
-                    PENGANGKUTAN.FCBA_DESTINATION,
-                    PENGANGKUTAN.AFDELING_DESTINATION,
-                    PENGANGKUTAN.CREATED_AT,
-                    PENGANGKUTAN.CREATED_BY
+                    *
                 FROM
                     SIPSMOBILE.PENGANGKUTAN
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE KERANI
-                ON
-                    PENGANGKUTAN.KODE_KARYAWAN_KERANI = KERANI.FCCODE
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE DRIVER
-                ON
-                    PENGANGKUTAN.KODE_KARYAWAN_DRIVER = DRIVER.FCCODE
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE TKBM1
-                ON
-                    PENGANGKUTAN.TKBM1 = TKBM1.FCCODE
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE TKBM2
-                ON
-                    PENGANGKUTAN.TKBM2 = TKBM2.FCCODE
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE TKBM3
-                ON
-                    PENGANGKUTAN.TKBM3 = TKBM3.FCCODE
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE TKBM4
-                ON
-                    PENGANGKUTAN.TKBM4 = TKBM4.FCCODE
-                LEFT JOIN
-                    SIPSMOBILE.EMPLOYEE TKBM5
-                ON
-                    PENGANGKUTAN.TKBM5 = TKBM5.FCCODE
-                LEFT JOIN
-                    IPLASPROD.VEHICLE KENDARAAN
-                ON
-                    PENGANGKUTAN.KODE_KENDARAAN = KENDARAAN.FCCODE AND KENDARAAN.ACTIVATION = 'Y'
-                WHERE
-                    PENGANGKUTAN.DELETED_AT IS NULL
+                WHERE 1=1
             ";
 
             $bindings = [];
@@ -255,16 +177,16 @@ class PengangkutanController extends Controller
                 }
 
                 $query .=
-                    " and TRUNC(PENGANGKUTAN.TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                    " and TRUNC(TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
                 $bindings["tanggal"] = $startDate;
                 $bindings["tanggal_end"] = $endDate;
             } elseif ($tanggal) {
                 $query .=
-                    " and TRUNC(PENGANGKUTAN.TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
+                    " and TRUNC(TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
                 $bindings["tanggal"] = $tanggal;
             } elseif ($tanggalEnd) {
                 $query .=
-                    " and TRUNC(PENGANGKUTAN.TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                    " and TRUNC(TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
                 $bindings["tanggal_end"] = $tanggalEnd;
             }
 
@@ -314,48 +236,48 @@ class PengangkutanController extends Controller
             }
 
             if ($fcba) {
-                $query .= " AND PENGANGKUTAN.FCBA = :fcba";
+                $query .= " AND FCBA = :fcba";
                 $bindings["fcba"] = $fcba;
             }
 
             if ($pabrik_tujuan) {
-                $query .= " AND PENGANGKUTAN.PABRIK_TUJUAN = :pabrik_tujuan";
+                $query .= " AND PABRIK_TUJUAN = :pabrik_tujuan";
                 $bindings["pabrik_tujuan"] = $pabrik_tujuan;
             }
 
             if ($afdeling) {
-                $query .= " AND PENGANGKUTAN.AFDELING = :afdeling";
+                $query .= " AND AFDELING = :afdeling";
                 $bindings["afdeling"] = $afdeling;
             }
 
             if ($tph) {
-                $query .= " AND PENGANGKUTAN.TPH = :tph";
+                $query .= " AND TPH = :tph";
                 $bindings["tph"] = $tph;
             }
 
             if ($fieldcode) {
-                $query .= " AND PENGANGKUTAN.FIELDCODE = :fieldcode";
+                $query .= " AND FIELDCODE = :fieldcode";
                 $bindings["fieldcode"] = $fieldcode;
             }
 
             if ($status_pengangkutan) {
                 $query .=
-                    " AND PENGANGKUTAN.STATUS_PENGANGKUTAN = :status_pengangkutan";
+                    " AND STATUS_PENGANGKUTAN = :status_pengangkutan";
                 $bindings["status_pengangkutan"] = $status_pengangkutan;
             }
 
             if ($flag) {
-                $query .= " AND PENGANGKUTAN.FLAG = :flag";
+                $query .= " AND FLAG = :flag";
                 $bindings["flag"] = $flag;
             }
 
             // Tambahkan bagian akhir query
             $query .= "
                 ORDER BY
-                    PENGANGKUTAN.TANGGAL DESC,
-                    PENGANGKUTAN.NOPENGANGKUTAN DESC,
-                    PENGANGKUTAN.NOSPB DESC,
-                    PENGANGKUTAN.NODOKUMEN DESC
+                    TANGGAL DESC,
+                    NOPENGANGKUTAN DESC,
+                    NOSPB DESC,
+                    NODOKUMEN DESC
             ";
 
             // Jalankan query
