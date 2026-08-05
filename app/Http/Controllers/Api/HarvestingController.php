@@ -284,7 +284,7 @@ class HarvestingController extends Controller
         // Validasi inputan
         $request->validate([
             "nodokumen" => "required|string",
-            "tanggal" => "required|date_format:Y-m-d",
+            "tanggal" => "required|date_format:Y-m-d H:i:s",
             "kode_karyawan_mandor1" => "nullable|string|exists:employee,fccode",
             "kode_karyawan_mandor_panen" =>
                 "nullable|string|exists:employee,fccode",
@@ -312,7 +312,7 @@ class HarvestingController extends Controller
             "status_docket" => "nullable",
             "kemandoran" => "nullable|exists:users,gangcode",
             "location" => "nullable",
-            "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
+            "images" => "nullable|images|mimes:jpg,jpeg,png|max:2048",
             "exception_case" => "nullable",
             "no_ba_exca" => "nullable|file|mimes:pdf|max:2048",
             "id_device" => "nullable",
@@ -645,7 +645,7 @@ class HarvestingController extends Controller
             "alasbrondol" => "nullable|string",
             "kemandoran" => "nullable|exists:users,gangcode",
             "status_docket" => "nullable",
-            "images" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
+            "images" => "nullable|images|mimes:jpg,jpeg,png|max:2048",
             "card_id" => "nullable",
         ]);
 
