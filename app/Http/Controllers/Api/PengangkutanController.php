@@ -138,7 +138,7 @@ class PengangkutanController extends Controller
                 SELECT
                     *
                 FROM
-                    SIPSMOBILE.PENGANGKUTAN
+                    SIPSMOBILE.V_DATA_PENGANGKUTAN
                 WHERE 1=1
             ";
 
