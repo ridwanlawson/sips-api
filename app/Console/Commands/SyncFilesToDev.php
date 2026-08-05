@@ -125,7 +125,7 @@ class SyncFilesToDev extends Command
 
         $orphanSummary = "";
         if ($this->option("cleanup-orphans")) {
-            $orphanSummary = $this->cleanupOrphans($tables, $isDryRun);
+            $orphanSummary = $this->cleanupOrphans($tables, $isDryRun, $storage);
         }
 
         $summary = "Sukses: {$totalSuccess} | Gagal: {$totalFailed}";
@@ -261,8 +261,11 @@ class SyncFilesToDev extends Command
         return ltrim($path, "/");
     }
 
-    private function cleanupOrphans(array $tables, bool $isDryRun): string
-    {
+    private function cleanupOrphans(
+        array $tables,
+        bool $isDryRun,
+        StorageService $storage,
+    ): string {
         $referenced = [];
 
         foreach ($tables as $tbl) {
@@ -306,6 +309,10 @@ class SyncFilesToDev extends Command
         $deleted = 0;
         $skippedPending = 0;
         $untracked = 0;
+        $reconcileUploaded = 0;
+        $reconcileDuplicate = 0;
+        $reconcileAmbiguous = 0;
+        $reconcileFailed = 0;
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($baseDir, RecursiveDirectoryIterator::SKIP_DOTS),
@@ -329,8 +336,33 @@ class SyncFilesToDev extends Command
             }
 
             if (!isset($referenced[$relPath])) {
-                $untracked++;
-                Log::warning("SyncFilesToDev: file untracked (tidak dihapus)", ["path" => $relPath]);
+                $status = $this->reconcileUntrackedFile(
+                    $relPath,
+                    $isDryRun,
+                    $storage,
+                );
+
+                switch ($status) {
+                    case "uploaded":
+                        $reconcileUploaded++;
+                        break;
+                    case "duplicate":
+                        $reconcileDuplicate++;
+                        break;
+                    case "ambiguous":
+                        $reconcileAmbiguous++;
+                        break;
+                    case "failed":
+                        $reconcileFailed++;
+                        break;
+                    default:
+                        $untracked++;
+                        Log::warning(
+                            "SyncFilesToDev: file untracked (tidak dihapus)",
+                            ["path" => $relPath],
+                        );
+                        break;
+                }
                 continue;
             }
 
@@ -351,9 +383,289 @@ class SyncFilesToDev extends Command
             }
         }
 
+        $removedDirs = $this->removeEmptyDirs($baseDir, $isDryRun);
+
         $summary = "Cleanup: hapus {$deleted} | skip-pending {$skippedPending} | untracked {$untracked}";
+        $summary .= " | reconcile: upload {$reconcileUploaded} | duplikat {$reconcileDuplicate} | ambigu {$reconcileAmbiguous} | gagal {$reconcileFailed}";
+        $summary .= " | folder-kosong dihapus {$removedDirs}";
         $this->info($summary);
 
         return $summary;
+    }
+
+    /**
+     * Coba cocokkan file disk yang tidak punya referensi DB dengan record-nya.
+     */
+    private function reconcileUntrackedFile(
+        string $relPath,
+        bool $isDryRun,
+        StorageService $storage,
+    ): string {
+        if (str_starts_with($relPath, "file/harvesting/images/")) {
+            return $this->reconcileByNodokumen(
+                "SIPSMOBILE.HARVESTING",
+                $relPath,
+                $isDryRun,
+                $storage,
+            );
+        }
+
+        if (str_starts_with($relPath, "file/pengangkutan/images/")) {
+            return $this->reconcileByNodokumen(
+                "SIPSMOBILE.PENGANGKUTAN",
+                $relPath,
+                $isDryRun,
+                $storage,
+            );
+        }
+
+        if (str_starts_with($relPath, "file/attendance/images/")) {
+            return $this->reconcileAttendance($relPath, $isDryRun, $storage);
+        }
+
+        return "untracked";
+    }
+
+    /**
+     * Reconcile harvesting/pengangkutan: cocokkan slug NODOKUMEN dari nama file.
+     */
+    private function reconcileByNodokumen(
+        string $table,
+        string $relPath,
+        bool $isDryRun,
+        StorageService $storage,
+    ): string {
+        $slug = $this->extractNodokumenSlug(basename($relPath));
+        if ($slug === "") {
+            return "untracked";
+        }
+
+        $devPrefix = rtrim(config("app.dev_server_url"), "/") . "%";
+
+        $rows = DB::connection("oracle")->select(
+            "SELECT ID, IMAGES
+             FROM {$table}
+             WHERE (IMAGES IS NULL OR IMAGES LIKE :dev_prefix)
+               AND LTRIM(RTRIM(REGEXP_REPLACE(NODOKUMEN, '[^[:alnum:]]+', '_'), '_'), '_') = :slug",
+            ["dev_prefix" => $devPrefix, "slug" => $slug],
+        );
+
+        if (count($rows) === 0) {
+            Log::warning(
+                "SyncFilesToDev: reconcile tanpa kandidat",
+                ["table" => $table, "path" => $relPath, "slug" => $slug],
+            );
+            return "untracked";
+        }
+
+        if (count($rows) > 1) {
+            Log::warning(
+                "SyncFilesToDev: reconcile ambigu (>1 kandidat)",
+                ["table" => $table, "path" => $relPath, "slug" => $slug],
+            );
+            return "ambiguous";
+        }
+
+        return $this->reconcileUploadOrDelete(
+            $table,
+            $relPath,
+            $rows[0],
+            $isDryRun,
+            $storage,
+        );
+    }
+
+    /**
+     * Reconcile attendance: cocokkan kode karyawan dari nama file + tanggal dari folder.
+     */
+    private function reconcileAttendance(
+        string $relPath,
+        bool $isDryRun,
+        StorageService $storage,
+    ): string {
+        $basename = basename($relPath);
+        if (!preg_match('/(\d{2}-\d{6}-\d{6}-\d{4})/', $basename, $m)) {
+            return "untracked";
+        }
+        $kode = $m[1];
+
+        $parts = explode("/", $relPath);
+        if (count($parts) < 8) {
+            return "untracked";
+        }
+        $tanggal = sprintf(
+            "%04d-%02d-%02d",
+            (int) $parts[4],
+            (int) $parts[5],
+            (int) $parts[6],
+        );
+
+        $devPrefix = rtrim(config("app.dev_server_url"), "/") . "%";
+
+        $rows = DB::connection("oracle")->select(
+            "SELECT ID, IMAGES
+             FROM SIPSMOBILE.ATTENDANCE
+             WHERE KODE_KARYAWAN = :kode
+               AND TRUNC(TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD')
+               AND (IMAGES IS NULL OR IMAGES LIKE :dev_prefix)",
+            ["kode" => $kode, "tanggal" => $tanggal, "dev_prefix" => $devPrefix],
+        );
+
+        if (count($rows) === 0) {
+            Log::warning(
+                "SyncFilesToDev: reconcile tanpa kandidat",
+                ["table" => "SIPSMOBILE.ATTENDANCE", "path" => $relPath],
+            );
+            return "untracked";
+        }
+
+        if (count($rows) > 1) {
+            Log::warning(
+                "SyncFilesToDev: reconcile ambigu (>1 kandidat)",
+                ["table" => "SIPSMOBILE.ATTENDANCE", "path" => $relPath],
+            );
+            return "ambiguous";
+        }
+
+        return $this->reconcileUploadOrDelete(
+            "SIPSMOBILE.ATTENDANCE",
+            $relPath,
+            $rows[0],
+            $isDryRun,
+            $storage,
+        );
+    }
+
+    /**
+     * Eksekusi untuk record yang sudah cocok:
+     * - IMAGES null      -> upload ke DEV, update DB, hapus file
+     * - IMAGES URL DEV   -> file duplikat lama, hapus saja
+     */
+    private function reconcileUploadOrDelete(
+        string $table,
+        string $relPath,
+        object $row,
+        bool $isDryRun,
+        StorageService $storage,
+    ): string {
+        $localAbsPath = public_path($relPath);
+
+        if ($row->images !== null) {
+            if ($isDryRun) {
+                $this->line("  [DRY-RUN] reconcile duplikat: {$relPath} (ID {$row->id})");
+                return "duplicate";
+            }
+
+            if (@unlink($localAbsPath)) {
+                return "duplicate";
+            }
+
+            Log::warning("SyncFilesToDev: reconcile hapus duplikat gagal", [
+                "table" => $table,
+                "id" => $row->id,
+                "path" => $relPath,
+            ]);
+            return "duplicate";
+        }
+
+        if ($isDryRun) {
+            $this->line("  [DRY-RUN] reconcile upload: {$relPath} (ID {$row->id})");
+            return "uploaded";
+        }
+
+        $devFileUrl = $storage->uploadToDev($localAbsPath, $relPath);
+
+        if (!$devFileUrl) {
+            Log::error("SyncFilesToDev: reconcile gagal upload", [
+                "table" => $table,
+                "id" => $row->id,
+                "path" => $relPath,
+            ]);
+            return "failed";
+        }
+
+        $updated = $this->updateRecordUrl($table, "IMAGES", $row->id, $devFileUrl);
+
+        if (!$updated) {
+            Log::error("SyncFilesToDev: reconcile update DB gagal", [
+                "table" => $table,
+                "id" => $row->id,
+                "path" => $relPath,
+            ]);
+            return "failed";
+        }
+
+        @unlink($localAbsPath);
+        $this->info("  ✓ reconcile ID {$row->id} [{$table}] → {$devFileUrl}");
+
+        return "uploaded";
+    }
+
+    /**
+     * Ambil slug NODOKUMEN dari nama file:
+     * "1785580467_MTE_AFD_01C_GW_010826_0003_photo.jpg" -> "MTE_AFD_01C_GW_010826_0003"
+     */
+    private function extractNodokumenSlug(string $basename): string
+    {
+        $name = (string) pathinfo($basename, PATHINFO_FILENAME);
+        $name = (string) preg_replace('/^\d+_/', "", $name);
+        $name = (string) preg_replace('/_photo$/', "", $name);
+
+        return trim((string) preg_replace('/[^A-Za-z0-9]+/', "_", $name), "_");
+    }
+
+    /**
+     * Hapus folder kosong di bawah public/file (bottom-up).
+     * Selalu skip file/apps dan folder induk public/file.
+     */
+    private function removeEmptyDirs(string $baseDir, bool $isDryRun): int
+    {
+        $removed = 0;
+        $publicDir = str_replace("\\", "/", rtrim(public_path(), "/")) . "/";
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($baseDir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST,
+        );
+
+        foreach ($iterator as $entry) {
+            if (!$entry->isDir()) {
+                continue;
+            }
+
+            $absNorm = str_replace("\\", "/", $entry->getPathname());
+
+            if (!str_starts_with($absNorm, $publicDir)) {
+                continue;
+            }
+
+            $relDir = ltrim(substr($absNorm, strlen($publicDir)), "/");
+
+            if ($relDir === "file" || str_starts_with($relDir, "file/apps")) {
+                continue;
+            }
+
+            $contents = array_diff(scandir($entry->getPathname()) ?: [], [".", ".."]);
+
+            if (count($contents) !== 0) {
+                continue;
+            }
+
+            if ($isDryRun) {
+                $this->line("  [DRY-RUN] cleanup folder kosong: {$relDir}/");
+                $removed++;
+                continue;
+            }
+
+            if (@rmdir($entry->getPathname())) {
+                $removed++;
+            } else {
+                Log::warning("SyncFilesToDev: hapus folder kosong gagal", [
+                    "path" => $relDir,
+                ]);
+            }
+        }
+
+        return $removed;
     }
 }
