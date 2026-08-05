@@ -22,17 +22,15 @@ class SyncFilesToDev extends Command
 
         $this->info("[" . now() . "] Mulai sync...");
 
-        if (!$storage->isDevOnline()) {
-            $this->warn("DEV server offline. Sync ditunda.");
-            Log::warning("SyncFilesToDev: DEV offline, sync dibatalkan.");
-            return Command::FAILURE;
+        $devOnline = $storage->isDevOnline();
+        if (!$devOnline) {
+            $this->warn("DEV server offline. Fase upload di-skip, cleanup tetap jalan.");
+            Log::warning("SyncFilesToDev: DEV offline, fase upload di-skip.");
         }
 
         $devUrl = rtrim(config("app.dev_server_url"), "/");
         $devPrefix = $devUrl . "%";
         $isDryRun = $this->option("dry-run");
-        $totalSuccess = 0;
-        $totalFailed = 0;
 
         $tables = [
             ["table" => "SIPSMOBILE.ATTENDANCE", "columns" => ["IMAGES", "NO_BA_EXCA", "DELETED_ATTACHMENT"]],
@@ -50,7 +48,119 @@ class SyncFilesToDev extends Command
             return Command::SUCCESS;
         }
 
+        if ($devOnline) {
+            [$totalSuccess, $totalFailed] = $this->syncPendingFiles(
+                $storage,
+                $tables,
+                $devPrefix,
+                $isDryRun,
+            );
+        } else {
+            $totalSuccess = 0;
+            $totalFailed = 0;
+            $this->warn("  DEV offline, file tertunda di PROD tidak diupload.");
+        }
+
+        $orphanSummary = "";
+        if ($this->option("cleanup-orphans")) {
+            $orphanSummary = $this->cleanupOrphans(
+                $tables,
+                $isDryRun,
+                $storage,
+                $devOnline,
+            );
+        }
+
+        $summary = "Sukses: {$totalSuccess} | Gagal: {$totalFailed}";
+        if ($orphanSummary) {
+            $summary .= " | " . $orphanSummary;
+        }
+
+        $this->info("[" . now() . "] Selesai. " . $summary);
+        Log::info("SyncFilesToDev selesai", [
+            "success" => $totalSuccess,
+            "failed" => $totalFailed,
+        ]);
+
+        return $totalFailed > 0 || !$devOnline
+            ? Command::FAILURE
+            : Command::SUCCESS;
+    }
+
+    private function isSafeToRun(): bool
+    {
+        if (config("app.server_role") !== "prod") {
+            return false;
+        }
+
+        $devUrl = rtrim((string) config("app.dev_server_url"), "/");
+        if ($devUrl === "") {
+            return false;
+        }
+
+        if ($devUrl === rtrim((string) config("app.url"), "/")) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function ensureColumnsExist(array $tables): array
+    {
+        $valid = [];
+
+        foreach ($tables as $tbl) {
+            $tableName = str_replace("SIPSMOBILE.", "", $tbl["table"]);
+
+            try {
+                $cols = DB::connection("oracle")->select(
+                    "SELECT column_name FROM all_tab_columns WHERE owner = 'SIPSMOBILE' AND table_name = :t",
+                    ["t" => $tableName],
+                );
+            } catch (\Throwable $e) {
+                Log::warning("SyncFilesToDev: cek kolom gagal", [
+                    "table" => $tableName,
+                    "message" => $e->getMessage(),
+                ]);
+                continue;
+            }
+
+            $existing = [];
+            foreach ($cols as $col) {
+                $existing[] = strtoupper($col->column_name);
+            }
+
+            $goodColumns = array_values(array_intersect($tbl["columns"], $existing));
+
+            if (!empty($goodColumns)) {
+                $valid[] = ["table" => $tbl["table"], "columns" => $goodColumns];
+            } else {
+                Log::warning("SyncFilesToDev: kolom tidak ditemukan, di-skip", [
+                    "table" => $tableName,
+                    "columns" => $tbl["columns"],
+                ]);
+            }
+        }
+
+        return $valid;
+    }
+
+    /**
+     * Fase upload utama: upload file PROD yang belum ada di DEV ke DEV,
+     * update URL di DB, lalu hapus file PROD (anti-premature-delete).
+     *
+     * @return array{0:int,1:int} [totalSuccess, totalFailed]
+     */
+    private function syncPendingFiles(
+        StorageService $storage,
+        array $tables,
+        string $devPrefix,
+        bool $isDryRun,
+    ): array {
         $refCounts = $this->collectNonDevReferenceCounts($tables, $devPrefix);
+
+        $totalSuccess = 0;
+        $totalFailed = 0;
 
         foreach ($tables as $tbl) {
             $table = $tbl["table"];
@@ -123,81 +233,7 @@ class SyncFilesToDev extends Command
             }
         }
 
-        $orphanSummary = "";
-        if ($this->option("cleanup-orphans")) {
-            $orphanSummary = $this->cleanupOrphans($tables, $isDryRun, $storage);
-        }
-
-        $summary = "Sukses: {$totalSuccess} | Gagal: {$totalFailed}";
-        if ($orphanSummary) {
-            $summary .= " | " . $orphanSummary;
-        }
-
-        $this->info("[" . now() . "] Selesai. " . $summary);
-        Log::info("SyncFilesToDev selesai", [
-            "success" => $totalSuccess,
-            "failed" => $totalFailed,
-        ]);
-
-        return $totalFailed > 0 ? Command::FAILURE : Command::SUCCESS;
-    }
-
-    private function isSafeToRun(): bool
-    {
-        if (config("app.server_role") !== "prod") {
-            return false;
-        }
-
-        $devUrl = rtrim((string) config("app.dev_server_url"), "/");
-        if ($devUrl === "") {
-            return false;
-        }
-
-        if ($devUrl === rtrim((string) config("app.url"), "/")) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private function ensureColumnsExist(array $tables): array
-    {
-        $valid = [];
-
-        foreach ($tables as $tbl) {
-            $tableName = str_replace("SIPSMOBILE.", "", $tbl["table"]);
-
-            try {
-                $cols = DB::connection("oracle")->select(
-                    "SELECT column_name FROM all_tab_columns WHERE owner = 'SIPSMOBILE' AND table_name = :t",
-                    ["t" => $tableName],
-                );
-            } catch (\Throwable $e) {
-                Log::warning("SyncFilesToDev: cek kolom gagal", [
-                    "table" => $tableName,
-                    "message" => $e->getMessage(),
-                ]);
-                continue;
-            }
-
-            $existing = [];
-            foreach ($cols as $col) {
-                $existing[] = strtoupper($col->column_name);
-            }
-
-            $goodColumns = array_values(array_intersect($tbl["columns"], $existing));
-
-            if (!empty($goodColumns)) {
-                $valid[] = ["table" => $tbl["table"], "columns" => $goodColumns];
-            } else {
-                Log::warning("SyncFilesToDev: kolom tidak ditemukan, di-skip", [
-                    "table" => $tableName,
-                    "columns" => $tbl["columns"],
-                ]);
-            }
-        }
-
-        return $valid;
+        return [$totalSuccess, $totalFailed];
     }
 
     private function fetchPendingRecords(string $table, string $column, string $devPrefix): array
@@ -265,6 +301,7 @@ class SyncFilesToDev extends Command
         array $tables,
         bool $isDryRun,
         StorageService $storage,
+        bool $devOnline,
     ): string {
         $referenced = [];
 
@@ -313,6 +350,7 @@ class SyncFilesToDev extends Command
         $reconcileDuplicate = 0;
         $reconcileAmbiguous = 0;
         $reconcileFailed = 0;
+        $reconcileSkipped = 0;
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($baseDir, RecursiveDirectoryIterator::SKIP_DOTS),
@@ -340,6 +378,7 @@ class SyncFilesToDev extends Command
                     $relPath,
                     $isDryRun,
                     $storage,
+                    $devOnline,
                 );
 
                 switch ($status) {
@@ -354,6 +393,9 @@ class SyncFilesToDev extends Command
                         break;
                     case "failed":
                         $reconcileFailed++;
+                        break;
+                    case "skipped":
+                        $reconcileSkipped++;
                         break;
                     default:
                         $untracked++;
@@ -386,7 +428,7 @@ class SyncFilesToDev extends Command
         $removedDirs = $this->removeEmptyDirs($baseDir, $isDryRun);
 
         $summary = "Cleanup: hapus {$deleted} | skip-pending {$skippedPending} | untracked {$untracked}";
-        $summary .= " | reconcile: upload {$reconcileUploaded} | duplikat {$reconcileDuplicate} | ambigu {$reconcileAmbiguous} | gagal {$reconcileFailed}";
+        $summary .= " | reconcile: upload {$reconcileUploaded} | duplikat {$reconcileDuplicate} | ambigu {$reconcileAmbiguous} | gagal {$reconcileFailed} | skip {$reconcileSkipped}";
         $summary .= " | folder-kosong dihapus {$removedDirs}";
         $this->info($summary);
 
@@ -400,6 +442,7 @@ class SyncFilesToDev extends Command
         string $relPath,
         bool $isDryRun,
         StorageService $storage,
+        bool $devOnline,
     ): string {
         if (str_starts_with($relPath, "file/harvesting/images/")) {
             return $this->reconcileByNodokumen(
@@ -407,6 +450,7 @@ class SyncFilesToDev extends Command
                 $relPath,
                 $isDryRun,
                 $storage,
+                $devOnline,
             );
         }
 
@@ -416,11 +460,17 @@ class SyncFilesToDev extends Command
                 $relPath,
                 $isDryRun,
                 $storage,
+                $devOnline,
             );
         }
 
         if (str_starts_with($relPath, "file/attendance/images/")) {
-            return $this->reconcileAttendance($relPath, $isDryRun, $storage);
+            return $this->reconcileAttendance(
+                $relPath,
+                $isDryRun,
+                $storage,
+                $devOnline,
+            );
         }
 
         return "untracked";
@@ -434,6 +484,7 @@ class SyncFilesToDev extends Command
         string $relPath,
         bool $isDryRun,
         StorageService $storage,
+        bool $devOnline,
     ): string {
         $slug = $this->extractNodokumenSlug(basename($relPath));
         if ($slug === "") {
@@ -472,6 +523,7 @@ class SyncFilesToDev extends Command
             $rows[0],
             $isDryRun,
             $storage,
+            $devOnline,
         );
     }
 
@@ -482,6 +534,7 @@ class SyncFilesToDev extends Command
         string $relPath,
         bool $isDryRun,
         StorageService $storage,
+        bool $devOnline,
     ): string {
         $basename = basename($relPath);
         if (!preg_match('/(\d{2}-\d{6}-\d{6}-\d{4})/', $basename, $m)) {
@@ -533,6 +586,7 @@ class SyncFilesToDev extends Command
             $rows[0],
             $isDryRun,
             $storage,
+            $devOnline,
         );
     }
 
@@ -547,6 +601,7 @@ class SyncFilesToDev extends Command
         object $row,
         bool $isDryRun,
         StorageService $storage,
+        bool $devOnline,
     ): string {
         $localAbsPath = public_path($relPath);
 
@@ -566,6 +621,11 @@ class SyncFilesToDev extends Command
                 "path" => $relPath,
             ]);
             return "duplicate";
+        }
+
+        if (!$devOnline) {
+            $this->line("  - reconcile skip (DEV offline): {$relPath} (ID {$row->id})");
+            return "skipped";
         }
 
         if ($isDryRun) {
