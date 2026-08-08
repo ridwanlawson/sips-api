@@ -249,7 +249,7 @@ class AttendanceController extends Controller
             'kemandoran' => 'nullable|exists:users,gangcode',
             'id_device' => 'nullable',
             'mac_address' => 'nullable',
-            'images' => 'nullable|image|mimes:webp,jpg,jpeg,png|max:2048',
+            'images' => 'nullable|file|mimes:webp,jpg,jpeg,png|max:2048',
             'created_by' => 'nullable',
         ]);
 
@@ -499,7 +499,7 @@ class AttendanceController extends Controller
             'kemandoran' => 'nullable|exists:users,gangcode',
             'id_device' => 'nullable',
             'mac_address' => 'nullable',
-            'images' => 'nullable|image|mimes:webp,jpg,jpeg,png|max:2048',
+            'images' => 'nullable|file|mimes:webp,jpg,jpeg,png|max:2048',
         ]);
 
         try {

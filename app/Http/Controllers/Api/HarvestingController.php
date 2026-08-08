@@ -316,7 +316,7 @@ class HarvestingController extends Controller
             'status_docket' => 'nullable',
             'kemandoran' => 'nullable|exists:users,gangcode',
             'location' => 'nullable',
-            'images' => 'nullable|image|mimes:webp,jpg,jpeg,png|max:2048',
+            'images' => 'nullable|file|mimes:webp,jpg,jpeg,png|max:2048',
             'exception_case' => 'nullable',
             'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
             'id_device' => 'nullable',
@@ -680,7 +680,7 @@ class HarvestingController extends Controller
             'alasbrondol' => 'nullable|string',
             'kemandoran' => 'nullable|exists:users,gangcode',
             'status_docket' => 'nullable',
-            'images' => 'nullable|image|mimes:webp,jpg,jpeg,png|max:2048',
+            'images' => 'nullable|file|mimes:webp,jpg,jpeg,png|max:2048',
             'card_id' => 'nullable',
         ]);
 
