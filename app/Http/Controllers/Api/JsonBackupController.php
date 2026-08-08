@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\AllResource;
 use App\Models\BackupJsonFile;
 use App\Services\StorageService;
+use App\Traits\FileCleanupTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Log;
  */
 class JsonBackupController extends Controller
 {
+    use FileCleanupTrait;
+
     protected StorageService $storageService;
 
     public function __construct(StorageService $storageService)
@@ -69,6 +72,8 @@ class JsonBackupController extends Controller
     public function upload(Request $request)
     {
         try {
+            $this->uploadedFiles = [];
+
             $validated = $request->validate([
                 'file' => 'required|file|mimes:json',
                 'activity' => 'required|in:attendance,harvest,transport',
@@ -117,6 +122,8 @@ class JsonBackupController extends Controller
             $fileSize = $file->getSize();
             $url = $this->storageService->storeFile($file, $relativePath);
 
+            $this->trackUploadedFile($url);
+
             $backupFile = BackupJsonFile::create([
                 'activity' => $validated['activity'],
                 'fcba' => $validated['fcba'],
@@ -138,6 +145,8 @@ class JsonBackupController extends Controller
                 $backupFile
             );
         } catch (\Exception $e) {
+            $this->cleanupUploadedFiles();
+
             Log::error('Backup JSON upload error: '.$e->getMessage(), [
                 'request' => $request->all(),
             ]);

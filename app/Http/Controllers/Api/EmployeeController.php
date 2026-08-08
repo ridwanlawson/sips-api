@@ -2,26 +2,31 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Karyawan;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Resources\AllResource;
+use App\Models\Karyawan;
+use App\Services\StorageService;
+use App\Traits\FileCleanupTrait;
+use App\Traits\ImageOptimizerTrait;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\StorageService;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @group Apps
  *
  * @subgroup Karyawan
- * @subgroupDescription Sub Group untuk Karyawan
  *
+ * @subgroupDescription Sub Group untuk Karyawan
  */
 class EmployeeController extends Controller
 {
-    use \App\Traits\ImageOptimizerTrait;
+    use FileCleanupTrait;
+    use ImageOptimizerTrait;
+
     /**
      * Memanggil data karyawan dari SIPS Mobile.
      *
@@ -105,7 +110,7 @@ class EmployeeController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil data.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -131,15 +136,17 @@ class EmployeeController extends Controller
         ]);
 
         try {
+            $this->uploadedFiles = [];
+
             // Inisialisasi variabel path image (default null jika tidak ada file)
             $imagePath = null;
 
             // Jika ada file image yang diunggah
             if ($request->hasFile('photo')) {
                 $storage = app(StorageService::class);
-                $folderPath = "file/employee_photo";
+                $folderPath = 'file/employee_photo';
                 $relativePath = $this->optimizeAndSaveImage(
-                    $request->file("photo"),
+                    $request->file('photo'),
                     $folderPath,
                 );
                 $localAbsPath = public_path($relativePath);
@@ -160,6 +167,8 @@ class EmployeeController extends Controller
                 }
             }
 
+            $this->trackUploadedFile($imagePath);
+
             $validated['photo'] = $imagePath;
             $validated['created_by'] = Auth::user()->username;
 
@@ -170,10 +179,12 @@ class EmployeeController extends Controller
             return new AllResource(true, 'Data Karyawan berhasil ditambahkan.', $datas);
         } catch (\Exception $e) {
             // Menangkap error dan mengembalikan pesan yang mudah dipahami oleh user
+            $this->cleanupUploadedFiles();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
-                'error' => $e->getMessage() // Tambahkan pesan error teknis jika perlu
+                'error' => $e->getMessage(), // Tambahkan pesan error teknis jika perlu
             ], 500);
         }
     }
@@ -185,11 +196,12 @@ class EmployeeController extends Controller
      */
     public function show($id)
     {
-        Log::info('HTTP Method: ' . request()->method());
+        Log::info('HTTP Method: '.request()->method());
         try {
             $datas = Karyawan::findOrFail($id);
+
             return new AllResource(true, 'Detail Data Karyawan', $datas);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data karyawan tidak ditemukan.',
@@ -225,25 +237,26 @@ class EmployeeController extends Controller
         ]);
 
         try {
+            $this->uploadedFiles = [];
 
             $datas = Karyawan::findOrFail($id);
 
             // Jika data tidak ditemukan
-            if (!$datas) {
+            if (! $datas) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Karyawan tidak ditemukan'
+                    'message' => 'Karyawan tidak ditemukan',
                 ], 404);
             }
 
             $imagePath = $datas->images; // Default gunakan gambar lama
 
             // Jika ada file image yang diunggah
-            if (!empty($request->hasFile('photo'))) {
+            if (! empty($request->hasFile('photo'))) {
                 $storage = app(StorageService::class);
-                $folderPath = "file/employee_photo";
+                $folderPath = 'file/employee_photo';
                 $relativePath = $this->optimizeAndSaveImage(
-                    $request->file("photo"),
+                    $request->file('photo'),
                     $folderPath,
                 );
                 $localAbsPath = public_path($relativePath);
@@ -264,6 +277,8 @@ class EmployeeController extends Controller
                 }
 
                 $validated['photo'] = $imagePath;
+
+                $this->trackUploadedFile($imagePath);
             }
 
             $validated['updated_by'] = Auth::user()->username;
@@ -271,18 +286,22 @@ class EmployeeController extends Controller
             $datas->update($validated);
 
             return new AllResource(true, 'Data Karyawan berhasil diperbarui.', $datas);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data karyawan tidak ditemukan.',
             ], 404);
         } catch (QueryException $e) {
+            $this->cleanupUploadedFiles();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengupdate data.',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
+            $this->cleanupUploadedFiles();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan pada sistem.',
@@ -298,14 +317,14 @@ class EmployeeController extends Controller
      */
     public function destroy($id)
     {
-        Log::info('Destroy method called with ID: ' . $id);
-        Log::info('HTTP Method: ' . request()->method());
+        Log::info('Destroy method called with ID: '.$id);
+        Log::info('HTTP Method: '.request()->method());
         try {
             $datas = Karyawan::findOrFail($id);
             $datas->delete();
 
             return new AllResource(true, 'Data Karyawan berhasil dihapus.', $datas);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data karyawan tidak ditemukan.',

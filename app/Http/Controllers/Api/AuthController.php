@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\User;
-use App\Models\Employee;
-use App\Models\BusinessUnit;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Database\QueryException;
 use App\Http\Resources\AllResource;
+use App\Models\BusinessUnit;
+use App\Models\Employee;
+use App\Models\User;
+use App\Services\StorageService;
+use App\Traits\FileCleanupTrait;
+use App\Traits\ImageOptimizerTrait;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\StorageService;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @group Auth
@@ -21,10 +24,14 @@ use App\Services\StorageService;
  */
 class AuthController extends Controller
 {
-    use \App\Traits\ImageOptimizerTrait;
+    use FileCleanupTrait;
+    use ImageOptimizerTrait;
+
     /**
      * Register User
+     *
      * @unauthenticated
+     *
      * @bodyParam username string required Username yang unik. Max: 75. Example: johndoe
      * @bodyParam fullname string required Nama lengkap. Max: 100. Example: John Doe
      * @bodyParam email string Email pengguna (opsional). Harus unik dan valid. Example: john@contoh.com
@@ -41,70 +48,42 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            "username" =>
-                "nullable|max:75|unique:users,username|required_without:idkaryawan",
-            "fullname" => "required_without:idkaryawan|nullable|max:100",
-            "email" => "nullable|email|unique:users,email|max:100",
-            "phone" => "nullable|digits_between:9,20",
-            "password" => "nullable|min:8",
-            "fcba" => "required_without:idkaryawan|nullable|max:10",
-            "afdeling" => "nullable|max:20",
-            "gangcode" => "nullable|max:20",
-            "level" => 'nullable|max:10|regex:/^\S+$/',
-            "position" => 'nullable|max:50|regex:/^\S+$/',
-            "bantu" => "nullable|max:20",
-            "photo" => "nullable|file|mimes:jpg,jpeg,png|max:2048",
-            "idkaryawan" => "nullable|exists:sips_production.employee,fccode",
+            'username' => 'nullable|max:75|unique:users,username|required_without:idkaryawan',
+            'fullname' => 'required_without:idkaryawan|nullable|max:100',
+            'email' => 'nullable|email|unique:users,email|max:100',
+            'phone' => 'nullable|digits_between:9,20',
+            'password' => 'nullable|min:8',
+            'fcba' => 'required_without:idkaryawan|nullable|max:10',
+            'afdeling' => 'nullable|max:20',
+            'gangcode' => 'nullable|max:20',
+            'level' => 'nullable|max:10|regex:/^\S+$/',
+            'position' => 'nullable|max:50|regex:/^\S+$/',
+            'bantu' => 'nullable|max:20',
+            'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'idkaryawan' => 'nullable|exists:sips_production.employee,fccode',
         ]);
 
-        // Inisialisasi variabel path photo (default null jika tidak ada file)
+        // Photo di-handle setelah semua cek unik (agar tidak ada file yatim)
         $photoPath = null;
 
-        // Jika ada file photo yang diunggah
-        if ($request->hasFile("photo")) {
-            $storage = app(StorageService::class);
-            $folderPath = "file/profile_photos";
-            $relativePath = $this->optimizeAndSaveImage(
-                $request->file("photo"),
-                $folderPath,
-            );
-            $localAbsPath = public_path($relativePath);
-
-            if ($storage->isDevOnline()) {
-                $devUrl = $storage->uploadToDev(
-                    $localAbsPath,
-                    $relativePath,
-                );
-                if ($devUrl) {
-                    $photoPath = $devUrl;
-                    @unlink($localAbsPath);
-                } else {
-                    $photoPath = asset($relativePath);
-                }
-            } else {
-                $photoPath = asset($relativePath);
-            }
-        }
-
         $emp = null;
-        if ($request->filled("idkaryawan")) {
+        if ($request->filled('idkaryawan')) {
             $emp = Employee::select(
-                "FCCODE",
-                "FCNAME",
-                "GANGCODE",
-                "SECTIONNAME",
-                "FCBA",
+                'FCCODE',
+                'FCNAME',
+                'GANGCODE',
+                'SECTIONNAME',
+                'FCBA',
             )
-                ->where("FCCODE", $request->idkaryawan)
-                ->whereNull("DATETERMINATE")
+                ->where('FCCODE', $request->idkaryawan)
+                ->whereNull('DATETERMINATE')
                 ->first();
             // Cara 2 (alternatif jika tidak pakai Rule::exists di atas):
-            if (!$emp) {
+            if (! $emp) {
                 return response()->json(
                     [
-                        "success" => false,
-                        "message" =>
-                            "Data karyawan tidak ditemukan / sudah terminate.",
+                        'success' => false,
+                        'message' => 'Data karyawan tidak ditemukan / sudah terminate.',
                     ],
                     422,
                 );
@@ -112,56 +91,54 @@ class AuthController extends Controller
         }
 
         // Password default jika kosong
-        $rawPassword = $request->filled("password")
+        $rawPassword = $request->filled('password')
             ? $request->password
-            : "12345678";
+            : '12345678';
 
         // Jika ada employee, override field; jika tidak, pakai dari request
-        $finalUsername = $request->filled("username")
+        $finalUsername = $request->filled('username')
             ? $request->username
             : $emp->fccode ?? null;
-        $finalFullname = $request->filled("fullname")
+        $finalFullname = $request->filled('fullname')
             ? strtoupper($request->fullname)
             : ($emp
                 ? strtoupper($emp->fcname)
                 : null); // ← uppercase
-        $finalFcba = $request->filled("fcba")
+        $finalFcba = $request->filled('fcba')
             ? $request->fcba
             : $emp->fcba ?? null;
-        $finalAfdeling = $request->filled("afdeling")
+        $finalAfdeling = $request->filled('afdeling')
             ? $request->afdeling
             : $emp->sectionname ?? null;
-        $finalGangcode = $request->filled("gangcode")
+        $finalGangcode = $request->filled('gangcode')
             ? $request->gangcode
             : $emp->gangcode ?? null;
-        $finalLevel = $request->filled("level")
+        $finalLevel = $request->filled('level')
             ? strtoupper($request->level)
             : null; // ← uppercase
-        $finalPosition = $request->filled("position")
+        $finalPosition = $request->filled('position')
             ? strtoupper($request->position)
             : null; // ← uppercase
 
         // 6) SAFETY CHECK: pastikan tetap memenuhi "required_without:idkaryawan"
-        if (!$request->filled("idkaryawan")) {
+        if (! $request->filled('idkaryawan')) {
             // Tanpa idkaryawan, field wajib dari request harus ada
-            if (!$finalUsername || !$finalFullname || !$finalFcba) {
+            if (! $finalUsername || ! $finalFullname || ! $finalFcba) {
                 return response()->json(
                     [
-                        "success" => false,
-                        "message" =>
-                            "Username, fullname, dan fcba wajib jika idkaryawan tidak diisi.",
+                        'success' => false,
+                        'message' => 'Username, fullname, dan fcba wajib jika idkaryawan tidak diisi.',
                     ],
                     422,
                 );
             }
         } else {
             // Dengan idkaryawan, pastikan mapping dari employee tidak kosong
-            if (!$finalUsername || !$finalFullname || !$finalFcba) {
+            if (! $finalUsername || ! $finalFullname || ! $finalFcba) {
                 return response()->json(
                     [
-                        "success" => false,
-                        "message" =>
-                            "Data karyawan tidak lengkap (FCCODE/FCNAME/FCBA).",
+                        'success' => false,
+                        'message' => 'Data karyawan tidak lengkap (FCCODE/FCNAME/FCBA).',
                     ],
                     422,
                 );
@@ -171,65 +148,109 @@ class AuthController extends Controller
         // 7) CEK UNIK USERNAME SETELAH OVERRIDE
         if (
             $finalUsername &&
-            \App\Models\User::where("username", $finalUsername)->exists()
+            User::where('username', $finalUsername)->exists()
         ) {
             return response()->json(
                 [
-                    "success" => false,
-                    "message" => "Username sudah digunakan: " . $finalUsername,
+                    'success' => false,
+                    'message' => 'Username sudah digunakan: '.$finalUsername,
                 ],
                 422,
             );
         }
 
-        $data = User::create([
-            "username" => $finalUsername,
-            "fullname" => $finalFullname,
-            "email" => $request->email,
-            "phone" => $request->phone,
-            "password" => bcrypt($rawPassword),
-            "fcba" => $finalFcba,
-            "afdeling" => $finalAfdeling,
-            "gangcode" => $finalGangcode,
-            "level" => $finalLevel, // ← pakai variable baru
-            "position" => $finalPosition, // ← pakai variable baru
-            "idkaryawan" => $request->idkaryawan,
-            "bantu" => $request->bantu,
-            "photo" => $photoPath,
-        ]);
+        $this->uploadedFiles = [];
 
-        return new AllResource(true, "User registered successfully", $data);
+        try {
+            // Upload photo baru dilakukan sekarang (setelah semua cek lolos)
+            if ($request->hasFile('photo')) {
+                $storage = app(StorageService::class);
+                $folderPath = 'file/profile_photos';
+                $relativePath = $this->optimizeAndSaveImage(
+                    $request->file('photo'),
+                    $folderPath,
+                );
+                $localAbsPath = public_path($relativePath);
+
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev(
+                        $localAbsPath,
+                        $relativePath,
+                    );
+                    if ($devUrl) {
+                        $photoPath = $devUrl;
+                        @unlink($localAbsPath);
+                    } else {
+                        $photoPath = asset($relativePath);
+                    }
+                } else {
+                    $photoPath = asset($relativePath);
+                }
+
+                $this->trackUploadedFile($photoPath);
+            }
+
+            $data = User::create([
+                'username' => $finalUsername,
+                'fullname' => $finalFullname,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'password' => bcrypt($rawPassword),
+                'fcba' => $finalFcba,
+                'afdeling' => $finalAfdeling,
+                'gangcode' => $finalGangcode,
+                'level' => $finalLevel, // ← pakai variable baru
+                'position' => $finalPosition, // ← pakai variable baru
+                'idkaryawan' => $request->idkaryawan,
+                'bantu' => $request->bantu,
+                'photo' => $photoPath,
+            ]);
+        } catch (\Exception $e) {
+            $this->cleanupUploadedFiles();
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat menyimpan data.',
+                    'error' => $e->getMessage(),
+                ],
+                500,
+            );
+        }
+
+        return new AllResource(true, 'User registered successfully', $data);
     }
 
     /**
      * Login User
+     *
      * @unauthenticated
      */
     public function login(Request $request)
     {
         $request->validate([
-            "username" => "required",
-            "password" => "required",
+            'username' => 'required',
+            'password' => 'required',
         ]);
 
-        $user = User::where("username", $request->username)
-            ->where("status", "Y")
+        $user = User::where('username', $request->username)
+            ->where('status', 'Y')
             ->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(["message" => "Invalid credentials"], 401);
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
         // Ambil FCCOMPANYCODE dari BusinessUnit berdasarkan FCBA user
-        $businessUnit = BusinessUnit::where("FCCODE", $user->fcba)->first();
+        $businessUnit = BusinessUnit::where('FCCODE', $user->fcba)->first();
         $user->fccompanycode = $businessUnit->fccompanycode ?? null;
 
-        $token = $user->createToken("auth_token")->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            "message" => "Login successful",
-            "token" => $token,
-            "user" => $user,
+            'message' => 'Login successful',
+            'token' => $token,
+            'user' => $user,
         ]);
     }
 
@@ -240,7 +261,7 @@ class AuthController extends Controller
     {
         $request->user()->tokens()->delete();
 
-        return response()->json(["message" => "Logged out successfully"]);
+        return response()->json(['message' => 'Logged out successfully']);
     }
 
     /**
@@ -249,26 +270,26 @@ class AuthController extends Controller
     public function changePassword(Request $request)
     {
         $request->validate([
-            "current_password" => "required",
-            "new_password" => "required|min:8",
+            'current_password' => 'required',
+            'new_password' => 'required|min:8',
         ]);
 
         $user = $request->user(); // Mendapatkan data pengguna yang login
 
         // Verifikasi password lama
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             throw ValidationException::withMessages([
-                "current_password" => "The current password is incorrect.",
+                'current_password' => 'The current password is incorrect.',
             ]);
         }
 
         // Update password baru
         $user->update([
-            "password" => Hash::make($request->new_password),
+            'password' => Hash::make($request->new_password),
         ]);
 
         return response()->json([
-            "message" => "Password has been changed successfully.",
+            'message' => 'Password has been changed successfully.',
         ]);
     }
 
@@ -282,18 +303,18 @@ class AuthController extends Controller
         // Cari pengguna berdasarkan ID
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(
                 [
-                    "message" => "User not found",
+                    'message' => 'User not found',
                 ],
                 404,
             );
         }
 
         return response()->json([
-            "message" => "User retrieved successfully",
-            "data" => $user,
+            'message' => 'User retrieved successfully',
+            'data' => $user,
         ]);
     }
 
@@ -321,7 +342,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'fullname' => 'sometimes|nullable|max:100',
-            'email' => 'sometimes|nullable|email|max:100|unique:users,email,' . Auth::id(),
+            'email' => 'sometimes|nullable|email|max:100|unique:users,email,'.Auth::id(),
             'phone' => 'sometimes|nullable|digits_between:9,20',
             'afdeling' => 'sometimes|nullable|max:20',
             'gangcode' => 'sometimes|nullable|max:20',
@@ -402,7 +423,11 @@ class AuthController extends Controller
         ]);
 
         try {
+            $this->uploadedFiles = [];
+
             $user = Auth::user();
+
+            $oldPhoto = $user->photo;
 
             $storage = app(StorageService::class);
             $folderPath = 'file/profile_photos';
@@ -428,27 +453,30 @@ class AuthController extends Controller
                 $photoPath = asset($relativePath);
             }
 
-            // Hapus foto lama jika ada dan tersimpan di lokal
-            if ($user->photo && $storage->isStoredOnProd($user->photo)) {
-                $oldPath = public_path($storage->urlToRelativePath($user->photo));
-                if (file_exists($oldPath)) {
-                    @unlink($oldPath);
-                }
-            }
+            $this->trackUploadedFile($photoPath);
 
             $user->update([
                 'photo' => $photoPath,
                 'updated_by' => $user->username,
             ]);
 
+            // Hapus foto lama (guarded: hanya jika sudah tidak direferensikan DB)
+            if ($oldPhoto) {
+                $storage->deleteFile($oldPhoto);
+            }
+
             return new AllResource(true, 'Photo profile berhasil diperbarui.', $user->fresh());
         } catch (QueryException $e) {
+            $this->cleanupUploadedFiles();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan database.',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
+            $this->cleanupUploadedFiles();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengupload photo.',
@@ -466,7 +494,7 @@ class AuthController extends Controller
     {
         // Validasi input status yang diizinkan
         $validated = $request->validate([
-            "status" => "required|string|in:Y,N",
+            'status' => 'required|string|in:Y,N',
         ]);
 
         try {
@@ -476,7 +504,7 @@ class AuthController extends Controller
             // Update status menggunakan query manual (konsisten dengan update lain)
             DB::update(
                 "UPDATE \"SIPSMOBILE\".\"USERS\" \n SET \"STATUS\" = ?, \"UPDATED_BY\" = ?, \"UPDATED_AT\" = SYSDATE\n WHERE \"ID\" = ?",
-                [$validated["status"], Auth::user()->username, $id],
+                [$validated['status'], Auth::user()->username, $id],
             );
 
             // Ambil kembali data yang sudah diupdate
@@ -484,36 +512,35 @@ class AuthController extends Controller
 
             return response()->json(
                 [
-                    "success" => true,
-                    "message" => "Status Absensi berhasil diperbarui.",
-                    "data" => $datas,
+                    'success' => true,
+                    'message' => 'Status Absensi berhasil diperbarui.',
+                    'data' => $datas,
                 ],
                 200,
             );
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json(
                 [
-                    "success" => false,
-                    "message" => "Data Absensi tidak ditemukan.",
+                    'success' => false,
+                    'message' => 'Data Absensi tidak ditemukan.',
                 ],
                 404,
             );
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return response()->json(
                 [
-                    "success" => false,
-                    "message" =>
-                        "Terjadi kesalahan saat mengupdate status absensi.",
-                    "error" => $e->getMessage(),
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat mengupdate status absensi.',
+                    'error' => $e->getMessage(),
                 ],
                 500,
             );
         } catch (\Exception $e) {
             return response()->json(
                 [
-                    "success" => false,
-                    "message" => "Terjadi kesalahan pada sistem.",
-                    "error" => $e->getMessage(),
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan pada sistem.',
+                    'error' => $e->getMessage(),
                 ],
                 500,
             );

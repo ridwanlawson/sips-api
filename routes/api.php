@@ -1,282 +1,288 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\MasterController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\EmployeeController;
-use App\Http\Controllers\Api\TphController;
-use App\Http\Controllers\Api\HarvestingController;
+use App\Http\Controllers\Api\AncakController;
+use App\Http\Controllers\Api\ApiLogController;
+use App\Http\Controllers\Api\AppUploadController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DeviceController;
+use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\FeatureSettingController;
+use App\Http\Controllers\Api\HarvestingController;
+use App\Http\Controllers\Api\JsonBackupController;
+use App\Http\Controllers\Api\MapController;
+use App\Http\Controllers\Api\MasterController;
+use App\Http\Controllers\Api\NfcCardController;
 use App\Http\Controllers\Api\PengangkutanController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\TphController;
 use App\Http\Controllers\Api\UploadController;
-use App\Http\Controllers\Api\JsonBackupController;
-use App\Http\Controllers\Api\ApiLogController;
-use App\Http\Controllers\Api\DeviceController;
-use App\Http\Controllers\Api\AncakController;
-use App\Http\Controllers\Api\AppUploadController;
-use App\Http\Controllers\Api\MapController;
-use App\Http\Controllers\Api\NfcCardController;
-use App\Http\Controllers\Api\FeatureSettingController;
 use App\Http\Controllers\Internal\InternalFileController;
+use App\Http\Middleware\ApiLogger;
+use Illuminate\Support\Facades\Route;
 
-Route::post("/register", [AuthController::class, "register"])
-    ->name("auth.register");
-Route::post("/login", [AuthController::class, "login"])
-    ->middleware("throttle:3,1")
-    ->name("auth.login");
+Route::post('/register', [AuthController::class, 'register'])
+    ->name('auth.register');
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:3,1')
+    ->name('auth.login');
 
-Route::get("/sips-karyawans", [
+Route::get('/sips-karyawans', [
     MasterController::class,
-    "karyawan",
-])->name("master.karyawan");
+    'karyawan',
+])->name('master.karyawan');
 
 // Public routes untuk App Update (tanpa auth agar bisa langsung diakses dari browser/mobile)
-Route::post("/app-update/check", [
+Route::post('/app-update/check', [
     AppUploadController::class,
-    "checkUpdate",
-])->name("app.check-update");
-Route::prefix("app")->group(function () {
-    Route::post("/apk", [AppUploadController::class, "upload_apk"])->name(
-        "app.upload-apk",
+    'checkUpdate',
+])->name('app.check-update');
+Route::prefix('app')->group(function () {
+    Route::post('/apk', [AppUploadController::class, 'upload_apk'])->name(
+        'app.upload-apk',
     );
-    Route::get("/apks", [AppUploadController::class, "list"])->name(
-        "app.list-versions",
+    Route::get('/apks', [AppUploadController::class, 'list'])->name(
+        'app.list-versions',
     );
-    Route::delete("/apk/{id}", [AppUploadController::class, "delete"])->name(
-        "app.delete-version",
+    Route::delete('/apk/{id}', [AppUploadController::class, 'delete'])->name(
+        'app.delete-version',
     );
 });
 
 Route::middleware([
-    "auth:sanctum",
-    \App\Http\Middleware\ApiLogger::class,
+    'auth:sanctum',
+    ApiLogger::class,
 ])->group(function () {
-    Route::post("/logout", [AuthController::class, "logout"])->name(
-        "auth.logout",
+    Route::post('/logout', [AuthController::class, 'logout'])->name(
+        'auth.logout',
     );
-    Route::get("/user/{id}", [AuthController::class, "getUser"])->name(
-        "auth.user",
+    Route::get('/user/{id}', [AuthController::class, 'getUser'])->name(
+        'auth.user',
     );
-    Route::post("/change-password", [
+    Route::post('/change-password', [
         AuthController::class,
-        "changePassword",
-    ])->name("auth.password.change");
-    Route::put("/user/profile", [
+        'changePassword',
+    ])->name('auth.password.change');
+    Route::put('/user/profile', [
         AuthController::class,
-        "updateProfile",
-    ])->name("user.profile.update");
-    Route::post("/user/photo", [
+        'updateProfile',
+    ])->name('user.profile.update');
+    Route::post('/user/photo', [
         AuthController::class,
-        "updatePhoto",
-    ])->name("user.photo.update");
-    Route::patch("user/{id}/status", [
+        'updatePhoto',
+    ])->name('user.photo.update');
+    Route::patch('user/{id}/status', [
         AuthController::class,
-        "updateStatus",
-    ])->name("user.updateStatus");
+        'updateStatus',
+    ])->name('user.updateStatus');
 
-    Route::prefix("master")->group(function () {
-        Route::get("/sips-users", [MasterController::class, "index"])->name(
-            "master.users",
+    Route::prefix('master')->group(function () {
+        Route::get('/sips-users', [MasterController::class, 'index'])->name(
+            'master.users',
         );
-        Route::get("/sips-fields", [MasterController::class, "field"])->name(
-            "master.field",
+        Route::get('/sips-fields', [MasterController::class, 'field'])->name(
+            'master.field',
         );
-        Route::get("/sips-karyawans-kemandoran", [
+        Route::get('/sips-karyawans-kemandoran', [
             MasterController::class,
-            "karyawanKemandoran",
-        ])->name("master.karyawan.kemandoran");
-        Route::get("/sips-kendaraan", [
+            'karyawanKemandoran',
+        ])->name('master.karyawan.kemandoran');
+        Route::get('/sips-kendaraan', [
             MasterController::class,
-            "vehicle",
-        ])->name("master.kendaraan");
-        Route::get("/sips-businessunit", [
+            'vehicle',
+        ])->name('master.kendaraan');
+        Route::get('/sips-businessunit', [
             MasterController::class,
-            "businessunit",
-        ])->name("master.businessunit");
-        Route::get("/sips-section", [MasterController::class, "section"])->name(
-            "master.section",
+            'businessunit',
+        ])->name('master.businessunit');
+        Route::get('/sips-section', [MasterController::class, 'section'])->name(
+            'master.section',
         );
-        Route::get("/sips-gang", [MasterController::class, "gang"])->name(
-            "master.gang",
+        Route::get('/sips-gang', [MasterController::class, 'gang'])->name(
+            'master.gang',
         );
 
-        Route::apiResource("maps", MapController::class)->parameters([
-            "maps" => "id",
+        Route::apiResource('maps', MapController::class)->parameters([
+            'maps' => 'id',
         ]);
     });
 
-    Route::prefix("apps")->group(function () {
-        Route::apiResource("tphs", TphController::class)->parameters([
-            "tphs" => "id",
+    Route::prefix('apps')->group(function () {
+        Route::apiResource('tphs', TphController::class)->parameters([
+            'tphs' => 'id',
         ]);
 
-        Route::apiResource("ancaks", AncakController::class)->parameters([
-            "ancaks" => "id",
+        Route::apiResource('ancaks', AncakController::class)->parameters([
+            'ancaks' => 'id',
         ]);
 
-        Route::apiResource("karyawans", EmployeeController::class)->parameters([
-            "karyawans" => "id",
+        Route::apiResource('karyawans', EmployeeController::class)->parameters([
+            'karyawans' => 'id',
         ]);
 
-        Route::apiResource("absensis", AttendanceController::class)->parameters(
+        Route::apiResource('absensis', AttendanceController::class)->parameters(
             [
-                "absensis" => "id",
+                'absensis' => 'id',
             ],
         );
 
         // Route untuk memperbarui hanya field status_absensi (STATUS_ATTENDANCE)
-        Route::patch("absensis/{id}/status", [
+        Route::patch('absensis/{id}/status', [
             AttendanceController::class,
-            "updateStatus",
-        ])->name("absensis.updateStatus");
+            'updateStatus',
+        ])->name('absensis.updateStatus');
 
-        Route::apiResource("panens", HarvestingController::class)->parameters([
-            "panens" => "id",
+        Route::apiResource('panens', HarvestingController::class)->parameters([
+            'panens' => 'id',
         ]);
 
         // Route untuk memperbarui hanya field status_absensi (STATUS_ATTENDANCE)
-        Route::patch("panens/{id}/status", [
+        Route::patch('panens/{id}/status', [
             HarvestingController::class,
-            "updateStatus",
-        ])->name("panens.updateStatus");
+            'updateStatus',
+        ])->name('panens.updateStatus');
 
         Route::apiResource(
-            "pengangkutans",
+            'pengangkutans',
             PengangkutanController::class,
         )->parameters([
-            "pengangkutans" => "id",
+            'pengangkutans' => 'id',
         ]);
 
         // Route untuk memperbarui hanya field status_absensi (STATUS_ATTENDANCE)
-        Route::patch("pengangkutans/{id}/status", [
+        Route::patch('pengangkutans/{id}/status', [
             PengangkutanController::class,
-            "updateStatus",
-        ])->name("pengangkutans.updateStatus");
-        Route::patch("pengangkutans/{id}/spbno-etd", [
+            'updateStatus',
+        ])->name('pengangkutans.updateStatus');
+        Route::patch('pengangkutans/{id}/spbno-etd', [
             PengangkutanController::class,
-            "updateSPBnETD",
-        ])->name("pengangkutans.updateSPBnETD");
+            'updateSPBnETD',
+        ])->name('pengangkutans.updateSPBnETD');
     });
 
-    Route::prefix("report")->group(function () {
-        Route::get("/hasil-panen", [
+    Route::prefix('report')->group(function () {
+        Route::get('/hasil-panen', [
             ReportController::class,
-            "hasil_panen",
-        ])->name("report.hasil-panen");
-        Route::get("/hasil-pengangkutan", [
+            'hasil_panen',
+        ])->name('report.hasil-panen');
+        Route::get('/hasil-pengangkutan', [
             ReportController::class,
-            "hasil_pengangkutan",
-        ])->name("report.hasil-pengangkutan");
-        Route::get("/hasil-langsir", [
+            'hasil_pengangkutan',
+        ])->name('report.hasil-pengangkutan');
+        Route::get('/hasil-langsir', [
             ReportController::class,
-            "hasil_langsir",
-        ])->name("report.hasil-langsir");
-        Route::get("/upload-attendance", [
+            'hasil_langsir',
+        ])->name('report.hasil-langsir');
+        Route::get('/upload-attendance', [
             ReportController::class,
-            "upload_attendance",
-        ])->name("report.upload-attendance");
-        Route::get("/upload-harvesting", [
+            'upload_attendance',
+        ])->name('report.upload-attendance');
+        Route::get('/upload-harvesting', [
             ReportController::class,
-            "upload_harvesting",
-        ])->name("report.upload-harvesting");
-        Route::get("/upload-harvesting-quality", [
+            'upload_harvesting',
+        ])->name('report.upload-harvesting');
+        Route::get('/upload-harvesting-quality', [
             ReportController::class,
-            "upload_harvesting_quality",
-        ])->name("report.upload-harvesting-quality");
-        Route::get("/upload-lhm", [
+            'upload_harvesting_quality',
+        ])->name('report.upload-harvesting-quality');
+        Route::get('/upload-lhm', [
             ReportController::class,
-            "upload_lhm",
-        ])->name("report.upload-lhm");
-        Route::get("/get-lhm", [ReportController::class, "get_lhm"])->name(
-            "report.get-lhm",
+            'upload_lhm',
+        ])->name('report.upload-lhm');
+        Route::get('/get-lhm', [ReportController::class, 'get_lhm'])->name(
+            'report.get-lhm',
         );
-        Route::get("/get-lha", [ReportController::class, "get_lha"])->name(
-            "report.get-lha",
+        Route::get('/get-lha', [ReportController::class, 'get_lha'])->name(
+            'report.get-lha',
         );
-        Route::get("/get-harvesting", [
+        Route::get('/get-harvesting', [
             ReportController::class,
-            "get_harvesting",
-        ])->name("report.get-harvesting");
+            'get_harvesting',
+        ])->name('report.get-harvesting');
     });
 
-    Route::prefix("uploads")->group(function () {
-        Route::post("/attendance", [
+    Route::prefix('uploads')->group(function () {
+        Route::post('/attendance', [
             UploadController::class,
-            "attendance",
-        ])->name("uploads.attendance");
-        Route::post("/harvesting", [
+            'attendance',
+        ])->name('uploads.attendance');
+        Route::post('/harvesting', [
             UploadController::class,
-            "harvesting",
-        ])->name("uploads.harvesting");
-        Route::post("/harvestingquality", [
+            'harvesting',
+        ])->name('uploads.harvesting');
+        Route::post('/harvestingquality', [
             UploadController::class,
-            "harvestingquality",
-        ])->name("upload.harvestingquality");
-        Route::post("/attendance/mobile", [
+            'harvestingquality',
+        ])->name('upload.harvestingquality');
+        Route::post('/attendance/mobile', [
             UploadController::class,
-            "attendance_mobile",
-        ])->name("uploads.attendance.mobile");
-        Route::post("/harvesting/mobile", [
+            'attendance_mobile',
+        ])->name('uploads.attendance.mobile');
+        Route::post('/harvesting/mobile', [
             UploadController::class,
-            "harvesting_mobile",
-        ])->name("uploads.harvesting.mobile");
-        Route::post("/harvestingquality/mobile", [
+            'harvesting_mobile',
+        ])->name('uploads.harvesting.mobile');
+        Route::post('/harvestingquality/mobile', [
             UploadController::class,
-            "harvestingquality_mobile",
-        ])->name("upload.harvestingquality.mobile");
-        Route::post("/lhm_data/mobile", [
+            'harvestingquality_mobile',
+        ])->name('upload.harvestingquality.mobile');
+        Route::post('/lhm_data/mobile', [
             UploadController::class,
-            "lhm_data",
-        ])->name("upload.lhm.data");
-        Route::post("/open_lhm_data/mobile", [
+            'lhm_data',
+        ])->name('upload.lhm.data');
+        Route::post('/open_lhm_data/mobile', [
             UploadController::class,
-            "open_lhm_data",
-        ])->name("upload.open.lhm.data");
+            'open_lhm_data',
+        ])->name('upload.open.lhm.data');
     });
 
-    Route::prefix("backup")->group(function () {
-        Route::post("/json", [JsonBackupController::class, "upload"])->name("backup.json");
-        Route::get("/json", [JsonBackupController::class, "index"])->name("backup.json.index");
-        Route::get("/json/{id}/download", [JsonBackupController::class, "download"])->name("backup.json.download");
-        Route::delete("/json/{id}", [JsonBackupController::class, "destroy"])->name("backup.json.destroy");
+    Route::prefix('backup')->group(function () {
+        Route::post('/json', [JsonBackupController::class, 'upload'])->name('backup.json');
+        Route::get('/json', [JsonBackupController::class, 'index'])->name('backup.json.index');
+        Route::get('/json/{id}/download', [JsonBackupController::class, 'download'])->name('backup.json.download');
+        Route::delete('/json/{id}', [JsonBackupController::class, 'destroy'])->name('backup.json.destroy');
     });
 
-    Route::prefix("settings")->group(function () {
+    Route::prefix('settings')->group(function () {
         // Devices API
-        Route::apiResource("devices", DeviceController::class)->parameters([
-            "devices" => "id",
+        Route::apiResource('devices', DeviceController::class)->parameters([
+            'devices' => 'id',
         ]);
 
         // NFC Cards API
-        Route::apiResource("nfc", NfcCardController::class)->parameters([
-            "nfc" => "id",
+        Route::apiResource('nfc', NfcCardController::class)->parameters([
+            'nfc' => 'id',
         ]);
 
         // Feature Settings API
-        Route::get("features/check", [
+        Route::get('features/check', [
             FeatureSettingController::class,
-            "checkStatus",
-        ])->name("settings.features.check");
-        Route::apiResource("features", FeatureSettingController::class)->parameters([
-            "features" => "id",
+            'checkStatus',
+        ])->name('settings.features.check');
+        Route::apiResource('features', FeatureSettingController::class)->parameters([
+            'features' => 'id',
         ]);
     });
 
     // API Logs Routes
-    Route::prefix("logs")->group(function () {
-        Route::get("/", [ApiLogController::class, "index"])->name("logs.index");
-        Route::get("/{id}", [ApiLogController::class, "show"])->name(
-            "logs.show",
+    Route::prefix('logs')->group(function () {
+        Route::get('/', [ApiLogController::class, 'index'])->name('logs.index');
+        Route::get('/{id}', [ApiLogController::class, 'show'])->name(
+            'logs.show',
         );
     });
 });
 
-Route::post("/deploy", [ApiLogController::class, "deploy"]);
+Route::post('/deploy', [ApiLogController::class, 'deploy']);
 
-Route::get("/health", [ApiLogController::class, "health"]);
+Route::get('/health', [ApiLogController::class, 'health']);
 
-Route::post("/internal/receive-file", [
+Route::post('/internal/receive-file', [
     InternalFileController::class,
-    "receive",
-])->middleware("internal.token");
+    'receive',
+])->middleware('internal.token');
+
+Route::delete('/internal/delete-file', [
+    InternalFileController::class,
+    'destroy',
+])->middleware('internal.token');

@@ -5,17 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\AppUpload;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class AppUploadController extends Controller
 {
-
     private $storagePath = 'file/apps';
-    private $allowedExtensions = ['apk', 'ipa'];
-    private $maxFileSize = 200 * 1024 * 1024; // 200MB
 
+    private $allowedExtensions = ['apk', 'ipa'];
+
+    private $maxFileSize = 200 * 1024 * 1024; // 200MB
 
     /*
     |--------------------------------------------------------------------------
@@ -30,6 +30,7 @@ class AppUploadController extends Controller
      * yang akan digunakan oleh sistem update aplikasi.
      *
      * @group App Update
+     *
      * @unauthenticated
      *
      * @bodyParam platform string required Platform aplikasi. Example: android
@@ -54,7 +55,6 @@ class AppUploadController extends Controller
      *      "created_at": "2026-03-09"
      *  }
      * }
-     *
      */
     public function upload_apk(Request $request)
     {
@@ -68,13 +68,13 @@ class AppUploadController extends Controller
             'all_input' => $request->all(),
         ]);
 
-        if (!$request->hasFile('file')) {
+        if (! $request->hasFile('file')) {
             return response()->json(['success' => false, 'message' => 'File tidak diterima'], 400);
         }
 
         if ($request->has('force_update')) {
             $request->merge([
-                'force_update' => filter_var($request->force_update, FILTER_VALIDATE_BOOLEAN)
+                'force_update' => filter_var($request->force_update, FILTER_VALIDATE_BOOLEAN),
             ]);
         }
 
@@ -82,59 +82,75 @@ class AppUploadController extends Controller
             'app_name' => 'required|string',
             'platform' => 'required|in:android,ios',
             'version' => 'required|string',
-            'file' => 'required|file|max:' . ($this->maxFileSize / 1024),
+            'file' => 'required|file|max:'.($this->maxFileSize / 1024),
             'force_update' => 'nullable|boolean',
             'min_version' => 'nullable|string',
-            'changelog' => 'nullable|string'
+            'changelog' => 'nullable|string',
         ]);
 
         $file = $request->file('file');
 
         $extension = strtolower($file->getClientOriginalExtension());
 
-        if (!in_array($extension, $this->allowedExtensions)) {
+        if (! in_array($extension, $this->allowedExtensions)) {
 
             return response()->json([
                 'success' => false,
-                'message' => 'File extension not allowed'
+                'message' => 'File extension not allowed',
             ]);
         }
 
-        $path = public_path($this->storagePath . '/' . $validated['app_name'] . '/' . $validated['platform']);
+        $path = public_path($this->storagePath.'/'.$validated['app_name'].'/'.$validated['platform']);
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             File::makeDirectory($path, 0755, true);
         }
 
-        $fileName = 'app-' . $validated['version'] . '-' . time() . '.' . $extension;
+        $fileName = 'app-'.$validated['version'].'-'.time().'.'.$extension;
 
         $fileSize = $file->getSize();
 
-        $file->move($path, $fileName);
+        $filePath = $this->storagePath.'/'.$validated['app_name'].'/'.$validated['platform'].'/'.$fileName;
 
-        $filePath = $this->storagePath . '/' . $validated['app_name'] . '/' . $validated['platform'] . '/' . $fileName;
+        try {
+            $file->move($path, $fileName);
 
-        $app = AppUpload::create([
-            'app_name' => $request->app_name ?? 'sipsmobile',
-            'platform' => $validated['platform'],
-            'version' => $validated['version'],
-            'min_version' => $request->min_version,
-            'force_update' => $request->force_update ?? false,
-            'file_name' => $fileName,
-            'file_path' => $filePath,
-            'file_size' => $fileSize,
-            'file_extension' => $extension,
-            'changelog' => $request->changelog,
-            'uploaded_by' => Auth::user()->username ?? 'system'
-        ]);
+            $app = AppUpload::create([
+                'app_name' => $request->app_name ?? 'sipsmobile',
+                'platform' => $validated['platform'],
+                'version' => $validated['version'],
+                'min_version' => $request->min_version,
+                'force_update' => $request->force_update ?? false,
+                'file_name' => $fileName,
+                'file_path' => $filePath,
+                'file_size' => $fileSize,
+                'file_extension' => $extension,
+                'changelog' => $request->changelog,
+                'uploaded_by' => Auth::user()->username ?? 'system',
+            ]);
+        } catch (\Exception $e) {
+            $movedPath = public_path($filePath);
+
+            if (File::exists($movedPath)) {
+                File::delete($movedPath);
+            }
+
+            Log::error('App upload error: '.$e->getMessage(), [
+                'file_path' => $filePath,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupload file.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
 
         return response()->json([
             'success' => true,
-            'data' => $app
+            'data' => $app,
         ]);
     }
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -148,6 +164,7 @@ class AppUploadController extends Controller
      * Digunakan oleh mobile app untuk mengecek versi terbaru.
      *
      * @group App Update
+     *
      * @unauthenticated
      *
      * @bodyParam platform string required Platform aplikasi. Example: android
@@ -188,9 +205,9 @@ class AppUploadController extends Controller
                 ->first();
         }
 
-        if (!$latest) {
+        if (! $latest) {
             return response()->json([
-                'update' => $latest
+                'update' => $latest,
             ]);
         }
 
@@ -211,11 +228,9 @@ class AppUploadController extends Controller
             'force_update' => $latest->force_update,
             'download_url' => url($latest->file_path),
             'file_size' => $latest->file_size,
-            'changelog' => $latest->changelog
+            'changelog' => $latest->changelog,
         ]);
     }
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -227,9 +242,9 @@ class AppUploadController extends Controller
      * List semua versi aplikasi
      *
      * @group App Update
+     *
      * @unauthenticated
      */
-
     public function list()
     {
 
@@ -242,10 +257,9 @@ class AppUploadController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $uploads
+            'data' => $uploads,
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -257,11 +271,11 @@ class AppUploadController extends Controller
      * Hapus versi aplikasi
      *
      * @group App Update
+     *
      * @unauthenticated
      *
      * @urlParam id integer required ID aplikasi. Example: 1
      */
-
     public function delete($id)
     {
 
@@ -276,7 +290,7 @@ class AppUploadController extends Controller
         $app->delete();
 
         return response()->json([
-            'success' => true
+            'success' => true,
         ]);
     }
 }
