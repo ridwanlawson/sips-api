@@ -20,7 +20,6 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * @group Auth
- *
  */
 class AuthController extends Controller
 {
@@ -59,7 +58,7 @@ class AuthController extends Controller
             'level' => 'nullable|max:10|regex:/^\S+$/',
             'position' => 'nullable|max:50|regex:/^\S+$/',
             'bantu' => 'nullable|max:20',
-            'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'photo' => 'nullable|image|mimes:webp,jpg,jpeg,png|max:2048',
             'idkaryawan' => 'nullable|exists:sips_production.employee,fccode',
         ]);
 
@@ -419,7 +418,7 @@ class AuthController extends Controller
     public function updatePhoto(Request $request)
     {
         $request->validate([
-            'photo' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'photo' => 'required|image|mimes:webp,jpg,jpeg,png|max:2048',
         ]);
 
         try {
