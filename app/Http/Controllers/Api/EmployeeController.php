@@ -128,7 +128,7 @@ class EmployeeController extends Controller
             'gangcode' => 'required|string|max:255',
             'fcba' => 'required|string|exists:sips_production.Employee,fcba',
             'noancak' => 'nullable|string',
-            'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'photo' => 'nullable|image|mimes:webp,jpg,jpeg,png|max:2048',
             'created_by' => 'nullable',
             'updated_by' => 'nullable',
             'face_recognition' => 'nullable',
@@ -232,7 +232,7 @@ class EmployeeController extends Controller
             'face_recognition' => 'nullable',
             'fr_registered_at' => 'nullable|date',
             'aktif' => 'nullable|string',
-            'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'photo' => 'nullable|image|mimes:webp,jpg,jpeg,png|max:2048',
             'updated_by' => 'nullable',
         ]);
 
