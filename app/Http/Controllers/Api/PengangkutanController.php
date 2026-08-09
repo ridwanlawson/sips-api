@@ -368,20 +368,6 @@ class PengangkutanController extends Controller
                 );
             }
 
-            // Antisipasi constraint: NOSPB unik (jika diisi)
-            if (
-                $request->filled('nospb') &&
-                Pengangkutan::where('NOSPB', $request->nospb)->exists()
-            ) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'NOSPB sudah pernah dimasukkan, cek kembali data Anda.',
-                    ],
-                    400,
-                );
-            }
-
             $karyawanKerani = Karyawan::select('fcba', 'sectionname')
                 ->firstWhere('fccode', $request->kode_karyawan_kerani);
             $userFcba = $karyawanKerani->fcba;
