@@ -551,13 +551,6 @@ class HarvestingController extends Controller
                     HARVESTING.UPDATED_AT
                 FROM
                     SIPSMOBILE.HARVESTING
-                INNER JOIN
-                    SIPSMOBILE.TPH
-                ON
-                    HARVESTING.TPH = TPH.NOTPH
-                    AND HARVESTING.FIELDCODE = TPH.FIELDCODE
-                    AND HARVESTING.AFDELING = TPH.AFDELING
-                    AND HARVESTING.FCBA = TPH.FCBA
                 LEFT JOIN
                     SIPSMOBILE.EMPLOYEE MANDOR1
                 ON
