@@ -391,16 +391,16 @@ class ReportController extends Controller
                 }
 
                 $query .=
-                    " and PENGANGKUTAN.TANGGAL between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                    " and TRUNC(PENGANGKUTAN.TANGGAL) between TO_DATE(:tanggal, 'YYYY-MM-DD') and TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
                 $bindings["tanggal"] = $startDate;
                 $bindings["tanggal_end"] = $endDate;
             } elseif ($tanggal) {
                 $query .=
-                    " and PENGANGKUTAN.TANGGAL = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
+                    " and TRUNC(PENGANGKUTAN.TANGGAL) = TO_DATE(:tanggal, 'YYYY-MM-DD') ";
                 $bindings["tanggal"] = $tanggal;
             } elseif ($tanggalEnd) {
                 $query .=
-                    " and PENGANGKUTAN.TANGGAL = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
+                    " and TRUNC(PENGANGKUTAN.TANGGAL) = TO_DATE(:tanggal_end, 'YYYY-MM-DD') ";
                 $bindings["tanggal_end"] = $tanggalEnd;
             }
 
@@ -660,15 +660,15 @@ class ReportController extends Controller
                 }
 
                 $query .=
-                    " and TANGGAL between TO_DATE(:tanggaldari, 'YYYY-MM-DD') and TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
+                    " and TRUNC(TANGGAL) between TO_DATE(:tanggaldari, 'YYYY-MM-DD') and TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
                 $bindings["tanggaldari"] = $startDate;
                 $bindings["tanggalsampai"] = $endDate;
             } elseif ($tanggaldari) {
-                $query .= " and TANGGAL = TO_DATE(:tanggaldari, 'YYYY-MM-DD') ";
+                $query .= " and TRUNC(TANGGAL) = TO_DATE(:tanggaldari, 'YYYY-MM-DD') ";
                 $bindings["tanggaldari"] = $tanggaldari;
             } elseif ($tanggalsampai) {
                 $query .=
-                    " and TANGGAL = TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
+                    " and TRUNC(TANGGAL) = TO_DATE(:tanggalsampai, 'YYYY-MM-DD') ";
                 $bindings["tanggalsampai"] = $tanggalsampai;
             }
 

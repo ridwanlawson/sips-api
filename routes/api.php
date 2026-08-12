@@ -27,6 +27,12 @@ Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:3,1')
     ->name('auth.login');
 
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
+    ->middleware('throttle:5,1')
+    ->name('auth.password.forgot');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+    ->name('auth.password.reset');
+
 Route::get('/sips-karyawans', [
     MasterController::class,
     'karyawan',
@@ -59,6 +65,9 @@ Route::middleware([
     Route::get('/user/{id}', [AuthController::class, 'getUser'])->name(
         'auth.user',
     );
+    Route::put('/user/{id}', [AuthController::class, 'updateUserData'])->name(
+        'user.update',
+    );
     Route::post('/change-password', [
         AuthController::class,
         'changePassword',
@@ -71,6 +80,10 @@ Route::middleware([
         AuthController::class,
         'updatePhoto',
     ])->name('user.photo.update');
+    Route::post('/user/{id}/photo', [
+        AuthController::class,
+        'updateUserPhoto',
+    ])->name('user.photo.update.id');
     Route::patch('user/{id}/status', [
         AuthController::class,
         'updateStatus',

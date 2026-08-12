@@ -16,6 +16,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -293,6 +295,93 @@ class AuthController extends Controller
     }
 
     /**
+     * Lupa Password - Kirim Link Reset
+     *
+     * @unauthenticated
+     *
+     * Mengirim email berisi link untuk mereset password apabila email terdaftar.
+     * Jawaban selalu sama (terdaftar maupun tidak) demi keamanan.
+     *
+     * @bodyParam email string required Email pengguna yang terdaftar. Example: john@contoh.com
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "Jika email terdaftar, link reset password telah dikirim."
+     * }
+     */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|max:100',
+        ]);
+
+        // Selalu kembalikan pesan yang sama agar tidak membocorkan keberadaan akun
+        try {
+            Password::sendResetLink($request->only('email'));
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim link reset password.', [
+                'email' => $request->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return new AllResource(
+            true,
+            'Jika email terdaftar, link reset password telah dikirim.',
+            null,
+        );
+    }
+
+    /**
+     * Reset Password
+     *
+     * @unauthenticated
+     *
+     * Mengatur password baru menggunakan email dan token dari link reset.
+     *
+     * @bodyParam email string required Email pengguna. Example: john@contoh.com
+     * @bodyParam token string required Token dari link email reset.
+     * @bodyParam password string required Password baru, minimal 8 karakter. Example: rahasia123
+     * @bodyParam password_confirmation string required Konfirmasi password baru.
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "Password berhasil diubah."
+     * }
+     * @response 400 scenario="invalid-token" {
+     *  "success": false,
+     *  "message": "Token tidak valid atau sudah kedaluwarsa."
+     * }
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|max:100',
+            'token' => 'required|string',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'token', 'password', 'password_confirmation'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                    'remember_token' => \Illuminate\Support\Str::random(60),
+                ])->save();
+            },
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return new AllResource(true, 'Password berhasil diubah.', null);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Token tidak valid atau sudah kedaluwarsa.',
+        ], 400);
+    }
+
+    /**
      * Memanggil User berdasarkan ID
      *
      * @urlParam id integer required ID pengguna.
@@ -403,6 +492,131 @@ class AuthController extends Controller
     }
 
     /**
+     * Update Data User berdasarkan ID (dilakukan oleh user lain / admin).
+     *
+     * Mengubah data pengguna dengan menargetkan ID tertentu.
+     * Field yang bisa diubah: username, fullname, email, phone, fcba, afdeling,
+     * gangcode, idkaryawan, level, position, bantu, status, dan password.
+     *
+     * @urlParam id integer required ID pengguna yang akan diubah.
+     *
+     * @bodyParam username string optional Username unik. Example: johndoe
+     * @bodyParam fullname string optional Nama lengkap. Max: 100. Example: John Doe
+     * @bodyParam email string optional Email. Harus unik (kecuali milik sendiri). Example: john@contoh.com
+     * @bodyParam phone string optional Nomor telepon. 9–20 digit. Example: 08123456789
+     * @bodyParam fcba string optional Kode FCBA. Example: MSE
+     * @bodyParam afdeling string optional Kode afdeling. Example: AFD-04
+     * @bodyParam gangcode string optional Kode gang. Example: PN011
+     * @bodyParam idkaryawan string optional Kode karyawan. Example: 06-930301
+     * @bodyParam level string optional Level pengguna. Example: KRP
+     * @bodyParam position string optional Jabatan. Example: KR.PANEN
+     * @bodyParam bantu string optional Kode bantu. Example: Y
+     * @bodyParam status string optional Status. Salah satu dari: Y, N. Example: Y
+     * @bodyParam password string optional Password baru. Min: 8. Example: rahasia123
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "Profile berhasil diperbarui.",
+     *  "data": {...}
+     * }
+     */
+    public function updateUserData(Request $request, $id)
+    {
+        $request->validate([
+            'username' => 'sometimes|nullable|max:75|unique:users,username,'.$id,
+            'fullname' => 'sometimes|nullable|max:100',
+            'email' => 'sometimes|nullable|email|max:100|unique:users,email,'.$id,
+            'phone' => 'sometimes|nullable|digits_between:9,20',
+            'fcba' => 'sometimes|nullable|max:10',
+            'afdeling' => 'sometimes|nullable|max:20',
+            'gangcode' => 'sometimes|nullable|max:20',
+            'idkaryawan' => 'sometimes|nullable|max:50',
+            'level' => 'sometimes|nullable|max:10',
+            'position' => 'sometimes|nullable|max:50',
+            'bantu' => 'sometimes|nullable|max:20',
+            'status' => 'sometimes|nullable|in:Y,N',
+            'password' => 'sometimes|nullable|min:8',
+        ]);
+
+        try {
+            $user = User::find($id);
+
+            if (! $user) {
+                return response()->json([
+                    'message' => 'User not found',
+                ], 404);
+            }
+
+            $data = [];
+
+            if ($request->filled('username')) {
+                $data['username'] = $request->username;
+            }
+            if ($request->filled('fullname')) {
+                $data['fullname'] = strtoupper($request->fullname);
+            }
+            if ($request->filled('email')) {
+                $data['email'] = $request->email;
+            }
+            if ($request->filled('phone')) {
+                $data['phone'] = $request->phone;
+            }
+            if ($request->filled('fcba')) {
+                $data['fcba'] = $request->fcba;
+            }
+            if ($request->filled('afdeling')) {
+                $data['afdeling'] = strtoupper($request->afdeling);
+            }
+            if ($request->filled('gangcode')) {
+                $data['gangcode'] = strtoupper($request->gangcode);
+            }
+            if ($request->filled('idkaryawan')) {
+                $data['idkaryawan'] = $request->idkaryawan;
+            }
+            if ($request->filled('level')) {
+                $data['level'] = strtoupper($request->level);
+            }
+            if ($request->filled('position')) {
+                $data['position'] = strtoupper($request->position);
+            }
+            if ($request->filled('bantu')) {
+                $data['bantu'] = $request->bantu;
+            }
+            if ($request->filled('status')) {
+                $data['status'] = $request->status;
+            }
+            if ($request->filled('password')) {
+                $data['password'] = bcrypt($request->password);
+            }
+
+            if (empty($data)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data yang dikirim untuk diperbarui.',
+                ], 422);
+            }
+
+            $data['updated_by'] = Auth::user()->username;
+
+            $user->update($data);
+
+            return new AllResource(true, 'Profile berhasil diperbarui.', $user->fresh());
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan database.',
+                'error' => $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan pada sistem.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Ganti Photo Profile User yang sedang login.
      *
      * Upload foto profile baru. Format: jpg, jpeg, png. Max: 2MB.
@@ -457,6 +671,96 @@ class AuthController extends Controller
             $user->update([
                 'photo' => $photoPath,
                 'updated_by' => $user->username,
+            ]);
+
+            // Hapus foto lama (guarded: hanya jika sudah tidak direferensikan DB)
+            if ($oldPhoto) {
+                $storage->deleteFile($oldPhoto);
+            }
+
+            return new AllResource(true, 'Photo profile berhasil diperbarui.', $user->fresh());
+        } catch (QueryException $e) {
+            $this->cleanupUploadedFiles();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan database.',
+                'error' => $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            $this->cleanupUploadedFiles();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupload photo.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Ganti Photo Profile User berdasarkan ID (dilakukan oleh user lain / admin).
+     *
+     * Upload foto profile baru untuk pengguna target. Format: jpg, jpeg, png. Max: 2MB.
+     *
+     * @urlParam id integer required ID pengguna yang fotonya akan diubah.
+     *
+     * @bodyParam photo file required File gambar JPG/PNG. Max: 2MB
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "Photo profile berhasil diperbarui.",
+     *  "data": {...}
+     * }
+     */
+    public function updateUserPhoto(Request $request, $id)
+    {
+        $request->validate([
+            'photo' => 'required|file|mimes:webp,jpg,jpeg,png|max:2048',
+        ]);
+
+        try {
+            $user = User::find($id);
+
+            if (! $user) {
+                return response()->json([
+                    'message' => 'User not found',
+                ], 404);
+            }
+
+            $this->uploadedFiles = [];
+
+            $oldPhoto = $user->photo;
+
+            $storage = app(StorageService::class);
+            $folderPath = 'file/profile_photos';
+            $relativePath = $this->optimizeAndSaveImage(
+                $request->file('photo'),
+                $folderPath,
+            );
+            $localAbsPath = public_path($relativePath);
+
+            $photoPath = null;
+            if ($storage->isDevOnline()) {
+                $devUrl = $storage->uploadToDev(
+                    $localAbsPath,
+                    $relativePath,
+                );
+                if ($devUrl) {
+                    $photoPath = $devUrl;
+                    @unlink($localAbsPath);
+                } else {
+                    $photoPath = asset($relativePath);
+                }
+            } else {
+                $photoPath = asset($relativePath);
+            }
+
+            $this->trackUploadedFile($photoPath);
+
+            $user->update([
+                'photo' => $photoPath,
+                'updated_by' => Auth::user()->username,
             ]);
 
             // Hapus foto lama (guarded: hanya jika sudah tidak direferensikan DB)
