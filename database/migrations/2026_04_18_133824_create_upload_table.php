@@ -220,6 +220,7 @@ return new class extends Migration
             $table->string('fcip');
             $table->date('lastupdate');
             $table->string('lasttime');
+            $table->string('rate_brondolan_upload');
             $table->string('lastapproval')->nullable();
         });
     }
