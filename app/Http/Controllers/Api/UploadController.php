@@ -1438,7 +1438,7 @@ class UploadController extends Controller
                 ->value("CODE"); // langsung ambil 1 kolom
 
             if (Auth::user()->level === $checkLastApproval) {
-                Log::info("LUAR BIASA");
+                // Log::info("LUAR BIASA");
                 DB::statement("
                         INSERT ALL
                         /*INTO IPLASPROD.ATTENDANCE_GAD (
@@ -1575,9 +1575,97 @@ class UploadController extends Controller
                                 WHERE DATA.fcba = ld.fcba AND DATA.code = u.\"LEVEL\"
                                 )
                     ");
+
+                DB::statement("
+                    INSERT ALL
+                    /*INTO IPLASPROD.ATTENDANCE_GAD (
+                        GANGCODE, FDDATE, SUPERVISION_1, SUPERVISION_2, SUPERVISION_3, SUPERVISION_4,
+                        EMPLOYEECODE, ATTENDANCE, JOBCODE, LOCATIONTYPE, LOCATIONCODE,
+                        MANDAYS, OTHRS, RATE, UNIT, OUTPUT,
+                        REFERENCE, REMARKS, FCENTRY, FCEDIT, FCIP, FCBA,
+                        LASTUPDATE, LASTTIME, LINENOKEY,
+                        OVERTIME_HOURS, TYPE_OVERTIME,
+                        CHARGEJOB, CHARGETYPE, CHARGECODE,
+                        BUCKET, SPBNO,
+                        KG_JANJANG, KG_BRONDOLAN,
+                        ROWSTATE, DOCUMENT_CLASSIFICATION,
+                        BASIS_BM, BJR, DOCUMENTNO, SUPERVISION_5
+                    )
+                    VALUES (
+                        GANGCODE, FDDATE, SUPERVISION_1, SUPERVISION_2, SUPERVISION_3, SUPERVISION_4,
+                        EMPLOYEECODE, ATTENDANCE, JOBCODE, LOCATIONTYPE, LOCATIONCODE,
+                        MANDAYS, OTHRS, RATE, UNIT, OUTPUT,
+                        REFERENCE, REMARKS, FCENTRY, FCEDIT, FCIP, FCBA,
+                        LASTUPDATE, LASTTIME, LINENOKEY,
+                        OVERTIME_HOURS, TYPE_OVERTIME,
+                        CHARGEJOB, CHARGETYPE, CHARGECODE,
+                        BUCKET, SPBNO,
+                        KG_JANJANG, KG_BRONDOLAN,
+                        ROWSTATE, DOCUMENT_CLASSIFICATION,
+                        BASIS_BM, BJR, DOCUMENTNO, SUPERVISION_5
+                    )*/
+                    INTO IPLASPROD.ATTENDANCE_GAD_TEMP (
+                        GANGCODE, FDDATE, SUPERVISION_1, SUPERVISION_2, SUPERVISION_3, SUPERVISION_4,
+                        EMPLOYEECODE, ATTENDANCE, JOBCODE, LOCATIONTYPE, LOCATIONCODE,
+                        MANDAYS, OTHRS, RATE, UNIT, OUTPUT,
+                        REFERENCE, REMARKS, FCENTRY, FCEDIT, FCIP, FCBA,
+                        LASTUPDATE, LASTTIME, LINENOKEY,
+                        OVERTIME_HOURS, TYPE_OVERTIME,
+                        CHARGEJOB, CHARGETYPE, CHARGECODE,
+                        JANJANG,
+                        ROWSTATE, DOCUMENT_CLASSIFICATION,
+                        GENERATE, GENERATETIME,
+                        BASIS_BM, KG_JANJANG, BJR, DOCUMENTNO, SUPERVISION_5
+                    )
+                    VALUES (
+                        GANGCODE, FDDATE, SUPERVISION_1, SUPERVISION_2, SUPERVISION_3, SUPERVISION_4,
+                        EMPLOYEECODE, ATTENDANCE, JOBCODE, LOCATIONTYPE, LOCATIONCODE,
+                        MANDAYS, OTHRS, RATE, UNIT, OUTPUT,
+                        REFERENCE, REMARKS, FCENTRY, FCEDIT, FCIP, FCBA,
+                        LASTUPDATE, LASTTIME, LINENOKEY,
+                        OVERTIME_HOURS, TYPE_OVERTIME,
+                        CHARGEJOB, CHARGETYPE, CHARGECODE,
+                        0,
+                        ROWSTATE, DOCUMENT_CLASSIFICATION,
+                        'AUTO GENERATE', SYSDATE,
+                        BASIS_BM, KG_JANJANG, BJR, DOCUMENTNO, SUPERVISION_5
+                    )
+                    SELECT
+                       	*
+                    FROM
+                        SIPSMOBILE.V_UPLOAD_BRONDOLAN vub
+                    WHERE
+                        NOT EXISTS (SELECT 1 FROM IPLASPROD.ATTENDANCE_GAD_TEMP agt WHERE agt.DOCUMENTNO = vub.ID AND agt.ATTENDANCE = 'KB')
+                        AND EXISTS
+                            (
+                            SELECT
+                            *
+                            FROM
+                                (
+                                    SELECT
+                                        d.FCBA,
+                                        r.CODE
+                                    FROM
+                                        (
+                                        SELECT
+                                            u.FCBA,
+                                            MIN(ORDERAPPROVAL) AS ORDERAPPROVAL
+                                        FROM
+                                            SIPSMOBILE.USERS u
+                                        JOIN SIPSMOBILE.ROLES r ON u.\"LEVEL\" = r.CODE
+                                        GROUP BY
+                                            u.FCBA
+                                        ORDER BY
+                                            u.FCBA
+                                        ) d
+                                    JOIN SIPSMOBILE.ROLES r ON r.ORDERAPPROVAL = d.ORDERAPPROVAL AND r.FCBA = d.FCBA
+                                ) DATA
+                            WHERE DATA.fcba = vub.fcba AND DATA.code = USER_LEVEL
+                            )
+                    ");
             }
 
-            Log::info("TIDAK LUAR BIASA " . $checkLastApproval);
+            // Log::info("TIDAK LUAR BIASA " . $checkLastApproval);
 
             $conn->commit();
             $conn->rollBack();
