@@ -1574,6 +1574,10 @@ class UploadController extends Controller
                                     ) DATA
                                 WHERE DATA.fcba = ld.fcba AND DATA.code = u.\"LEVEL\"
                                 )
+                                AND EXISTS (
+                                  SELECT 1 FROM SIPSMOBILE.TEMP_LHM_INPUT t WHERE t.ID = ld.ID
+                                )
+
                     ");
 
                 DB::statement("
@@ -1662,6 +1666,9 @@ class UploadController extends Controller
                                 ) DATA
                             WHERE DATA.fcba = vub.fcba AND DATA.code = USER_LEVEL
                             )
+                            AND EXISTS (
+                                 SELECT 1 FROM SIPSMOBILE.TEMP_LHM_INPUT t WHERE t.ID = vub.ID
+                               )
                     ");
             }
 
