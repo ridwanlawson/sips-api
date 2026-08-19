@@ -1575,7 +1575,7 @@ class UploadController extends Controller
                                 WHERE DATA.fcba = ld.fcba AND DATA.code = u.\"LEVEL\"
                                 )
                                 AND EXISTS (
-                                  SELECT 1 FROM SIPSMOBILE.TEMP_LHM_INPUT t WHERE t.ID = ld.ID
+                                  SELECT 1 FROM SIPSMOBILE.TEMP_LHM_UPDATE t WHERE t.ID = ld.ID
                                 )
 
                     ");
@@ -1667,7 +1667,7 @@ class UploadController extends Controller
                             WHERE DATA.fcba = vub.fcba AND DATA.code = USER_LEVEL
                             )
                             AND EXISTS (
-                                 SELECT 1 FROM SIPSMOBILE.TEMP_LHM_INPUT t WHERE t.ID = vub.ID
+                                 SELECT 1 FROM SIPSMOBILE.TEMP_LHM_UPDATE t WHERE t.ID = vub.ID
                                )
                     ");
             }
