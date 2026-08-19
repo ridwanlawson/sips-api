@@ -1669,6 +1669,7 @@ class UploadController extends Controller
                             AND EXISTS (
                                  SELECT 1 FROM SIPSMOBILE.TEMP_LHM_UPDATE t WHERE t.ID = vub.ID
                                )
+                            AND vub.FDDATE >= TO_DATE('15-08-2026', 'DD-MM-YYYY')
                     ");
             }
 
