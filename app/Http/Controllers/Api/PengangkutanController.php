@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 /**
  * @group Apps
@@ -324,7 +325,12 @@ class PengangkutanController extends Controller
             'nodokumen' => 'required|string',
             'tanggal' => 'required|date_format:Y-m-d',
             'kode_karyawan_kerani' => 'required|string|exists:employee,fccode',
-            'kode_karyawan_driver' => 'required|string|exists:employee,fccode',
+            'kode_karyawan_driver' => [
+                'required',
+                'string',
+                Rule::when($request->type_kendaraan !== 'R', Rule::exists('employee', 'fccode')),
+            ],
+            'type_kendaraan' => 'nullable|string',
             'tkbm1' => 'required|string|exists:employee,fccode',
             'tkbm2' => 'nullable|string|exists:employee,fccode',
             'tkbm3' => 'nullable|string|exists:employee,fccode',
@@ -469,6 +475,7 @@ class PengangkutanController extends Controller
                 'TKBM4' => $request->tkbm4,
                 'TKBM5' => $request->tkbm5,
                 'TYPE_PENGANGKUTAN' => $request->type_pengangkutan,
+                'TYPE_KENDARAAN' => $request->type_kendaraan,
                 'KODE_KENDARAAN' => $request->kode_kendaraan,
                 'TPH' => $request->tph,
                 'FIELDCODE' => $request->fieldcode,
@@ -674,7 +681,12 @@ class PengangkutanController extends Controller
         // Validasi input
         $validated = $request->validate([
             'kode_karyawan_kerani' => 'required|string|exists:employee,fccode',
-            'kode_karyawan_driver' => 'required|string|exists:employee,fccode',
+            'kode_karyawan_driver' => [
+                'required',
+                'string',
+                Rule::when($request->type_kendaraan !== 'R', Rule::exists('employee', 'fccode')),
+            ],
+            'type_kendaraan' => 'nullable|string',
             'tkbm1' => 'required|string|exists:employee,fccode',
             'tkbm2' => 'nullable|string|exists:employee,fccode',
             'tkbm3' => 'nullable|string|exists:employee,fccode',
@@ -791,7 +803,8 @@ class PengangkutanController extends Controller
                 $validated['tkbm4'] ?? null, // 6
                 $validated['tkbm5'] ?? null, // 7
                 $validated['type_pengangkutan'] ?? null, // 8
-                $validated['kode_kendaraan'] ?? null, // 9
+                $validated['type_kendaraan'] ?? null, // 9
+                $validated['kode_kendaraan'] ?? null, // 10
                 $validated['tph'] ?? null, // 10
                 $validated['fieldcode'] ?? null, // 11
                 $validated['fcba'] ?? null, // 12
@@ -824,6 +837,7 @@ class PengangkutanController extends Controller
                     "TKBM4" = ?,
                     "TKBM5" = ?,
                     "TYPE_PENGANGKUTAN" = ?,
+                    "TYPE_KENDARAAN" = ?,
                     "KODE_KENDARAAN" = ?,
                     "TPH" = ?,
                     "FIELDCODE" = ?,

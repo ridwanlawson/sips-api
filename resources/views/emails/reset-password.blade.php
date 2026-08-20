@@ -21,7 +21,7 @@
                                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
                                     <tr>
                                         <td align="center" valign="middle" style="padding-bottom:12px;">
-                                            <img src="{{ asset('images/logo.svg') }}" alt="PT. Sentosa Kalimantan Jaya" width="64" height="64" style="display:block; width:64px; height:64px; border:0; max-width:100%;" />
+                                            <img src="{{ rtrim((string) (env('PASSWORD_RESET_URL') ?: config('app.url')), '/') . '/logo.svg' }}" alt="PT. Sentosa Kalimantan Jaya" width="64" height="64" style="display:block; width:64px; height:64px; border:0; max-width:100%;" />
                                         </td>
                                     </tr>
                                     <tr>

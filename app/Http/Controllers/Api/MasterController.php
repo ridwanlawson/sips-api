@@ -473,4 +473,72 @@ class MasterController extends Controller
 
         return new AllResource(true, "List Data Gang", $datas);
     }
+
+    /**
+     * Data Kontrak dari SIPS Mobile.
+     *
+     * API ini digunakan untuk memanggil data kontrak dari view V_CONTRACT. Tetapi jika ingin melakukan filter pada data yang dipanggil, buatlah parameter pada Url berdasarkan _**Query Parameter**_
+     *
+     * @queryParam agreementcode string Optional. Filter kontrak berdasarkan kode perjanjian. Example: AGR-0001
+     * @queryParam contractorcode string Optional. Filter kontrak berdasarkan kode kontraktor. Example: CTR-0001
+     * @queryParam contractorname string Optional. Filter kontrak berdasarkan nama kontraktor. Example: PT.SKJ
+     * @queryParam fcba string Optional. Filter kontrak berdasarkan fcba. Example: MTE
+     * @queryParam tanggal string Optional. Filter kontrak yang berlaku pada tanggal tertentu (dalam rentang startdate dan finishdate). Example: 2026-06-01
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "List Data Kontrak",
+     *  "data": [
+     *      {
+     *          "agreementcode": "AGR-0001",
+     *          "agreementdate": "2026-01-01",
+     *          "contractorcode": "CTR-0001",
+     *          "contractorname": "PT.SKJ",
+     *          "startdate": "2026-01-01",
+     *          "finishdate": "2026-12-31",
+     *          "fcba": "MTE"
+     *      }
+     *  ]
+     * }
+     */
+    public function contract(Request $request)
+    {
+        try {
+            $datas = DB::table("V_CONTRACT");
+
+            if ($agreementcode = $request->query("agreementcode")) {
+                $datas->where("AGREEMENTCODE", $agreementcode);
+            }
+
+            if ($contractorcode = $request->query("contractorcode")) {
+                $datas->where("CONTRACTORCODE", $contractorcode);
+            }
+
+            if ($contractorname = $request->query("contractorname")) {
+                $datas->where("CONTRACTORNAME", "like", "%" . $contractorname . "%");
+            }
+
+            if ($fcba = $request->query("fcba")) {
+                $datas->where("FCBA", $fcba);
+            }
+
+            if ($tanggal = $request->query("tanggal")) {
+                $datas->where("STARTDATE", "<=", $tanggal)
+                    ->where("FINISHDATE", ">=", $tanggal);
+            }
+
+            $datas = $datas
+                ->orderBy("FCBA")
+                ->orderBy("AGREEMENTCODE")
+                ->get();
+
+            return new AllResource(true, "List Data Kontrak", $datas);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

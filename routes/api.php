@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\PengangkutanController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\TphController;
 use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\VehicleRentController;
 use App\Http\Controllers\Internal\InternalFileController;
 use App\Http\Middleware\ApiLogger;
 use Illuminate\Support\Facades\Route;
@@ -114,6 +115,10 @@ Route::middleware([
         Route::get('/sips-gang', [MasterController::class, 'gang'])->name(
             'master.gang',
         );
+        Route::get('/sips-contracts', [
+            MasterController::class,
+            'contract',
+        ])->name('master.contract');
 
         Route::apiResource('maps', MapController::class)->parameters([
             'maps' => 'id',
@@ -154,6 +159,10 @@ Route::middleware([
             HarvestingController::class,
             'updateStatus',
         ])->name('panens.updateStatus');
+
+        Route::apiResource('vehicle-rents', VehicleRentController::class)->parameters([
+            'vehicle_rents' => 'id',
+        ]);
 
         Route::apiResource(
             'pengangkutans',

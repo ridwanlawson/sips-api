@@ -11,8 +11,7 @@ class Vehicle extends Model
 {
     use HasApiTokens, HasFactory;
 
-    protected $connection = 'sips_production'; // Menggunakan koneksi sips_production
-    protected $table = 'VEHICLE'; // Nama tabel tanpa prefix schema
+    protected $table = 'V_VEHICLE_FULL'; // Nama tabel tanpa prefix schema
 	protected $fillable = [
 		'FCCODE',
 		'FCNAME',
