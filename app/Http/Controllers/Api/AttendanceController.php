@@ -236,7 +236,7 @@ class AttendanceController extends Controller
             'pengancakan' => 'nullable',
             'total_late_time' => 'nullable|date_format:H:i',
             'go_home_early' => 'nullable|date_format:H:i',
-            'attendance_type' => 'nullable',
+            'attendance_type' => 'nullable|in:REGULAR,ASSISTENSI',
             'exception_case' => 'nullable',
             'no_ba_exca' => 'nullable|file|mimes:pdf|max:2048',
             'fcba' => 'required|string|exists:employee,fcba',
@@ -481,7 +481,7 @@ class AttendanceController extends Controller
         $validated = $request->validate([
             'kode_karyawan_mandor' => 'nullable|exists:employee,fccode',
             'kode_karyawan' => 'required|string|exists:employee,fccode',
-            'attendance_type' => 'nullable',
+            'attendance_type' => 'nullable|in:REGULAR,ASSISTENSI',
             'time_out' => 'nullable|date_format:Y-m-d H:i:s',
             'location_out' => 'nullable',
             'pengancakan' => 'nullable',
