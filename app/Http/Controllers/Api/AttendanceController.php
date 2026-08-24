@@ -100,6 +100,7 @@ class AttendanceController extends Controller
                     ATTENDANCE.SECTION_DESTINATION,
                     ATTENDANCE.KEMANDORAN,
                     ATTENDANCE.IMAGES,
+                    ATTENDANCE.IMAGES_OUT,
                     ATTENDANCE.ID_DEVICE,
                     ATTENDANCE.MAC_ADDRESS,
                     ATTENDANCE.CREATED_AT,
@@ -250,6 +251,7 @@ class AttendanceController extends Controller
             'id_device' => 'nullable',
             'mac_address' => 'nullable',
             'images' => 'nullable|file|mimes:webp,jpg,jpeg,png|max:2048',
+            'images_out' => 'nullable|file|mimes:webp,jpg,jpeg,png|max:2048',
             'created_by' => 'nullable',
         ]);
 
@@ -311,6 +313,32 @@ class AttendanceController extends Controller
 
             $this->trackUploadedFile($imagePath);
 
+            // --- IMAGES_OUT ---
+            $imageOutPath = null;
+
+            if ($request->hasFile('images_out')) {
+                $folderPath = "file/attendance/images/{$fcbaSlug}/{$datePath}";
+                $relativePath = $this->optimizeAndSaveImage(
+                    $request->file('images_out'),
+                    $folderPath,
+                );
+                $localAbsPath = public_path($relativePath);
+
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev($localAbsPath, $relativePath);
+                    if ($devUrl) {
+                        $imageOutPath = $devUrl;
+                        @unlink($localAbsPath);
+                    } else {
+                        $imageOutPath = asset($relativePath);
+                    }
+                } else {
+                    $imageOutPath = asset($relativePath);
+                }
+            }
+
+            $this->trackUploadedFile($imageOutPath);
+
             // --- NO_BA_EXCA ---
             $baExcaPath = null;
 
@@ -364,6 +392,7 @@ class AttendanceController extends Controller
                 'ID_DEVICE' => $request->id_device,
                 'MAC_ADDRESS' => $request->mac_address,
                 'IMAGES' => $imagePath,
+                'IMAGES_OUT' => $imageOutPath,
                 'CREATED_BY' => Auth::user()->username,
             ]);
 
@@ -428,6 +457,7 @@ class AttendanceController extends Controller
                     ATTENDANCE.SECTION_DESTINATION,
                     ATTENDANCE.KEMANDORAN,
                     ATTENDANCE.IMAGES,
+                    ATTENDANCE.IMAGES_OUT,
                     ATTENDANCE.ID_DEVICE,
                     ATTENDANCE.MAC_ADDRESS,
                     ATTENDANCE.CREATED_AT,
@@ -500,6 +530,7 @@ class AttendanceController extends Controller
             'id_device' => 'nullable',
             'mac_address' => 'nullable',
             'images' => 'nullable|file|mimes:webp,jpg,jpeg,png|max:2048',
+            'images_out' => 'nullable|file|mimes:webp,jpg,jpeg,png|max:2048',
         ]);
 
         try {
@@ -544,6 +575,35 @@ class AttendanceController extends Controller
 
             $this->trackUploadedFile($imagePath);
 
+            // --- IMAGES_OUT (foto check-out) ---
+            $imageOutPath = $datas->images_out;
+
+            if ($request->hasFile('images_out')) {
+                $folderPath = "file/attendance/images/{$fcbaSlug}/{$datePath}";
+                $relativePath = $this->optimizeAndSaveImage(
+                    $request->file('images_out'),
+                    $folderPath,
+                );
+                $localAbsPath = public_path($relativePath);
+
+                if ($storage->isDevOnline()) {
+                    $devUrl = $storage->uploadToDev(
+                        $localAbsPath,
+                        $relativePath,
+                    );
+                    if ($devUrl) {
+                        $imageOutPath = $devUrl;
+                        @unlink($localAbsPath);
+                    } else {
+                        $imageOutPath = asset($relativePath);
+                    }
+                } else {
+                    $imageOutPath = asset($relativePath);
+                }
+            }
+
+            $this->trackUploadedFile($imageOutPath);
+
             // --- NO_BA_EXCA ---
             $baExcaPath = $datas->no_ba_exca;
 
@@ -585,6 +645,7 @@ class AttendanceController extends Controller
                 $validated['id_device'] ?? null,
                 $validated['mac_address'] ?? null,
                 $imagePath,
+                $imageOutPath,
                 Auth::user()->username,
                 $id,
             ];
@@ -611,6 +672,7 @@ class AttendanceController extends Controller
                 "ID_DEVICE"            = ?,
                 "MAC_ADDRESS"          = ?,
                 "IMAGES"               = ?,
+                "IMAGES_OUT"           = ?,
                 "UPDATED_BY"           = ?,
                 "UPDATED_AT"           = SYSDATE
             ';

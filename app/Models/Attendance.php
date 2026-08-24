@@ -36,6 +36,7 @@ class Attendance extends Model
         'ID_DEVICE',
         'MAC_ADDRESS',
         'IMAGES',
+        'IMAGES_OUT',
         'FLAG',
         'EXCEPTION_CASE',
         'NO_BA_EXCA',

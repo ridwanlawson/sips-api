@@ -33,7 +33,7 @@ class SyncFilesToDev extends Command
         $isDryRun = $this->option("dry-run");
 
         $tables = [
-            ["table" => "SIPSMOBILE.ATTENDANCE", "columns" => ["IMAGES", "NO_BA_EXCA", "DELETED_ATTACHMENT"]],
+            ["table" => "SIPSMOBILE.ATTENDANCE", "columns" => ["IMAGES", "IMAGES_OUT", "NO_BA_EXCA", "DELETED_ATTACHMENT"]],
             ["table" => "SIPSMOBILE.HARVESTING", "columns" => ["IMAGES", "NO_BA_EXCA", "DELETED_ATTACHMENT"]],
             ["table" => "SIPSMOBILE.PENGANGKUTAN", "columns" => ["IMAGES", "NO_BA_EXCA", "DELETED_ATTACHMENT"]],
             ["table" => "SIPSMOBILE.USERS", "columns" => ["PHOTO"]],
