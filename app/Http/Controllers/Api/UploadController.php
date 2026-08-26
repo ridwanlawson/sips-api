@@ -876,6 +876,7 @@ class UploadController extends Controller
                 );
             }
 
+            $user = Auth::user()->username;
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
             $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
@@ -910,9 +911,9 @@ class UploadController extends Controller
                     "BUCKET" => $data["BUCKET"] ?? null,
                     "PRESSEMESTER_ABW" => $data["PRESSEMESTER_ABW"] ?? null,
                     "BUNCH_ESTATEWEIGHT" => $data["BUNCH_ESTATEWEIGHT"] ?? null,
-                    "FCENTRY" => $data["FCENTRY"] ?? null,
-                    "FCEDIT" => $data["FCEDIT"] ?? null,
-                    "FCIP" => $data["FCIP"] ?? null,
+                    "FCENTRY" => $user,
+                    "FCEDIT" => $user,
+                    "FCIP" => $request->ip(),
                     "FCBA" => $data["FCBA"] ?? null,
                     "LASTUPDATE" => $currentDateTime,
                     "LASTTIME" => $currentTime,
@@ -929,7 +930,7 @@ class UploadController extends Controller
                     "KETERANGAN" => $data["KETERANGAN"] ?? "SIPSMOBILE",
                     "MILL_WEIGHT_DTL" => $data["MILL_WEIGHT_DTL"] ?? null,
                     "BJR_CHIT" => $data["BJR_CHIT"] ?? null,
-                    "LASTAPPROVAL" => Auth::user()->username ?? "SIPSMOBILE",
+                    "LASTAPPROVAL" => $user ?? "SIPSMOBILE",
                 ];
 
                 DB::connection("oracle")->insert($sql, $params);
@@ -1435,6 +1436,7 @@ class UploadController extends Controller
 
             $checkLastApproval = DB::table("T_LASTAPPROVAL")
                 ->where("FCBA", Auth::user()->fcba) // penting kalau ada banyak data
+                ->where("TYPES", "ATD") // penting kalau ada banyak data
                 ->value("CODE"); // langsung ambil 1 kolom
 
             if (Auth::user()->level === $checkLastApproval) {
