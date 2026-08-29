@@ -941,6 +941,7 @@ class ReportController extends Controller
      * @queryParam mill string Optional. Filter berdasarkan Pabrik Tujuan. Example: DOM
      * @queryParam fcba string Optional. Filter berdasarkan FCBA. Example: PTE
      * @queryParam chitno string Optional. Filter berdasarkan Weighbridge Chit Number. Example: TBS2026004804
+     * @queryParam upload string Optional. Filter berdasarkan Kode Upload Y atau N. Example: N
      *
      * @response 200 scenario="success" {
      *  "success": true,
@@ -997,12 +998,25 @@ class ReportController extends Controller
             $mill = $request->query("mill");
             $fcba = $request->query("fcba");
             $chitno = $request->query("chitno");
+            $upload = $request->query("upload");
 
-            $datas = DB::connection("oracle")->table("V_UPLOAD_HVTG");
+            $datas = DB::connection("oracle")->table("V_HARVESTING_DATA");
+
+            // 🔹 FILTER BASIC
+            if ($upload) {
+                if ($upload === "Y") {
+                    $datas->where("TYPEDATA", "HARVESTINGSPB");
+                }
+                if ($upload === "N") {
+                    $datas->whereRaw(
+                        "NOT EXISTS (SELECT 1 FROM SIPSMOBILE.HARVESTINGSPB agt WHERE agt.SPBNO = SPBNO AND agt.FIELDCODE = FIELDCODE AND agt.HARVESTDATE = HARVESTDATE AND agt.RECEPTIONDATE = RECEPTIONDATE)",
+                    );
+                }
+            }
 
             // 🔹 FILTER BASIC
             if ($nospb) {
-                $datas->where("NOSPB", $nospb);
+                $datas->where("SPBNO", $nospb);
             }
 
             if ($kode_kendaraan) {
@@ -1056,7 +1070,7 @@ class ReportController extends Controller
             }
 
             // 🔹 ORDERING
-            $datas = $datas->orderByDesc("NOSPB")->get();
+            $datas = $datas->orderByDesc("SPBNO")->get();
 
             // 🔥 NORMALISASI ANGKA
             foreach ($datas as &$row) {

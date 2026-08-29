@@ -1313,7 +1313,7 @@ class UploadController extends Controller
                         v.OTHRS,
                         v.RATE,
                         v.UNIT,
-                        v.OUTPUT,
+                        tmp.HA,
                         v.REFERENCE,
                         v.REMARKS,
                         v.OVERTIME_HOURS,
@@ -1566,13 +1566,13 @@ class UploadController extends Controller
                                                 MIN(ORDERAPPROVAL) AS ORDERAPPROVAL
                                             FROM
                                                 SIPSMOBILE.USERS u
-                                            JOIN SIPSMOBILE.ROLES r ON u.\"LEVEL\" = r.CODE
+                                            JOIN SIPSMOBILE.ROLES r ON u.\"LEVEL\" = r.CODE AND r.TYPES = 'ATD'
                                             GROUP BY
                                                 u.FCBA
                                             ORDER BY
                                                 u.FCBA
                                             ) d
-                                        JOIN SIPSMOBILE.ROLES r ON r.ORDERAPPROVAL = d.ORDERAPPROVAL AND r.FCBA = d.FCBA
+                                        JOIN SIPSMOBILE.ROLES r ON r.ORDERAPPROVAL = d.ORDERAPPROVAL AND r.FCBA = d.FCBA AND r.TYPES = 'ATD'
                                     ) DATA
                                 WHERE DATA.fcba = ld.fcba AND DATA.code = u.\"LEVEL\"
                                 )
@@ -1658,13 +1658,13 @@ class UploadController extends Controller
                                             MIN(ORDERAPPROVAL) AS ORDERAPPROVAL
                                         FROM
                                             SIPSMOBILE.USERS u
-                                        JOIN SIPSMOBILE.ROLES r ON u.\"LEVEL\" = r.CODE
+                                        JOIN SIPSMOBILE.ROLES r ON u.\"LEVEL\" = r.CODE AND r.TYPES = 'ATD'
                                         GROUP BY
                                             u.FCBA
                                         ORDER BY
                                             u.FCBA
                                         ) d
-                                    JOIN SIPSMOBILE.ROLES r ON r.ORDERAPPROVAL = d.ORDERAPPROVAL AND r.FCBA = d.FCBA
+                                    JOIN SIPSMOBILE.ROLES r ON r.ORDERAPPROVAL = d.ORDERAPPROVAL AND r.FCBA = d.FCBA AND r.TYPES = 'ATD'
                                 ) DATA
                             WHERE DATA.fcba = vub.fcba AND DATA.code = USER_LEVEL
                             )
