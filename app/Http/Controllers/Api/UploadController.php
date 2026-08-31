@@ -1291,12 +1291,13 @@ class UploadController extends Controller
                         v.TOTALBRD,
                         v.RATE_BRONDOLAN,
                         CASE
-                            WHEN TO_NUMBER(agg.SUM_HA) >= TO_NUMBER(agg.SUM_BASIS_HA) AND v.ROWDATA = 1 THEN TO_NUMBER(?)
+                            WHEN TO_NUMBER(agg.SUM_HA) >= TO_NUMBER(agg.SUM_BASIS_HA) AND v.ROWDATA = 1 AND v.ATTENDANCE = 'KJ' THEN
+                                TO_NUMBER(?)
                             ELSE v.RPHK
                         END,
                         v.BRD_RP,
                         CASE
-                            WHEN TO_NUMBER(agg.SUM_HA) >= TO_NUMBER(agg.SUM_BASIS_HA) AND v.ROWDATA = 1 THEN
+                            WHEN TO_NUMBER(agg.SUM_HA) >= TO_NUMBER(agg.SUM_BASIS_HA) AND v.ROWDATA = 1 AND v.ATTENDANCE = 'KJ' THEN
                                 TO_NUMBER(?) + v.BRD_RP + v.RPBASIS + v.TOTALRPPREMI + v.HARILIBUR + 0 + v.JUMLAHDENDA
                             ELSE v.TOTAL
                         END,
