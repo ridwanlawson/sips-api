@@ -1497,7 +1497,7 @@ class UploadController extends Controller
                             BASIS_BM, KG_JANJANG, BJR, DOCUMENTNO, SUPERVISION_5
                         )
                         SELECT
-                            IPLASPROD.EMPLOYEE_API.GET_GANGCODE(ld.FCBA, ld.EMPLOYEECODE),
+                            IPLASPROD.EMPLOYEE_API.GET_GANGCODE(ld.FCBA, ld.EMPLOYEECODE) GANGCODE,
                             FDDATE,
                             SUPERVISION_1,
                             SUPERVISION_2,
