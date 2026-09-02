@@ -941,6 +941,7 @@ class ReportController extends Controller
      * @queryParam mill string Optional. Filter berdasarkan Pabrik Tujuan. Example: DOM
      * @queryParam fcba string Optional. Filter berdasarkan FCBA. Example: PTE
      * @queryParam chitno string Optional. Filter berdasarkan Weighbridge Chit Number. Example: TBS2026004804
+     * @queryParam level_user string Optional. Filter berdasarkan Kode Level_User. Example: MDP
      * @queryParam upload string Optional. Filter berdasarkan Kode Upload Y atau N. Example: N
      *
      * @response 200 scenario="success" {
@@ -998,9 +999,10 @@ class ReportController extends Controller
             $mill = $request->query("mill");
             $fcba = $request->query("fcba");
             $chitno = $request->query("chitno");
+            $level_user = $request->query("level_user");
             $upload = $request->query("upload");
 
-            $datas = DB::connection("oracle")->table("V_HARVESTING_DATA");
+            $datas = DB::connection("oracle")->table("V_HARVESTING_DATA vhd");
 
             // 🔹 FILTER BASIC
             if ($upload) {
@@ -1009,7 +1011,7 @@ class ReportController extends Controller
                 }
                 if ($upload === "N") {
                     $datas->whereRaw(
-                        "NOT EXISTS (SELECT 1 FROM SIPSMOBILE.HARVESTINGSPB agt WHERE agt.SPBNO = SPBNO AND agt.FIELDCODE = FIELDCODE AND agt.HARVESTDATE = HARVESTDATE AND agt.RECEPTIONDATE = RECEPTIONDATE)",
+                        "NOT EXISTS (SELECT 1 FROM IPLASPROD.HARVESTINGSPB agt WHERE agt.SPBNO = vhd.SPBNO AND agt.FIELDCODE = vhd.FIELDCODE AND agt.HARVESTDATE = vhd.HARVESTDATE)",
                     );
                 }
             }
@@ -1037,6 +1039,10 @@ class ReportController extends Controller
 
             if ($chitno) {
                 $datas->where("CHITNO", $chitno);
+            }
+
+            if ($level_user) {
+                $datas->where("LEVEL_USER", $level_user);
             }
 
             // 🔥 FILTER TANGGAL (OPTIMIZED - TANPA BETWEEN / TANPA TRUNC)
@@ -1070,7 +1076,9 @@ class ReportController extends Controller
             }
 
             // 🔹 ORDERING
-            $datas = $datas->orderByDesc("SPBNO")->get();
+            $datas = $datas->orderByDesc("RECEPTIONDATE")
+                ->orderByDesc("SPBNO")
+                ->get();
 
             // 🔥 NORMALISASI ANGKA
             foreach ($datas as &$row) {
