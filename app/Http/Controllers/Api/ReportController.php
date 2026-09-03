@@ -997,6 +997,7 @@ class ReportController extends Controller
             $kode_kendaraan = $request->query("kode_kendaraan");
             $kode_karyawan_driver = $request->query("kode_karyawan_driver");
             $mill = $request->query("mill");
+            $afdeling = $request->query("afdeling");
             $fcba = $request->query("fcba");
             $chitno = $request->query("chitno");
             $level_user = $request->query("level_user");
@@ -1035,6 +1036,10 @@ class ReportController extends Controller
 
             if ($fcba) {
                 $datas->where("FCBA", $fcba);
+            }
+
+            if ($afdeling) {
+                $datas->where("AFDELING", $afdeling);
             }
 
             if ($chitno) {

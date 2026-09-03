@@ -244,6 +244,10 @@ Route::middleware([
             UploadController::class,
             'harvesting_mobile',
         ])->name('uploads.harvesting.mobile');
+        Route::post('/harvesting/mobile/open', [
+            UploadController::class,
+            'open_harvesting_mobile',
+        ])->name('uploads.harvesting.mobile.open');
         Route::post('/harvestingquality/mobile', [
             UploadController::class,
             'harvestingquality_mobile',

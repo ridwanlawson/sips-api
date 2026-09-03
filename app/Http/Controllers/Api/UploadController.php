@@ -806,6 +806,33 @@ class UploadController extends Controller
     }
 
     /**
+     * Normalisasi HARVESTDATE ke "YYYY-MM-DD HH24:MI:SS".
+     * Terima ISO ("2026-02-08T00:00:00.000Z"), spasi ("2026-02-08 00:00:00"),
+     * atau tanggal saja ("2026-02-08"). Return null jika tak bisa diparse.
+     */
+    private function normalizeHarvestDate($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $s = trim((string) $value);
+        if ($s === "") {
+            return null;
+        }
+        $s = str_replace("T", " ", $s);
+        $s = preg_replace('/(\.\d+)?\s*(Z|[+-]\d{2}:?\d{2})?$/', "", $s);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $s)) {
+            $s .= " 00:00:00";
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $s)) {
+            $s .= ":00";
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $s)) {
+            return null;
+        }
+        return $s;
+    }
+
+    /**
      * Upload ke SIPS Mobile dari Harvesting SPB .
      *
      * Endpoint ini digunakan untuk mengirim data harvesting SPB dari SIPS Mobile ke tabel SIPSMOBILE.HARVESTINGSPB.
@@ -876,78 +903,453 @@ class UploadController extends Controller
                 );
             }
 
+            $conn = DB::connection("oracle");
             $user = Auth::user()->username;
+            $conn->beginTransaction();
             $inserted = [];
             $currentDateTime = now(); // Current timestamp
             $currentTime = $currentDateTime->format("H:i"); // Format HH:MM
+            $ip = $request->ip();
 
+            // Ambil hanya key pencocokan dari request (SPBNO, FIELDCODE, HARVESTDATE)
+            // Baris tanpa ketiga key tersebut dilewati agar tidak meledak di kolom DATE Oracle.
+            $rows = [];
             foreach ($datas as $r_data) {
-                // Normalisasi keys dari snake_case ke UPPERCASE
                 $data = array_change_key_case($r_data, CASE_UPPER);
-
-                // Insert ke HARVESTINGSPB
-                $sql = "INSERT INTO SIPSMOBILE.HARVESTINGSPB (
-                    SPBNO, FIELDCODE, RECEPTIONDATE, HARVESTDATE, CROPCODE, PRODUCTCODE, OWN, VEHICLE, DRIVER, MILL, AGREEMENTCODE, TRANSPORTTYPE, SPB_TYPE, BUNCH, BUCKET, PRESSEMESTER_ABW, BUNCH_ESTATEWEIGHT, FCENTRY, FCEDIT, FCIP, FCBA, LASTUPDATE, LASTTIME, CHITNO, MILL_WEIGHT_BRUTO, MILL_WEIGHT_GROSS, MILL_WEIGHT_TARRA, MILL_WEIGHT_POTONGAN, MILL_WEIGHT_NETTO, MENTAH, TANKOS, HILANG, KETERANGAN, MILL_WEIGHT_DTL, BJR_CHIT, LASTAPPROVAL
-                ) VALUES (
-                    :SPBNO, :FIELDCODE, :RECEPTIONDATE, :HARVESTDATE, :CROPCODE, :PRODUCTCODE, :OWN, :VEHICLE, :DRIVER, :MILL, :AGREEMENTCODE, :TRANSPORTTYPE, :SPB_TYPE, :BUNCH, :BUCKET, :PRESSEMESTER_ABW, :BUNCH_ESTATEWEIGHT, :FCENTRY, :FCEDIT, :FCIP, :FCBA, :LASTUPDATE, :LASTTIME, :CHITNO, :MILL_WEIGHT_BRUTO, :MILL_WEIGHT_GROSS, :MILL_WEIGHT_TARRA, :MILL_WEIGHT_POTONGAN, :MILL_WEIGHT_NETTO, :MENTAH, :TANKOS, :HILANG, :KETERANGAN, :MILL_WEIGHT_DTL, :BJR_CHIT, :LASTAPPROVAL
-                )";
-
-                $params = [
-                    "SPBNO" => $data["SPBNO"] ?? null,
-                    "FIELDCODE" => $data["FIELDCODE"] ?? null,
-                    "RECEPTIONDATE" => $data["RECEPTIONDATE"] ?? null,
-                    "HARVESTDATE" => $data["HARVESTDATE"] ?? null,
-                    "CROPCODE" => $data["CROPCODE"] ?? null,
-                    "PRODUCTCODE" => $data["PRODUCTCODE"] ?? "TBS",
-                    "OWN" => $data["OWN"] ?? "OWN",
-                    "VEHICLE" => $data["VEHICLE"] ?? null,
-                    "DRIVER" => $data["DRIVER"] ?? null,
-                    "MILL" => $data["MILL"] ?? null,
-                    "AGREEMENTCODE" => $data["AGREEMENTCODE"] ?? null,
-                    "TRANSPORTTYPE" =>
-                    $data["TRANSPORTTYPE"] ?? "DIRECTTRANSPORT",
-                    "SPB_TYPE" => $data["SPB_TYPE"] ?? 0,
-                    "BUNCH" => $data["BUNCH"] ?? null,
-                    "BUCKET" => $data["BUCKET"] ?? null,
-                    "PRESSEMESTER_ABW" => $data["PRESSEMESTER_ABW"] ?? null,
-                    "BUNCH_ESTATEWEIGHT" => $data["BUNCH_ESTATEWEIGHT"] ?? null,
-                    "FCENTRY" => $user,
-                    "FCEDIT" => $user,
-                    "FCIP" => $request->ip(),
-                    "FCBA" => $data["FCBA"] ?? null,
-                    "LASTUPDATE" => $currentDateTime,
-                    "LASTTIME" => $currentTime,
-                    "CHITNO" => $data["CHITNO"] ?? null,
-                    "MILL_WEIGHT_BRUTO" => $data["MILL_WEIGHT_BRUTO"] ?? null,
-                    "MILL_WEIGHT_GROSS" => $data["MILL_WEIGHT_GROSS"] ?? null,
-                    "MILL_WEIGHT_TARRA" => $data["MILL_WEIGHT_TARRA"] ?? null,
-                    "MILL_WEIGHT_POTONGAN" =>
-                    $data["MILL_WEIGHT_POTONGAN"] ?? null,
-                    "MILL_WEIGHT_NETTO" => $data["MILL_WEIGHT_NETTO"] ?? null,
-                    "MENTAH" => $data["MENTAH"] ?? null,
-                    "TANKOS" => $data["TANKOS"] ?? null,
-                    "HILANG" => $data["HILANG"] ?? null,
-                    "KETERANGAN" => $data["KETERANGAN"] ?? "SIPSMOBILE",
-                    "MILL_WEIGHT_DTL" => $data["MILL_WEIGHT_DTL"] ?? null,
-                    "BJR_CHIT" => $data["BJR_CHIT"] ?? null,
-                    "LASTAPPROVAL" => $user ?? "SIPSMOBILE",
+                $spbno = trim((string) ($data["SPBNO"] ?? ""));
+                $fieldcode = trim((string) ($data["FIELDCODE"] ?? ""));
+                $harvestDate = $this->normalizeHarvestDate($data["HARVESTDATE"] ?? null);
+                if ($spbno === "" || $fieldcode === "" || $harvestDate === null) {
+                    continue;
+                }
+                $rows[] = [
+                    "SPBNO" => $spbno,
+                    "FIELDCODE" => $fieldcode,
+                    "HARVESTDATE" => $harvestDate, // selalu "YYYY-MM-DD HH24:MI:SS"
                 ];
-
-                DB::connection("oracle")->insert($sql, $params);
-                $inserted[] = $data["SPBNO"] ?? null;
+                $inserted[] = $spbno;
             }
+
+            if (count($rows) === 0) {
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
+            }
+
+            // Pastikan staging table (global temp, 3 kolom) ada — dibuat sekali saja.
+            // Baca CNT toleran case (driver bisa kembalikan lower/upper) agar CREATE
+            // tidak dicoba berulang (ORA-00955) saat tabel sudah ada.
+            $exists = $conn->selectOne(
+                "SELECT COUNT(*) AS CNT FROM ALL_TABLES
+                 WHERE OWNER = 'SIPSMOBILE' AND TABLE_NAME = 'TEMP_HVT_HARVESTING'",
+            );
+            if ((int) ($exists->CNT ?? $exists->cnt ?? 0) === 0) {
+                try {
+                    $conn->statement("
+                    CREATE GLOBAL TEMPORARY TABLE SIPSMOBILE.TEMP_HVT_HARVESTING (
+                        SPBNO VARCHAR2(50),
+                        FIELDCODE VARCHAR2(15),
+                        HARVESTDATE DATE
+                    ) ON COMMIT PRESERVE ROWS
+                ");
+                } catch (\Exception $e) {
+                    // Abaikan jika tabel sudah ada (race antar request pertama) — lanjutkan.
+                    if (stripos($e->getMessage(), "ORA-00955") === false) {
+                        throw $e;
+                    }
+                }
+            }
+
+            // Kosongkan staging milik sesi ini (GTT: baris private per sesi).
+            // Pakai DELETE, bukan TRUNCATE, agar tidak ada DDL implicit-commit di tengah transaksi.
+            $conn->statement("DELETE FROM SIPSMOBILE.TEMP_HVT_HARVESTING");
+
+            // Bulk load key ke staging (chunk besar, tanpa array_merge O(n^2))
+            // HARVESTDATE diikat eksplisit via TO_DATE agar tidak tergantung NLS_DATE_FORMAT.
+            $staged = 0;
+            foreach (array_chunk($rows, 10000) as $chunk) {
+                $selects = [];
+                $bindings = [];
+                foreach ($chunk as $row) {
+                    $selects[] = "SELECT ?, ?, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') FROM DUAL";
+                    array_push($bindings, $row["SPBNO"], $row["FIELDCODE"], $row["HARVESTDATE"]);
+                }
+
+                $sql =
+                    "INSERT INTO SIPSMOBILE.TEMP_HVT_HARVESTING (SPBNO, FIELDCODE, HARVESTDATE) " .
+                    implode(" UNION ALL ", $selects);
+                $staged += $conn->affectingStatement($sql, $bindings);
+            }
+
+            // Level approval pertama & terakhir untuk TYPES='HVT' sesuai FCBA user (pola seperti ATD).
+            // Eksplisit koneksi oracle (jangan koneksi default) agar konsisten dengan query lain.
+            $lastApprovalLevel = DB::connection("oracle")->table("T_LASTAPPROVAL")
+                ->where("FCBA", Auth::user()->fcba)
+                ->where("TYPES", "HVT")
+                ->value("CODE");
+
+            // Query builder merusak nama tabel ber-schema ("SIPSMOBILE.ROLES" jadi
+            // "SIPSMOBILE"."SIPSMOBILE"."SIPSMOBILE"."ROLES" → ORA-00907), jadi pakai raw.
+            $firstApprovalRow = $conn->selectOne(
+                "SELECT CODE FROM SIPSMOBILE.ROLES WHERE TYPES = ? AND FCBA = ? ORDER BY ORDERAPPROVAL DESC FETCH FIRST 1 ROW ONLY",
+                ["HVT", Auth::user()->fcba],
+            );
+            $firstApprovalLevel = $firstApprovalRow->CODE ?? $firstApprovalRow->code ?? null;
+
+            $isFirstApprover = Auth::user()->level === $firstApprovalLevel;
+            $isLastApprover = Auth::user()->level === $lastApprovalLevel;
+
+            // ===== FIRST APPROVER: insert ke SIPSMOBILE.HARVESTINGSPB (sumber: V_HARVESTING_DATA) + update PENGANGKUTAN =====
+            $hvtInserted = 0;
+            $pengangkutanUpdated = 0;
+            $hvtUpdated = 0;
+            $prodInserted = 0;
+            if ($isFirstApprover) {
+                $hvtInserted = $conn->affectingStatement(
+                    "
+                    INSERT INTO SIPSMOBILE.HARVESTINGSPB (
+                        SPBNO, FIELDCODE, RECEPTIONDATE, HARVESTDATE, CROPCODE,
+                        PRODUCTCODE, OWN, VEHICLE, DRIVER, MILL, AGREEMENTCODE,
+                        TRANSPORTTYPE, SPB_TYPE, BUNCH, BUCKET, PRESSEMESTER_ABW,
+                        BUNCH_ESTATEWEIGHT, FCENTRY, FCEDIT, FCIP, FCBA, LASTUPDATE,
+                        LASTTIME, CHITNO, MILL_WEIGHT_BRUTO, MILL_WEIGHT_GROSS,
+                        MILL_WEIGHT_TARRA, MILL_WEIGHT_POTONGAN, MILL_WEIGHT_NETTO,
+                        MENTAH, TANKOS, HILANG, KETERANGAN, MILL_WEIGHT_DTL,
+                        BJR_CHIT, LASTAPPROVAL
+                    )
+                    SELECT
+                        vhd.SPBNO, vhd.FIELDCODE, vhd.RECEPTIONDATE, vhd.HARVESTDATE,
+                        vhd.CROPCODE, vhd.PRODUCTCODE, vhd.OWN, vhd.VEHICLE, vhd.DRIVER,
+                        vhd.MILL, vhd.AGREEMENTCODE, vhd.TRANSPORTTYPE, vhd.SPB_TYPE,
+                        vhd.BUNCH, vhd.BUCKET, vhd.PRESSEMESTER_ABW, vhd.BUNCH_ESTATEWEIGHT,
+                        ?, ?, ?, vhd.FCBA, ?, ?, vhd.CHITNO,
+                        vhd.MILL_WEIGHT_BRUTO, vhd.MILL_WEIGHT_GROSS, vhd.MILL_WEIGHT_TARRA,
+                        vhd.MILL_WEIGHT_POTONGAN, vhd.MILL_WEIGHT_NETTO, vhd.MENTAH,
+                        vhd.TANKOS, vhd.HILANG, vhd.KETERANGAN, vhd.MILL_WEIGHT_DTL,
+                        vhd.BJR_CHIT, ?
+                    FROM SIPSMOBILE.V_HARVESTING_DATA vhd
+                    WHERE vhd.TYPEDATA = 'V_HARVESTING'
+                      AND EXISTS (
+                          SELECT 1 FROM SIPSMOBILE.TEMP_HVT_HARVESTING t
+                          WHERE t.SPBNO = vhd.SPBNO
+                            AND t.FIELDCODE = vhd.FIELDCODE
+                            AND TRUNC(t.HARVESTDATE) = TRUNC(vhd.HARVESTDATE)
+                      )
+                      AND NOT EXISTS (
+                          SELECT 1 FROM SIPSMOBILE.HARVESTINGSPB h
+                          WHERE h.SPBNO = vhd.SPBNO
+                            AND h.FIELDCODE = vhd.FIELDCODE
+                            AND TRUNC(h.HARVESTDATE) = TRUNC(vhd.HARVESTDATE)
+                      )
+                    ",
+                    [$user, $user, $ip, $currentDateTime, $currentTime, $user],
+                );
+
+                $pengangkutanUpdated = $conn->affectingStatement(
+                    "
+                    UPDATE SIPSMOBILE.PENGANGKUTAN p
+                    SET p.STATUS_PENGANGKUTAN = 'Approved',
+                        p.UPDATED_BY = ?,
+                        p.UPDATED_AT = SYSDATE
+                    WHERE EXISTS (
+                        SELECT 1 FROM SIPSMOBILE.TEMP_HVT_HARVESTING t
+                        WHERE t.SPBNO = p.NOSPB
+                          AND t.FIELDCODE = p.FIELDCODE
+                    )
+                    ",
+                    [$user],
+                );
+            } else {
+                // ===== BUKAN FIRST APPROVER: hanya Update kolom approval (set-based dari staging) =====
+                $hvtUpdated = $conn->affectingStatement(
+                    "
+                    UPDATE SIPSMOBILE.HARVESTINGSPB h
+                    SET h.LASTAPPROVAL = ?,
+                        h.FCEDIT = ?,
+                        h.LASTUPDATE = SYSDATE
+                    WHERE EXISTS (
+                        SELECT 1 FROM SIPSMOBILE.TEMP_HVT_HARVESTING t
+                        WHERE t.SPBNO = h.SPBNO
+                          AND t.FIELDCODE = h.FIELDCODE
+                          AND TRUNC(t.HARVESTDATE) = TRUNC(h.HARVESTDATE)
+                    )
+                    ",
+                    [$user, $user],
+                );
+            }
+
+            // ===== LAST APPROVER: pindahkan SIPSMOBILE.HARVESTINGSPB -> IPLASPROD.HARVESTINGSPB =====
+            if ($isLastApprover) {
+                $prodInserted = $conn->affectingStatement(
+                    "
+                    INSERT INTO IPLASPROD.HARVESTINGSPB (
+                        SPBNO, FIELDCODE, RECEPTIONDATE, HARVESTDATE, CROPCODE,
+                        PRODUCTCODE, OWN, VEHICLE, DRIVER, MILL, AGREEMENTCODE,
+                        TRANSPORTTYPE, SPB_TYPE, BUNCH, BUCKET, PRESSEMESTER_ABW,
+                        BUNCH_ESTATEWEIGHT, FCENTRY, FCEDIT, FCIP, FCBA, LASTUPDATE,
+                        LASTTIME, CHITNO, MILL_WEIGHT_BRUTO, MILL_WEIGHT_GROSS,
+                        MILL_WEIGHT_TARRA, MILL_WEIGHT_POTONGAN, MILL_WEIGHT_NETTO,
+                        MENTAH, TANKOS, HILANG, KETERANGAN, MILL_WEIGHT_DTL, BJR_CHIT
+                    )
+                    SELECT
+                        h.SPBNO, h.FIELDCODE, h.RECEPTIONDATE, h.HARVESTDATE,
+                        h.CROPCODE, h.PRODUCTCODE, h.OWN, h.VEHICLE, h.DRIVER,
+                        h.MILL, h.AGREEMENTCODE, h.TRANSPORTTYPE, h.SPB_TYPE,
+                        h.BUNCH, h.BUCKET, h.PRESSEMESTER_ABW, h.BUNCH_ESTATEWEIGHT,
+                        h.FCENTRY, h.FCEDIT, h.FCIP, h.FCBA, h.LASTUPDATE, h.LASTTIME,
+                        h.CHITNO, h.MILL_WEIGHT_BRUTO, h.MILL_WEIGHT_GROSS,
+                        h.MILL_WEIGHT_TARRA, h.MILL_WEIGHT_POTONGAN, h.MILL_WEIGHT_NETTO,
+                        h.MENTAH, h.TANKOS, h.HILANG, h.KETERANGAN, h.MILL_WEIGHT_DTL,
+                        h.BJR_CHIT
+                    FROM SIPSMOBILE.HARVESTINGSPB h
+                    WHERE EXISTS (
+                        SELECT 1 FROM SIPSMOBILE.TEMP_HVT_HARVESTING t
+                        WHERE t.SPBNO = h.SPBNO
+                          AND t.FIELDCODE = h.FIELDCODE
+                          AND TRUNC(t.HARVESTDATE) = TRUNC(h.HARVESTDATE)
+                    )
+                      AND NOT EXISTS (
+                        SELECT 1 FROM IPLASPROD.HARVESTINGSPB agt
+                        WHERE agt.SPBNO = h.SPBNO
+                          AND agt.FIELDCODE = h.FIELDCODE
+                          AND TRUNC(agt.HARVESTDATE) = TRUNC(h.HARVESTDATE)
+                    )
+                    "
+                );
+            }
+
+            $conn->commit();
+
+            // Jejak per tahap: kalau response success tapi DB kosong, log ini tunjukkan tahap mana yang 0 baris.
+            Log::info("harvesting_mobile submit", [
+                "user" => $user,
+                "level" => Auth::user()->level,
+                "fcba" => Auth::user()->fcba,
+                "is_first" => $isFirstApprover,
+                "is_last" => $isLastApprover,
+                "first_level" => $firstApprovalLevel,
+                "last_level" => $lastApprovalLevel,
+                "rows_in" => count($rows),
+                "staged" => $staged,
+                "hvt_inserted" => $hvtInserted,
+                "pengangkutan_updated" => $pengangkutanUpdated,
+                "hvt_updated" => $hvtUpdated,
+                "prod_inserted" => $prodInserted,
+                "spbnos" => $inserted,
+            ]);
+
+            // Kalau semua tahap 0 baris, jangan klaim "berhasil ditambahkan" — beri tahu user
+            // kemungkinan penyebabnya (umumnya: belum di-approve level sebelumnya).
+            $totalApplied = $hvtInserted + $pengangkutanUpdated + $hvtUpdated + $prodInserted;
+            $doneMessage = $totalApplied > 0
+                ? "Data Harvesting SPB berhasil ditambahkan."
+                : "Tidak ada data yang diproses. Pastikan data sudah di-approve oleh level sebelumnya.";
 
             return new AllResource(
                 true,
-                "Data Harvesting SPB berhasil ditambahkan.",
+                $doneMessage,
                 $inserted,
             );
         } catch (\Exception $e) {
+            $conn->rollBack();
+
             return response()->json(
                 [
                     "success" => false,
                     "message" =>
                     "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+                    "error" => $e->getMessage(),
+                ],
+                500,
+            );
+        }
+    }
+
+    /**
+     * Open Harvesting SPB SIPSMobile.
+     *
+     * Endpoint ini digunakan untuk menarik data Harvesting SPB dari IPLASPROD.HARVESTINGSPB.
+     * Data harus dikirim sebagai array.
+     *
+     * @bodyParam data array required Array data Harvesting SPB yang akan diopen.
+     * @bodyParam data[].SPBNO string required SPBNO Data Harvesting SPB. Example: SPBMTE01092600020
+     * @bodyParam data[].FIELDCODE string required FIELDCODE Data Harvesting SPB. Example: G55
+     * @bodyParam data[].HARVESTDATE string required HARVESTDATE Data Harvesting SPB. Example: 2026-09-03
+     *
+     * @response 200 scenario="success" {
+     *  "success": true,
+     *  "message": "Data Harvesting SPB berhasil dibuka.",
+     *  "data": [1, 2, 3]
+     * }
+     * @response 400 scenario="invalid data" {
+     *  "success": false,
+     *  "message": "Data tidak valid atau kosong."
+     * }
+     * @response 500 scenario="error" {
+     *  "success": false,
+     *  "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+     *  "error": "Deskripsi error dari database"
+     * }
+     */
+    public function open_harvesting_mobile(Request $request)
+    {
+        try {
+            $datas = $request->input("data");
+
+            if (!$datas || !is_array($datas)) {
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
+            }
+
+            $conn = DB::connection("oracle");
+            $user = Auth::user()->username ?? null;
+            $conn->beginTransaction();
+
+            // Samakan key dengan harvesting_mobile: SPBNO + FIELDCODE + HARVESTDATE.
+            $rows = [];
+            foreach ($datas as $r_data) {
+                $data = array_change_key_case($r_data, CASE_UPPER);
+                $spbno = trim((string) ($data["SPBNO"] ?? ""));
+                $fieldcode = trim((string) ($data["FIELDCODE"] ?? ""));
+                $harvestDate = $this->normalizeHarvestDate($data["HARVESTDATE"] ?? null);
+                if ($spbno === "" || $fieldcode === "" || $harvestDate === null) {
+                    continue;
+                }
+                $key = $spbno . "|" . $fieldcode . "|" . substr($harvestDate, 0, 10);
+                $rows[$key] = [
+                    "SPBNO" => $spbno,
+                    "FIELDCODE" => $fieldcode,
+                    "HARVESTDATE" => $harvestDate,
+                ];
+            }
+
+            $rows = array_values($rows);
+
+            if (count($rows) === 0) {
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "Data tidak valid atau kosong.",
+                    ],
+                    400,
+                );
+            }
+
+            // Reuse staging GTT yang sama dengan harvesting_mobile.
+            $exists = $conn->selectOne(
+                "SELECT COUNT(*) AS CNT FROM ALL_TABLES
+                 WHERE OWNER = 'SIPSMOBILE' AND TABLE_NAME = 'TEMP_HVT_HARVESTING'",
+            );
+            if ((int) ($exists->CNT ?? $exists->cnt ?? 0) === 0) {
+                try {
+                    $conn->statement("
+                    CREATE GLOBAL TEMPORARY TABLE SIPSMOBILE.TEMP_HVT_HARVESTING (
+                        SPBNO VARCHAR2(50),
+                        FIELDCODE VARCHAR2(15),
+                        HARVESTDATE DATE
+                    ) ON COMMIT PRESERVE ROWS
+                ");
+                } catch (\Exception $e) {
+                    if (stripos($e->getMessage(), "ORA-00955") === false) {
+                        throw $e;
+                    }
+                }
+            }
+
+            $conn->statement("DELETE FROM SIPSMOBILE.TEMP_HVT_HARVESTING");
+
+            foreach (array_chunk($rows, 10000) as $chunk) {
+                $selects = [];
+                $bindings = [];
+                foreach ($chunk as $row) {
+                    $selects[] = "SELECT ?, ?, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS') FROM DUAL";
+                    array_push($bindings, $row["SPBNO"], $row["FIELDCODE"], $row["HARVESTDATE"]);
+                }
+
+                $sql =
+                    "INSERT INTO SIPSMOBILE.TEMP_HVT_HARVESTING (SPBNO, FIELDCODE, HARVESTDATE) " .
+                    implode(" UNION ALL ", $selects);
+                $conn->statement($sql, $bindings);
+            }
+
+            // c. Hapus data turunan di IPLASPROD dulu.
+            $prodDeleted = $conn->affectingStatement(
+                "
+                DELETE FROM IPLASPROD.HARVESTINGSPB p
+                WHERE p.KETERANGAN = 'SIPSMOBILE'
+                  AND EXISTS (
+                      SELECT 1 FROM SIPSMOBILE.TEMP_HVT_HARVESTING t
+                      WHERE t.SPBNO = p.SPBNO
+                        AND t.FIELDCODE = p.FIELDCODE
+                        AND TRUNC(t.HARVESTDATE) = TRUNC(p.HARVESTDATE)
+                  )
+                ",
+            );
+
+            // b. Hapus data di SIPSMOBILE.
+            $hvtDeleted = $conn->affectingStatement(
+                "
+                DELETE FROM SIPSMOBILE.HARVESTINGSPB h
+                WHERE EXISTS (
+                    SELECT 1 FROM SIPSMOBILE.TEMP_HVT_HARVESTING t
+                    WHERE t.SPBNO = h.SPBNO
+                      AND t.FIELDCODE = h.FIELDCODE
+                      AND TRUNC(t.HARVESTDATE) = TRUNC(h.HARVESTDATE)
+                )
+                ",
+            );
+
+            // a. Kembalikan status pengangkutan (terakhir).
+            $pengangkutanReverted = $conn->affectingStatement(
+                "
+                UPDATE SIPSMOBILE.PENGANGKUTAN p
+                SET p.STATUS_PENGANGKUTAN = 'Planned'
+                WHERE EXISTS (
+                    SELECT 1 FROM SIPSMOBILE.TEMP_HVT_HARVESTING t
+                    WHERE t.SPBNO = p.NOSPB
+                      AND t.FIELDCODE = p.FIELDCODE
+                )
+                ",
+            );
+
+            $conn->commit();
+
+            Log::info("open_harvesting_mobile open", [
+                "user" => $user,
+                "rows_in" => count($rows),
+                "prod_deleted" => $prodDeleted,
+                "hvt_deleted" => $hvtDeleted,
+                "pengangkutan_reverted" => $pengangkutanReverted,
+            ]);
+
+            $totalApplied = $prodDeleted + $hvtDeleted + $pengangkutanReverted;
+
+            return response()->json([
+                "success" => true,
+                "message" => $totalApplied > 0
+                    ? "open Harvesting SPB berhasil."
+                    : "Tidak ada data yang diproses. Pastikan SPBNO, FIELDCODE, dan HARVESTDATE sudah pernah diupload.",
+            ]);
+        } catch (\Exception $e) {
+            $conn->rollBack();
+
+            Log::error("OPEN HARVESTING ERROR", [
+                "message" => $e->getMessage(),
+            ]);
+
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "Gagal open data.",
                     "error" => $e->getMessage(),
                 ],
                 500,
@@ -1869,19 +2271,19 @@ class UploadController extends Controller
 
             return response()->json([
                 "success" => true,
-                "message" => "Reverse LHM berhasil.",
+                "message" => "open LHM berhasil.",
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error("REVERSE LHM ERROR", [
+            Log::error("open LHM ERROR", [
                 "message" => $e->getMessage(),
             ]);
 
             return response()->json(
                 [
                     "success" => false,
-                    "message" => "Gagal reverse data.",
+                    "message" => "Gagal open data.",
                     "error" => $e->getMessage(),
                 ],
                 500,
