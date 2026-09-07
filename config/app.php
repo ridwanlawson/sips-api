@@ -125,6 +125,8 @@ return [
     "deploy_branch" => env("DEPLOY_BRANCH"),
     "deploy_path" => env("DEPLOY_PATH"),
 
+    "pass_reset_url" => env("PASSWORD_RESET_URL", ""),
+
     "dev_server_url" => env("DEV_SERVER_URL", ""),
     "dev_server_timeout" => env("DEV_SERVER_TIMEOUT", 5),
 

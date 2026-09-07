@@ -49,7 +49,7 @@ class ResetPasswordNotification extends BaseResetPassword
             return call_user_func(static::$createUrlCallback, $notifiable, $this->token);
         }
 
-        $base = rtrim((string) (env('PASSWORD_RESET_URL') ?: config('app.url')), '/');
+        $base = rtrim((string) (config('app.pass_reset_url') ?: config('app.url')), '/');
 
         return $base.'/reset-password'
             .'?email='.urlencode($notifiable->getEmailForPasswordReset())
