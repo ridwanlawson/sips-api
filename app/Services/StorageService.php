@@ -47,11 +47,14 @@ class StorageService
         string $relativePath,
     ): ?string {
         try {
+            if (! is_file($localAbsPath)) {
+                return null;
+            }
             $res = Http::timeout(60)
                 ->withHeaders(['X-Internal-Token' => $this->devToken])
                 ->attach(
                     'file',
-                    file_get_contents($localAbsPath),
+                    fopen($localAbsPath, 'r'),
                     basename($relativePath),
                 )
                 ->post($this->devUrl.'/api/internal/receive-file', [
@@ -105,10 +108,6 @@ class StorageService
         $localAbsPath = public_path($relativePath);
 
         if ($this->isDevOnline()) {
-            // Kalau server ini DEV, tidak relevan
-            if (config('app.server_role') === 'dev') {
-                return false;
-            }
             $devUrl = $this->uploadToDev($localAbsPath, $relativePath);
             if ($devUrl) {
                 @unlink($localAbsPath);

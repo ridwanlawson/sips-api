@@ -178,10 +178,18 @@ class ApiLogController extends Controller
      */
     public function health()
     {
+        try {
+            \Illuminate\Support\Facades\DB::connection('oracle')->selectOne('SELECT 1 FROM dual');
+            $db = 'up';
+        } catch (\Throwable) {
+            $db = 'down';
+        }
+
         return response()->json([
-            "status" => "ok",
+            "status" => $db === 'up' ? 'ok' : 'degraded',
+            "db" => $db,
             "server" => config("app.server_role"),
             "time" => now()->toIso8601String(),
-        ]);
+        ], $db === 'up' ? 200 : 503);
     }
 }

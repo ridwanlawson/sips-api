@@ -49,7 +49,7 @@ class SyncFilesToDev extends Command
         }
 
         if ($devOnline) {
-            [$totalSuccess, $totalFailed] = $this->syncPendingFiles(
+            [$totalSuccess, $totalFailed, $totalMissing] = $this->syncPendingFiles(
                 $storage,
                 $tables,
                 $devPrefix,
@@ -58,6 +58,7 @@ class SyncFilesToDev extends Command
         } else {
             $totalSuccess = 0;
             $totalFailed = 0;
+            $totalMissing = 0;
             $this->warn("  DEV offline, file tertunda di PROD tidak diupload.");
         }
 
@@ -71,7 +72,7 @@ class SyncFilesToDev extends Command
             );
         }
 
-        $summary = "Sukses: {$totalSuccess} | Gagal: {$totalFailed}";
+        $summary = "Sukses: {$totalSuccess} | Gagal: {$totalFailed} | Hilang: {$totalMissing}";
         if ($orphanSummary) {
             $summary .= " | " . $orphanSummary;
         }
@@ -80,6 +81,7 @@ class SyncFilesToDev extends Command
         Log::info("SyncFilesToDev selesai", [
             "success" => $totalSuccess,
             "failed" => $totalFailed,
+            "missing" => $totalMissing,
         ]);
 
         return $totalFailed > 0 || !$devOnline
@@ -149,7 +151,7 @@ class SyncFilesToDev extends Command
      * Fase upload utama: upload file PROD yang belum ada di DEV ke DEV,
      * update URL di DB, lalu hapus file PROD (anti-premature-delete).
      *
-     * @return array{0:int,1:int} [totalSuccess, totalFailed]
+     * @return array{0:int,1:int,2:int} [success, failed, missing]
      */
     private function syncPendingFiles(
         StorageService $storage,
@@ -161,6 +163,7 @@ class SyncFilesToDev extends Command
 
         $totalSuccess = 0;
         $totalFailed = 0;
+        $totalMissing = 0;
 
         foreach ($tables as $tbl) {
             $table = $tbl["table"];
@@ -183,7 +186,7 @@ class SyncFilesToDev extends Command
 
                     if (!file_exists($localAbsPath)) {
                         $this->warn("  File tidak ditemukan di disk: {$relativePath} (ID: {$record->id})");
-                        $totalFailed++;
+                        $totalMissing++;
                         continue;
                     }
 
@@ -233,7 +236,7 @@ class SyncFilesToDev extends Command
             }
         }
 
-        return [$totalSuccess, $totalFailed];
+        return [$totalSuccess, $totalFailed, $totalMissing];
     }
 
     private function fetchPendingRecords(string $table, string $column, string $devPrefix): array
