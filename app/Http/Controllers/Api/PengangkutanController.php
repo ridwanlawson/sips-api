@@ -793,93 +793,186 @@ class PengangkutanController extends Controller
                 $this->trackUploadedFile($baExcaPath);
             }
 
-            // Menyusun data untuk update
-            $updateData = [
-                $validated['kode_karyawan_kerani'] ?? null, // 1
-                $validated['kode_karyawan_driver'] ?? null, // 2
-                $validated['tkbm1'] ?? null, // 3
-                $validated['tkbm2'] ?? null, // 4
-                $validated['tkbm3'] ?? null, // 5
-                $validated['tkbm4'] ?? null, // 6
-                $validated['tkbm5'] ?? null, // 7
-                $validated['type_pengangkutan'] ?? null, // 8
-                $validated['type_kendaraan'] ?? null, // 9
-                $validated['kode_kendaraan'] ?? null, // 10
-                $validated['tph'] ?? null, // 10
-                $validated['fieldcode'] ?? null, // 11
-                $validated['fcba'] ?? null, // 12
-                $validated['afdeling'] ?? null, // 13
-                $validated['fcba_destination'] ?? null, // 14
-                $validated['afdeling_destination'] ?? null, // 15
-                $validated['pabrik_tujuan'] ?? null, // 16
-                $validated['totaljanjang'] ?? null, // 17
-                $validated['output'] ?? null, // 18
-                $validated['janjangnormal'] ?? null, // 19
-                $validated['brondolan'] ?? null, // 20
-                $validated['mentah'] ?? null, // 21
-                $validated['abnormal'] ?? null, // 22
-                $validated['eta'] ?? null, // 23
-                $validated['etd'] ?? null, // 24
-                $validated['card_id'] ?? null, // 25
-                $imagePath, // 26
-                Auth::user()->username, // 27
-                $validated['exception_case'] ?? null, // 28
-                $baExcaPath, // 29
-                $id, // (ID untuk WHERE)
+            // 1 pengangkutan = N baris dgn NOPENGANGKUTAN sama. Kolom header
+            // di bawah ini milik rit, jadi perubahannya dipropagasi ke semua
+            // baris se-NOPENGANGKUTAN. TYPE_KENDARAAN sengaja tidak diupdate.
+            $headerMap = [
+                'kode_karyawan_kerani' => 'KODE_KARYAWAN_KERANI',
+                'kode_karyawan_driver' => 'KODE_KARYAWAN_DRIVER',
+                'tkbm1' => 'TKBM1',
+                'tkbm2' => 'TKBM2',
+                'tkbm3' => 'TKBM3',
+                'tkbm4' => 'TKBM4',
+                'tkbm5' => 'TKBM5',
+                'kode_kendaraan' => 'KODE_KENDARAAN',
             ];
 
-            $setClause = '
-                    "KODE_KARYAWAN_KERANI" = ?,
-                    "KODE_KARYAWAN_DRIVER" = ?,
-                    "TKBM1" = ?,
-                    "TKBM2" = ?,
-                    "TKBM3" = ?,
-                    "TKBM4" = ?,
-                    "TKBM5" = ?,
-                    "TYPE_PENGANGKUTAN" = ?,
-                    "TYPE_KENDARAAN" = ?,
-                    "KODE_KENDARAAN" = ?,
-                    "TPH" = ?,
-                    "FIELDCODE" = ?,
-                    "FCBA" = ?,
-                    "AFDELING" = ?,
-                    "FCBA_DESTINATION" = ?,
-                    "AFDELING_DESTINATION" = ?,
-                    "PABRIK_TUJUAN" = ?,
-                    "TOTALJANJANG" = ?,
-                    "OUTPUT" = ?,
-                    "JANJANGNORMAL" = ?,
-                    "BRONDOLAN" = ?,
-                    "MENTAH" = ?,
-                    "ABNORMAL" = ?,
-                    "ETA" = ?,
-                    "ETD" = ?,
-                    "CARD_ID" = ?,
-                    "IMAGES" = ?,
-                    "UPDATED_BY" = ?,
-                    "UPDATED_AT" = SYSDATE,
-                    "EXCEPTION_CASE" = ?,
-                    "NO_BA_EXCA" = ?
-                ';
+            $detailMap = [
+                'type_pengangkutan' => 'TYPE_PENGANGKUTAN',
+                'tph' => 'TPH',
+                'fieldcode' => 'FIELDCODE',
+                'fcba' => 'FCBA',
+                'afdeling' => 'AFDELING',
+                'fcba_destination' => 'FCBA_DESTINATION',
+                'afdeling_destination' => 'AFDELING_DESTINATION',
+                'pabrik_tujuan' => 'PABRIK_TUJUAN',
+                'totaljanjang' => 'TOTALJANJANG',
+                'output' => 'OUTPUT',
+                'janjangnormal' => 'JANJANGNORMAL',
+                'brondolan' => 'BRONDOLAN',
+                'mentah' => 'MENTAH',
+                'abnormal' => 'ABNORMAL',
+                'eta' => 'ETA',
+                'etd' => 'ETD',
+                'card_id' => 'CARD_ID',
+                'exception_case' => 'EXCEPTION_CASE',
+            ];
 
-            // Update menggunakan query manual
-            DB::update(
-                'UPDATE "SIPSMOBILE"."PENGANGKUTAN"
-                SET '.
-                    $setClause.
-                    '
-                WHERE "ID" = ?',
-                $updateData,
-            );
+            $norm = static fn ($v) => $v === '' ? null : $v;
+            $rawAttrs = $datas->getAttributes();
+            $oldByUpper = [];
+            foreach ($rawAttrs as $attrKey => $attrVal) {
+                $oldByUpper[strtoupper($attrKey)] = $attrVal;
+            }
+            $old = static fn (string $col) => $oldByUpper[$col] ?? null;
+            $isSame = static function ($new, $oldVal) use ($norm) {
+                $n = $norm($new);
+                $o = $norm($oldVal);
+                if ($n === null || $o === null) {
+                    return $n === $o;
+                }
+
+                return (string) $n === (string) $o;
+            };
+
+            // Hanya kolom yang dikirim client DAN nilainya benar-benar
+            // berubah yang diupdate. Field yang absen dari request (misal
+            // ETA tak pernah dikirim frontend, destination kosong di-skip
+            // FormData) berarti "tidak diubah" — bukan "kosongkan".
+            $dirtyHeader = [];
+            foreach ($headerMap as $input => $col) {
+                if (! $request->exists($input)) {
+                    continue;
+                }
+                $newVal = $norm($validated[$input] ?? null);
+                if (! $isSame($newVal, $old($col))) {
+                    $dirtyHeader[$col] = $newVal;
+                }
+            }
+
+            $dirtyDetail = [];
+            foreach ($detailMap as $input => $col) {
+                if (! $request->exists($input)) {
+                    continue;
+                }
+                $newVal = $norm($validated[$input] ?? null);
+                if (! $isSame($newVal, $old($col))) {
+                    $dirtyDetail[$col] = $newVal;
+                }
+            }
+
+            $imagesChanged = ! $isSame($imagePath, $old('IMAGES'));
+            $baChanged = ! $isSame($baExcaPath, $old('NO_BA_EXCA'));
+            if ($imagesChanged) {
+                $dirtyDetail['IMAGES'] = $norm($imagePath);
+            }
+            if ($baChanged) {
+                $dirtyDetail['NO_BA_EXCA'] = $norm($baExcaPath);
+            }
+
+            if (empty($dirtyHeader) && empty($dirtyDetail)) {
+                return response()->json(
+                    [
+                        'success' => true,
+                        'message' => 'Tidak ada perubahan data.',
+                        'data' => $datas,
+                        'meta' => [
+                            'header_propagated' => false,
+                            'affected_header' => 0,
+                            'updated_columns' => [],
+                        ],
+                    ],
+                    200,
+                );
+            }
+
+            $username = Auth::user()->username;
+            $noPengangkutan = $norm($old('NOPENGANGKUTAN'));
+            $affectedHeader = 0;
+
+            DB::transaction(function () use (
+                $dirtyHeader,
+                $dirtyDetail,
+                $username,
+                $noPengangkutan,
+                $id,
+                &$affectedHeader
+            ) {
+                $headerForSelf = $dirtyHeader;
+                if (! empty($dirtyHeader) && $noPengangkutan !== null) {
+                    // Propagasi hanya ke baris yang nilainya masih beda
+                    // (DECODE = pembanding null-safe Oracle), jadi saudara
+                    // yang sudah sama tidak tersentuh UPDATED_AT-nya.
+                    $setParts = [];
+                    $setBindings = [];
+                    $guardParts = [];
+                    $guardBindings = [];
+                    foreach ($dirtyHeader as $col => $val) {
+                        $setParts[] = "\"{$col}\" = ?";
+                        $setBindings[] = $val;
+                        $guardParts[] = "DECODE(\"{$col}\", ?, 0, 1) = 1";
+                        $guardBindings[] = $val;
+                    }
+
+                    $affectedHeader = DB::update(
+                        'UPDATE "SIPSMOBILE"."PENGANGKUTAN" SET '.
+                            implode(', ', $setParts).
+                            ', "UPDATED_BY" = ?, "UPDATED_AT" = SYSDATE '.
+                            'WHERE "NOPENGANGKUTAN" = ? AND ('.
+                            implode(' OR ', $guardParts).
+                            ')',
+                        array_merge($setBindings, [$username, $noPengangkutan], $guardBindings),
+                    );
+                    $headerForSelf = [];
+                }
+
+                $selfChanges = array_merge($headerForSelf, $dirtyDetail);
+                if (! empty($selfChanges)) {
+                    $setParts = [];
+                    $bindings = [];
+                    foreach ($selfChanges as $col => $val) {
+                        $setParts[] = "\"{$col}\" = ?";
+                        $bindings[] = $val;
+                    }
+                    $bindings[] = $username;
+                    $bindings[] = $id;
+
+                    DB::update(
+                        'UPDATE "SIPSMOBILE"."PENGANGKUTAN" SET '.
+                            implode(', ', $setParts).
+                            ', "UPDATED_BY" = ?, "UPDATED_AT" = SYSDATE '.
+                            'WHERE "ID" = ?',
+                        $bindings,
+                    );
+                }
+            });
 
             $datas = Pengangkutan::findOrFail($id);
+            $updatedColumns = array_merge(array_keys($dirtyHeader), array_keys($dirtyDetail));
 
             // Berhasil diupdate
             return response()->json(
                 [
                     'success' => true,
-                    'message' => 'Data Pengangkutan berhasil diperbarui.',
+                    'message' => $affectedHeader > 1
+                        ? "Data Pengangkutan berhasil diperbarui ({$affectedHeader} baris se-No Pengangkutan ikut diperbarui)."
+                        : 'Data Pengangkutan berhasil diperbarui.',
                     'data' => $datas,
+                    'meta' => [
+                        'header_propagated' => $affectedHeader > 0,
+                        'affected_header' => $affectedHeader,
+                        'updated_columns' => $updatedColumns,
+                    ],
                 ],
                 200,
             );
