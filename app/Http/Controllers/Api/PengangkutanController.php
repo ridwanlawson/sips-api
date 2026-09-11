@@ -363,12 +363,20 @@ class PengangkutanController extends Controller
         try {
             $this->uploadedFiles = [];
 
-            // Antisipasi constraint: NODOKUMEN unik per TYPE_PENGANGKUTAN
-            if (Pengangkutan::where('NODOKUMEN', $request->nodokumen)->where('TYPE_PENGANGKUTAN', $request->type_pengangkutan)->exists()) {
+            // Aturan NODOKUMEN per TYPE_PENGANGKUTAN:
+            // - type 1: NODOKUMEN hanya boleh ada 1x.
+            // - type 2: boleh >1x iff NODOKUMEN sudah ada di type 1 dan
+            //   SUM(output type 2) + output baru <= SUM(output type 1).
+            $nodokumenErr = $this->checkNodokumenQuota(
+                (int) $request->type_pengangkutan,
+                $request->nodokumen,
+                (float) $request->output,
+            );
+            if ($nodokumenErr !== null) {
                 return response()->json(
                     [
                         'success' => false,
-                        'message' => 'NODOKUMEN sudah pernah dimasukkan, cek kembali data Anda.',
+                        'message' => $nodokumenErr,
                     ],
                     400,
                 );
@@ -729,6 +737,38 @@ class PengangkutanController extends Controller
                         'message' => 'Pengangkutan tidak ditemukan',
                     ],
                     404,
+                );
+            }
+
+            // Cek kuota NODOKUMEN sebelum upload file agar penolakan
+            // tidak meninggalkan file yatim (return 400 di sini tidak
+            // memanggil cleanupUploadedFiles). NODOKUMEN immutable di
+            // update(), jadi dipakai nilai dari DB.
+            $updateAttrs = $datas->getAttributes();
+            $updateByUpper = [];
+            foreach ($updateAttrs as $attrKey => $attrVal) {
+                $updateByUpper[strtoupper($attrKey)] = $attrVal;
+            }
+            $updateNodokumen = (string) ($updateByUpper['NODOKUMEN'] ?? '');
+            $updateType = $request->exists('type_pengangkutan')
+                ? (int) $validated['type_pengangkutan']
+                : (int) ($updateByUpper['TYPE_PENGANGKUTAN'] ?? 0);
+            $updateOutput = $request->exists('output')
+                ? (float) $validated['output']
+                : (float) ($updateByUpper['OUTPUT'] ?? 0);
+            $nodokumenErr = $this->checkNodokumenQuota(
+                $updateType,
+                $updateNodokumen,
+                $updateOutput,
+                (string) $id,
+            );
+            if ($nodokumenErr !== null) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => $nodokumenErr,
+                    ],
+                    400,
                 );
             }
 
@@ -1228,6 +1268,53 @@ class PengangkutanController extends Controller
                 500,
             );
         }
+    }
+
+    /**
+     * Cek aturan NODOKUMEN per TYPE_PENGANGKUTAN.
+     *
+     * - type 1: NODOKUMEN hanya boleh ada 1x; output-nya juga tidak boleh
+     *   dikecilkan di bawah total OUTPUT type 2 yang sudah ada.
+     * - type 2: boleh >1x iff NODOKUMEN sudah ada di type 1 dan
+     *   SUM(output type 2) + output baru <= SUM(output type 1).
+     *
+     * @return string|null null jika lolos, pesan error jika ditolak.
+     */
+    private function checkNodokumenQuota(int $type, string $nodokumen, float $outputBaru, ?string $excludeId = null): ?string
+    {
+        $base = Pengangkutan::where('NODOKUMEN', $nodokumen);
+        if ($excludeId !== null) {
+            $base->where('ID', '!=', $excludeId);
+        }
+
+        if ($type === 1) {
+            if ((clone $base)->where('TYPE_PENGANGKUTAN', 1)->exists()) {
+                return 'NODOKUMEN dengan tipe pengangkutan 1 sudah pernah dimasukkan, cek kembali data Anda.';
+            }
+            $dipakai = (float) (clone $base)->where('TYPE_PENGANGKUTAN', 2)->sum('OUTPUT');
+            if ($dipakai > 0 && $outputBaru < $dipakai) {
+                return "OUTPUT tipe 1 tidak boleh lebih kecil dari total OUTPUT tipe 2 yang sudah ada ({$dipakai}).";
+            }
+
+            return null;
+        }
+
+        if ($type === 2) {
+            if (! (clone $base)->where('TYPE_PENGANGKUTAN', 1)->exists()) {
+                return 'NODOKUMEN ini belum ada di pengangkutan tipe 1 (LANGSIR), tidak bisa membuat pengangkutan tipe 2.';
+            }
+            $kuota = (float) (clone $base)->where('TYPE_PENGANGKUTAN', 1)->sum('OUTPUT');
+            $terpakai = (float) (clone $base)->where('TYPE_PENGANGKUTAN', 2)->sum('OUTPUT');
+            if ($terpakai + $outputBaru > $kuota) {
+                $sisa = $kuota - $terpakai;
+
+                return "Total OUTPUT tipe 2 melebihi OUTPUT tipe 1 (kuota {$kuota}, sudah terpakai {$terpakai}, sisa {$sisa}).";
+            }
+
+            return null;
+        }
+
+        return null;
     }
 
     /**

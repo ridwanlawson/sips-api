@@ -30,6 +30,7 @@ class Harvesting extends Model
         "BUSUK2",
         "BUAHKECIL",
         "PARTENO",
+        "PARTENO50PLUS",
         "BRONDOL",
         "ALASBRONDOL",
         "TANGKAIPANJANG",
