@@ -363,8 +363,8 @@ class PengangkutanController extends Controller
         try {
             $this->uploadedFiles = [];
 
-            // Antisipasi constraint: NODOKUMEN unik
-            if (Pengangkutan::where('NODOKUMEN', $request->nodokumen)->exists()) {
+            // Antisipasi constraint: NODOKUMEN unik per TYPE_PENGANGKUTAN
+            if (Pengangkutan::where('NODOKUMEN', $request->nodokumen)->where('TYPE_PENGANGKUTAN', $request->type_pengangkutan)->exists()) {
                 return response()->json(
                     [
                         'success' => false,
