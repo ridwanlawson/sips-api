@@ -365,8 +365,9 @@ class PengangkutanController extends Controller
 
             // Aturan NODOKUMEN per TYPE_PENGANGKUTAN:
             // - type 1: NODOKUMEN hanya boleh ada 1x.
-            // - type 2: boleh >1x iff NODOKUMEN sudah ada di type 1 dan
-            //   SUM(output type 2) + output baru <= SUM(output type 1).
+            // - type 2: default max 1x; boleh >1x iff NODOKUMEN sudah ada
+            //   di type 1 dan SUM(output type 2) + output baru
+            //   <= SUM(output type 1).
             $nodokumenErr = $this->checkNodokumenQuota(
                 (int) $request->type_pengangkutan,
                 $request->nodokumen,
@@ -1275,8 +1276,9 @@ class PengangkutanController extends Controller
      *
      * - type 1: NODOKUMEN hanya boleh ada 1x; output-nya juga tidak boleh
      *   dikecilkan di bawah total OUTPUT type 2 yang sudah ada.
-     * - type 2: boleh >1x iff NODOKUMEN sudah ada di type 1 dan
-     *   SUM(output type 2) + output baru <= SUM(output type 1).
+     * - type 2: default max 1x (mirip type 1); boleh >1x iff NODOKUMEN
+     *   sudah ada di type 1 dan SUM(output type 2) + output baru
+     *   <= SUM(output type 1).
      *
      * @return string|null null jika lolos, pesan error jika ditolak.
      */
@@ -1300,8 +1302,13 @@ class PengangkutanController extends Controller
         }
 
         if ($type === 2) {
-            if (! (clone $base)->where('TYPE_PENGANGKUTAN', 1)->exists()) {
-                return 'NODOKUMEN ini belum ada di pengangkutan tipe 1 (LANGSIR), tidak bisa membuat pengangkutan tipe 2.';
+            $hasType1 = (clone $base)->where('TYPE_PENGANGKUTAN', 1)->exists();
+            if (! $hasType1) {
+                if ((clone $base)->where('TYPE_PENGANGKUTAN', 2)->exists()) {
+                    return 'NODOKUMEN dengan tipe pengangkutan 2 sudah pernah dimasukkan, cek kembali data Anda.';
+                }
+
+                return null;
             }
             $kuota = (float) (clone $base)->where('TYPE_PENGANGKUTAN', 1)->sum('OUTPUT');
             $terpakai = (float) (clone $base)->where('TYPE_PENGANGKUTAN', 2)->sum('OUTPUT');
