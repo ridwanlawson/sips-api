@@ -1761,6 +1761,15 @@ class UploadController extends Controller
                     ],
                 );
 
+                // HAPUS PENAMPUNG HA (sudah di-approve ulang)
+                $conn->statement("
+                    DELETE FROM SIPSMOBILE.LHM_OPEN_HA_HOLD h
+                    WHERE EXISTS (
+                        SELECT 1 FROM SIPSMOBILE.TEMP_LHM_INPUT tmp
+                        WHERE tmp.ID = h.ID AND tmp.ROWDATA = h.ROWDATA
+                    )
+                ");
+
                 // UPDATE STATUS
                 $conn->statement("
                     UPDATE SIPSMOBILE.ATTENDANCE a
@@ -2148,9 +2157,13 @@ class UploadController extends Controller
                 );
             }
 
-            DB::beginTransaction();
-
             $conn = DB::connection("oracle");
+            $conn->beginTransaction();
+
+            // CLEAN TEMP DULU (biar tidak numpuk / tercampur sesi lain)
+            $conn->statement("DELETE FROM SIPSMOBILE.TEMP_LHM_INPUT");
+
+            $openBy = Auth::user()->username ?? null;
 
             // =============================
             // 1. PREPARE TEMP TABLE
@@ -2255,7 +2268,29 @@ class UploadController extends Controller
             ");
 
             // =============================
-            // 7. DELETE LHM_DATA (TERAKHIR!)
+            // 7. BACKUP HA KE PENAMPUNG (SEBELUM LHM_DATA DIHAPUS!)
+            // =============================
+            $conn->statement(
+                "
+                MERGE INTO SIPSMOBILE.LHM_OPEN_HA_HOLD h
+                USING (
+                    SELECT l.ID, l.ROWDATA, l.HA
+                    FROM SIPSMOBILE.LHM_DATA l
+                    JOIN SIPSMOBILE.TEMP_LHM_INPUT tmp
+                        ON l.ID = tmp.ID AND l.ROWDATA = tmp.ROWDATA
+                ) s
+                ON (h.ID = s.ID AND h.ROWDATA = s.ROWDATA)
+                WHEN MATCHED THEN
+                    UPDATE SET h.HA = s.HA, h.OPEN_BY = ?, h.OPEN_AT = SYSDATE
+                WHEN NOT MATCHED THEN
+                    INSERT (ID, ROWDATA, HA, OPEN_BY, OPEN_AT)
+                    VALUES (s.ID, s.ROWDATA, s.HA, ?, SYSDATE)
+            ",
+                [$openBy, $openBy],
+            );
+
+            // =============================
+            // 8. DELETE LHM_DATA (TERAKHIR!)
             // =============================
             $conn->statement("
                 DELETE FROM SIPSMOBILE.LHM_DATA l
@@ -2267,14 +2302,14 @@ class UploadController extends Controller
                 )
             ");
 
-            DB::commit();
+            $conn->commit();
 
             return response()->json([
                 "success" => true,
                 "message" => "open LHM berhasil.",
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
+            $conn->rollBack();
 
             Log::error("open LHM ERROR", [
                 "message" => $e->getMessage(),
