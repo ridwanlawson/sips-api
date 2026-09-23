@@ -9,7 +9,7 @@ use App\Services\StorageService;
 use App\Traits\FileCleanupTrait;
 use App\Traits\ImageOptimizerTrait;
 use Carbon\Carbon;
-// use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -468,11 +468,13 @@ class HarvestingController extends Controller
                 );
             }
 
-            // Log error lainnya
-            // Log::error('Error simpan harvesting', [
-            //     'message' => $e->getMessage(),
-            //     'request' => $request->all()
-            // ]);
+
+            Log::error('QUERY EXCEPTION - Error simpan harvesting', [
+                'class' => get_class($e),
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+                'request' => $request->all(),
+            ]);
 
             return response()->json(
                 [
@@ -483,6 +485,13 @@ class HarvestingController extends Controller
             );
         } catch (\Exception $e) {
             $this->cleanupUploadedFiles();
+
+            Log::error('GENERAL EXCEPTION - Error simpan harvesting', [
+                'class' => get_class($e),
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+                'request' => $request->all(),
+            ]);
 
             return response()->json(
                 [
@@ -682,6 +691,17 @@ class HarvestingController extends Controller
 
             // Cari data berdasarkan ID
             $datas = Harvesting::findOrFail($id);
+
+            $status = array_change_key_case($datas->getAttributes(), CASE_UPPER)['STATUS_HARVESTING'] ?? null;
+            if (strtolower(trim($status ?? '')) !== 'planned') {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Data dengan status '.($status ?: 'tanpa status').' tidak dapat diubah. Hanya data Planned yang dapat diubah.',
+                    ],
+                    403,
+                );
+            }
 
             // Jika data tidak ditemukan
             if (! $datas) {
@@ -990,6 +1010,17 @@ class HarvestingController extends Controller
             $this->uploadedFiles = [];
 
             $datas = Harvesting::findOrFail($id);
+
+            $status = array_change_key_case($datas->getAttributes(), CASE_UPPER)['STATUS_HARVESTING'] ?? null;
+            if (strtolower(trim($status ?? '')) !== 'planned') {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Data dengan status '.($status ?: 'tanpa status').' tidak dapat dihapus. Hanya data Planned yang dapat dihapus.',
+                    ],
+                    403,
+                );
+            }
 
             $baExcaPath = null;
 

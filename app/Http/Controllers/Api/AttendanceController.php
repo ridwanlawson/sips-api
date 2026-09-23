@@ -538,6 +538,17 @@ class AttendanceController extends Controller
 
             $datas = Attendance::findOrFail($id);
 
+            $status = array_change_key_case($datas->getAttributes(), CASE_UPPER)['STATUS_ATTENDANCE'] ?? null;
+            if (strtolower(trim($status ?? '')) !== 'planned') {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Data dengan status '.($status ?: 'tanpa status').' tidak dapat diubah. Hanya data Planned yang dapat diubah.',
+                    ],
+                    403,
+                );
+            }
+
             $storage = app(StorageService::class);
 
             $fcbaSlug = Str::slug(strtolower($datas->fcba ?? 'unknown'));
@@ -810,6 +821,17 @@ class AttendanceController extends Controller
             $this->uploadedFiles = [];
 
             $datas = Attendance::findOrFail($id);
+
+            $status = array_change_key_case($datas->getAttributes(), CASE_UPPER)['STATUS_ATTENDANCE'] ?? null;
+            if (strtolower(trim($status ?? '')) !== 'planned') {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Data dengan status '.($status ?: 'tanpa status').' tidak dapat dihapus. Hanya data Planned yang dapat dihapus.',
+                    ],
+                    403,
+                );
+            }
 
             $storage = app(StorageService::class);
 

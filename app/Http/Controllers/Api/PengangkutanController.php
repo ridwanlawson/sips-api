@@ -730,6 +730,17 @@ class PengangkutanController extends Controller
             // Cari data berdasarkan ID
             $datas = Pengangkutan::findOrFail($id);
 
+            $status = array_change_key_case($datas->getAttributes(), CASE_UPPER)['STATUS_PENGANGKUTAN'] ?? null;
+            if (strtolower(trim($status ?? '')) !== 'planned') {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Data dengan status '.($status ?: 'tanpa status').' tidak dapat diubah. Hanya data Planned yang dapat diubah.',
+                    ],
+                    403,
+                );
+            }
+
             // Jika data tidak ditemukan
             if (! $datas) {
                 return response()->json(
@@ -1199,6 +1210,17 @@ class PengangkutanController extends Controller
             $this->uploadedFiles = [];
 
             $datas = Pengangkutan::findOrFail($id);
+
+            $status = array_change_key_case($datas->getAttributes(), CASE_UPPER)['STATUS_PENGANGKUTAN'] ?? null;
+            if (strtolower(trim($status ?? '')) !== 'planned') {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Data dengan status '.($status ?: 'tanpa status').' tidak dapat dihapus. Hanya data Planned yang dapat dihapus.',
+                    ],
+                    403,
+                );
+            }
 
             $baExcaPath = null;
 
