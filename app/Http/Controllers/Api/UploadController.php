@@ -2273,7 +2273,7 @@ class UploadController extends Controller
      * }
      * @response 500 scenario="error" {
      *  "success": false,
-     *  "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+     *  "message": "Terjadi kesalahan saat menyimpan data. Silakan coba lagis.",
      *  "error": "Deskripsi error dari database"
      * }
      */
