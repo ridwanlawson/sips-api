@@ -1853,6 +1853,7 @@ class UploadController extends Controller
 
             if (Auth::user()->level === $checkLastApproval) {
                 // Log::info("LUAR BIASA");
+                // INSERT ATTENDANCE (POTONG BUAH)
                 DB::statement("
                         INSERT ALL
                         /*INTO IPLASPROD.ATTENDANCE_GAD (
@@ -1988,12 +1989,13 @@ class UploadController extends Controller
                                     ) DATA
                                 WHERE DATA.fcba = ld.fcba AND DATA.code = u.\"LEVEL\"
                                 )
-                                AND EXISTS (
-                                  SELECT 1 FROM SIPSMOBILE.TEMP_LHM_UPDATE t WHERE t.ID = ld.ID
-                                )
+                            AND EXISTS (
+                                SELECT 1 FROM SIPSMOBILE.TEMP_LHM_UPDATE t WHERE t.ID = ld.ID
+                            )
 
                     ");
 
+                // INSERT ATTENDANCE (KB/BRONDOLAN)
                 DB::statement("
                     INSERT ALL
                     /*INTO IPLASPROD.ATTENDANCE_GAD (
@@ -2086,6 +2088,139 @@ class UploadController extends Controller
                             AND vub.FDDATE >= TO_DATE('15-08-2026', 'DD-MM-YYYY')
                     ");
             }
+
+                // INSERT HARVESTING QUALITY
+                DB::statement("
+                    INSERT ALL
+                    INTO IPLASPROD.HARVESTINGQUALITY (
+                        EMPCODE,
+                        FDDATE,
+                        FIELDCODE,
+                        UNDER_RIPE,
+                        OVER_RIPE,
+                        ABNORMAL,
+                        LONG_STALK,
+                        EATEN_BY_RAT,
+                        UNHARVEST_FFB,
+                        UNCOLLECT_LF_CIRCLE,
+                        UNCOLLECT_LF_PIECE,
+                        UNARRANGE_FFB,
+                        UNPRUNE_FROND,
+                        QE_1,
+                        QE_2,
+                        QE_3,
+                        QE_4,
+                        QE_5,
+                        QE_6,
+                        QE_7,
+                        QE_8,
+                        QE_9,
+                        QE_10,
+                        FCENTRY,
+                        FCEDIT,
+                        FCIP,
+                        FCBA,
+                        LASTUPDATE,
+                        LASTTIME,
+                        QE_11,
+                        QE_12,
+                        QE_13,
+                        QE_14,
+                        QE_15,
+                        QE_16,
+                        QE_17,
+                        DOCUMENTNO
+                    )
+                    VALUES (
+                        EMPCODE,
+                        FDDATE,
+                        FIELDCODE,
+                        UNDER_RIPE,
+                        OVER_RIPE,
+                        ABNORMAL,
+                        LONG_STALK,
+                        EATEN_BY_RAT,
+                        UNHARVEST_FFB,
+                        UNCOLLECT_LF_CIRCLE,
+                        UNCOLLECT_LF_PIECE,
+                        UNARRANGE_FFB,
+                        UNPRUNE_FROND,
+                        QE_1,
+                        QE_2,
+                        QE_3,
+                        QE_4,
+                        QE_5,
+                        QE_6,
+                        QE_7,
+                        QE_8,
+                        QE_9,
+                        QE_10,
+                        FCENTRY,
+                        FCEDIT,
+                        FCIP,
+                        FCBA,
+                        LASTUPDATE,
+                        LASTTIME,
+                        QE_11,
+                        QE_12,
+                        QE_13,
+                        QE_14,
+                        QE_15,
+                        QE_16,
+                        QE_17,
+                        DOCUMENTNO
+                    )
+                    SELECT
+                        EMPCODE,
+                        FDDATE,
+                        FIELDCODE,
+                        UNDER_RIPE,
+                        OVER_RIPE,
+                        ABNORMAL,
+                        LONG_STALK,
+                        EATEN_BY_RAT,
+                        UNHARVEST_FFB,
+                        UNCOLLECT_LF_CIRCLE,
+                        UNCOLLECT_LF_PIECE,
+                        UNARRANGE_FFB,
+                        UNPRUNE_FROND,
+                        QE_1,
+                        QE_2,
+                        QE_3,
+                        QE_4,
+                        QE_5,
+                        QE_6,
+                        QE_7,
+                        QE_8,
+                        QE_9,
+                        QE_10,
+                        FCENTRY,
+                        FCEDIT,
+                        FCIP,
+                        FCBA,
+                        LASTUPDATE,
+                        LASTTIME,
+                        QE_11,
+                        QE_12,
+                        QE_13,
+                        QE_14,
+                        QE_15,
+                        QE_16,
+                        QE_17,
+                        DOCUMENTNO
+                    FROM SIPSMOBILE.V_UPLOAD_HVTG_QLTY q
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                   	    FROM IPLASPROD.HARVESTINGQUALITY hq
+                   	    WHERE hq.EMPCODE     = q.EMPCODE
+                 	      AND hq.FDDATE      = q.FDDATE
+                 	      AND hq.FIELDCODE   = q.FIELDCODE
+                 	      AND hq.FCBA  		 = q.FCBA
+                    )
+                    AND EXISTS (
+                        SELECT 1 FROM SIPSMOBILE.TEMP_LHM_UPDATE t WHERE t.ID = q.DOCUMENTNO
+                    )
+                ");
 
             // Log::info("TIDAK LUAR BIASA " . $checkLastApproval);
 
